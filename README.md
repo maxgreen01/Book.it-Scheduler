@@ -1,1 +1,1 @@
-# CS546-Scheduler
+# Book.it Scheduler
