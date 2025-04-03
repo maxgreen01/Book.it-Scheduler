@@ -1,12 +1,16 @@
 {
-  "name": "book.it-scheduler",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
-  "type": "module",
-  "scripts": {
-    "start": "node app.js"
-},
-  "author": "Max Green, Praneeth Vanguru, Brendan Lee, Alex Prikockis",
-  "license": "ISC"
+    "name": "book.it-scheduler",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "type": "module",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "author": "Max Green, Praneeth Vanguru, Brendan Lee, Alex Prikockis",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^5.1.0",
+        "handlebars": "^4.7.8"
+    }
 }
