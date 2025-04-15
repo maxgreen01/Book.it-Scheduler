@@ -39,16 +39,12 @@ async function seed () {
     const cids = [];
     for (let i = 0; i < N_COM; i++) {
 
-        
-        /* replace this line with the below when we have a createComment() */
-        cids.push(new ObjectId());
-
-    //   const uid = faker.helpers.arrayElement(uids);  //assign to random user
-    //   const comment = await createComment(
-    //     uid,
-    //     faker.lorem.sentences({min: 2, max: 4})
-    //   );
-    //   cids.push(comment._id);
+      const uid = faker.helpers.arrayElement(uids);  //assign to random user
+      const comment = await createComment(
+        uid,
+        faker.lorem.sentences({min: 2, max: 4})
+      );
+      cids.push(comment._id);
     }
 
     
