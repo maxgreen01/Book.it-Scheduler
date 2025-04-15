@@ -16,4 +16,7 @@ const getCollectionFn = (collection) => {
 };
 
 // export used collections
-export const movies = getCollectionFn("movies");
+export const meetings = getCollectionFn("meetings");
+export const comments = getCollectionFn("comments");
+export const users = getCollectionFn("users");
+
