@@ -1,10 +1,12 @@
 import rootRoutes from "./root.js";
-import meetingsRoutes from "./meetings.js";
-import createRoutes from "./create.js";
 import profileRoutes from "./profile.js";
+import loginRoutes from "./login.js";
+import createRoutes from "./create.js";
+import meetingsRoutes from "./meetings.js";
 
 const constructorMethod = (app) => {
     app.use("/", rootRoutes);
+    app.use("/login", loginRoutes);
     app.use("/profile", profileRoutes);
     app.use("/create", createRoutes);
     app.use("/meetings", meetingsRoutes);

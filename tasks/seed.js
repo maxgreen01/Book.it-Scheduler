@@ -5,7 +5,6 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import * as userFunctions from "../data/users.js";
-import { ObjectId } from "mongodb";
 
 // define the seed procedure, which is called below
 async function seed() {

@@ -4,5 +4,11 @@
     "tabWidth": 4,
     "semi": true,
     "singleQuote": false,
-    "printWidth": 1000
+    "printWidth": 1000,
+    "overrides": [
+        {
+            "files": "*.handlebars",
+            "options": { "parser": "html" }
+        }
+    ]
 }

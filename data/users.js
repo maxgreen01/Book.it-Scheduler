@@ -1,6 +1,6 @@
 // Data functions for user profile objects
 
-import validation from "../utils/validation.js";
+import * as validation from "../utils/validation.js";
 import { usersCollection } from "../config/mongoCollections.js";
 
 // Construct a user document given an object containing the required fields, or throw an error if any fields are invalid.
@@ -14,7 +14,7 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", true);
     if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture", true);
-    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo MG - validate Timeslot objects
+    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo - validate Timeslot objects
 
     // ============= construct the document =============
     const user = {
@@ -36,7 +36,8 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
 
 // create a user object and save it to the DB, then return the added object
 export async function createUser({ uid, password, firstName, lastName, description, profilePicture, availability }) {
-    if (!validation.isUserIdUnique(uid)) throw new Error(`User ID "${uid}" is not unique`);
+    console.log(await getAllUserIDs(), await validation.isUserIdUnique(uid));
+    if (!(await validation.isUserIdUnique(uid))) throw new Error(`User ID "${uid}" is not unique`);
 
     // set up the document that will be saved to the DB
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
@@ -60,7 +61,7 @@ export async function getAllUsers() {
 // return an array of all user IDs in the DB
 export async function getAllUserIDs() {
     const collection = await usersCollection();
-    const users = await collection.find({}).project({ _id: 1 }).toArray();
+    const users = (await collection.find({}).project({ _id: 1 }).toArray()).map((obj) => obj._id); // extract `_id` from each object to get a list of strings
     if (!users) throw new Error("Could not retrieve all users");
     return users;
 }
