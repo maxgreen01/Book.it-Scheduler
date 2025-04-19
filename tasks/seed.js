@@ -4,8 +4,8 @@ import { faker } from "@faker-js/faker";
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
-// import { createComment } from "../data/comments.js";
 import * as userFunctions from "../data/users.js";
+import { ObjectId } from "mongodb";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -18,7 +18,7 @@ async function seed() {
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
         const lname = faker.person.lastName();
-        const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`;
+        const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
 
         console.log(`Adding user ${i}: ${fname} ${lname}`);
         const user = await userFunctions.createUser({
@@ -32,7 +32,6 @@ async function seed() {
         });
         userIds.push(user._id);
     }
-    console.log(userIds);
 
     //
 
@@ -44,7 +43,7 @@ async function seed() {
 
         // Uncomment the below when we have createMeeting()
         // console.log(`Adding comment ${i}`);
-        // const meeting = await createMeeting(
+        // const meeting = await meetingFuncs.createMeeting(
         //     // (...)
         // );
 
@@ -64,7 +63,7 @@ async function seed() {
         // const meeting = faker.helpers.arrayElement(meetingIds);
 
         // Uncomment the below when we have createComment()
-        // const comment = await createComment(
+        // const comment = await commentFuncs.createComment(
         //     uid,
         //     faker.lorem.sentences({min: 2, max: 4})
         // );
