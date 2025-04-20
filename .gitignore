@@ -3,3 +3,7 @@ node_modules/
 
 # Local settings
 .vscode
+
+# Profile pictures (except default)
+public/images
+!public/images/_default.jpg
