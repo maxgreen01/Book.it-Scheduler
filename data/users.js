@@ -13,7 +13,7 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     if (!allowUndefined || typeof firstName !== "undefined") firstName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(firstName, "First Name", 1));
     if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", true);
-    if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture", true);
+    if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture");
     if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo - validate Timeslot objects
 
     // ============= construct the document =============
@@ -36,7 +36,6 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
 
 // create a user object and save it to the DB, then return the added object
 export async function createUser({ uid, password, firstName, lastName, description, profilePicture, availability }) {
-    console.log(await getAllUserIDs(), await validation.isUserIdUnique(uid));
     if (!(await validation.isUserIdUnique(uid))) throw new Error(`User ID "${uid}" is not unique`);
 
     // set up the document that will be saved to the DB

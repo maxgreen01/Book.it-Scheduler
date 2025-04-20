@@ -1,7 +1,9 @@
 import express from "express";
-import { ValidationError } from "../utils/validation.js";
+import { ValidationError, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as userFunctions from "../data/users.js";
+import path from "node:path";
+import fs from "node:fs/promises";
 
 const router = express.Router();
 
@@ -31,6 +33,42 @@ router
         let data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(res, 400, "Request body is empty");
+        }
+
+        // validate User ID
+        try {
+            data.uid = validateUserId(data.uid);
+        } catch (err) {
+            return routeUtils.renderError(res, 400, err.message);
+        }
+
+        // process profile picture, if one is supplied
+        const pfpFile = req.files?.profilePicture;
+        if (pfpFile) {
+            // remove the existing profile picture (if it isn't the default)
+            try {
+                const user = await userFunctions.getUserById(data.uid);
+
+                if (user.profilePicture !== routeUtils.defaultProfilePicture) {
+                    await fs.unlink(user.profilePicture);
+                }
+            } catch (err) {
+                return routeUtils.renderError(res, 500, err.message);
+            }
+
+            // rename the file
+            const extension = pfpFile.name.split(".").pop();
+            const filepath = `/public/images/${data.uid}.${extension}`;
+
+            // upload the file to the server
+            try {
+                await pfpFile.mv(path.join(routeUtils.__rootdir, filepath));
+            } catch (err) {
+                return routeUtils.renderError(res, 500, err.message);
+            }
+
+            // file successfully uploaded, so save its path
+            data.profilePicture = filepath;
         }
 
         // validate all inputs and add the user to the DB
