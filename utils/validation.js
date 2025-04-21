@@ -1,106 +1,125 @@
 import { ObjectId } from "mongodb";
+import { getAllUserIDs } from "../data/users.js";
 
-const exportedMethods = {
-    //
-    // ============ String Validation ============
-    //
+// custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
+export class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
 
-    // Throw an error if a variable is undefined, not a string, or an empty string.
-    // Return the trimmed string if it is valid.
-    validateAndTrimString(str) {
-        if (typeof str !== "string" || str.trim().length === 0) throw new Error(`Invalid or empty string input "${str}"`);
-        return str.trim();
-    },
+//
+// ============ String Validation ============
+//
 
-    // Throw an error if the trimmed string contains any letters other than a-z or A-Z, or has length lower than the specified minimum.
-    // Return the trimmed string if it is valid.
-    validateAlphabetical(str, minLen) {
-        str = this.validateAndTrimString(str);
-        // regex to check if the string is at least 1 a-z or A-Z character, anchored from beginning to end
-        if (!str.match(/^[a-zA-Z]+$/)) throw new Error(`String input "${str}" contains non-alphabetical characters`);
-        if (str.length < minLen) throw new Error(`String input "${str}" is shorter than ${minLen} characters`);
-        return str;
-    },
+// Throw an error if a variable is undefined, not a string, or an empty string (unless `ignoreEmpty` is `true`).
+// Return the trimmed string if it is valid.
+export function validateAndTrimString(str, label = "String", ignoreEmpty) {
+    if (typeof str !== "string" || (!ignoreEmpty && str.trim().length === 0)) throw new ValidationError(`${label} "${str}" is invalid or empty`);
+    return str.trim();
+}
 
-    // same as `validateAlphabetical`, but numbers are also allowed in the string
-    validateAlphanumeric(str, minLen) {
-        str = this.validateAndTrimString(str);
-        if (!str.match(/^[a-zA-Z0-9]+$/)) throw new Error(`String input "${str}" contains non-alphanumeric characters`);
-        if (str.length < minLen) throw new Error(`String input "${str}" is shorter than ${minLen} characters`);
-        return str;
-    },
+// Throw an error if the trimmed string does not match the given regex, or has length lower than the specified minimum.
+// Return the trimmed string if it is valid.
+export function validateStrUsingRegex(str, regex, label = "String", errorMsg = "disallowed", minLen) {
+    str = validateAndTrimString(str);
+    if (!str.match(regex)) throw new ValidationError(`${label} "${str}" contains ${errorMsg} characters`);
+    if (str.length < minLen) throw new ValidationError(`${label} "${str}" is shorter than ${minLen} characters`);
+    return str;
+}
 
-    //
-    // ============ Number-Related Validation ============
-    //
+// Throw an error if the trimmed string contains any letters other than a-z or A-Z, or has length lower than the specified minimum.
+// Return the trimmed string if it is valid.
+export function validateAlphabetical(str, label = "String", minLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z]+$/, label, "non-alphabetical", minLen);
+}
 
-    // Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
-    // Return the given number.
-    validateNumber(num, min, max) {
-        if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new Error(`Invalid number "${num}"`);
-        return num;
-    },
+// same as `validateAlphabetical`, but hyphens and apostrophes are also allowed in the string (for user names)
+export function validateAlphabeticalExtended(str, label = "String", minLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z'-]+$/, label, "non-alphabetical", minLen);
+}
 
-    // Convert a string to an int, and throw an error if it is NaN or outside the given bounds.
-    // Return the converted number.
-    convertStrToInt(str, min, max) {
-        const num = Number.parseInt(str);
-        this.validateNumber(num, min, max);
-        return num;
-    },
+// same as `validateAlphabetical`, but numbers are also allowed in the string
+export function validateAlphanumeric(str, label = "String", minLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z0-9]+$/, label, "non-alphanumeric", minLen);
+}
 
-    // Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
-    // Return the converted number.
-    convertStrToFloat(str, min, max) {
-        const num = Number.parseFloat(str);
-        this.validateNumber(num, min, max);
-        return num;
-    },
+//
+// ============ Number-Related Validation ============
+//
 
-    //
-    // ============ Database-Related Validation ============
-    //
+// Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
+// Return the given number.
+export function validateNumber(num, label = "Number", min, max) {
+    if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} "${num}" is invalid or out of range`);
+    return num;
+}
 
-    // Throw an error if a string is not valid or is not a valid `uid`.
-    // Return the trimmed `uid` if it is valid.
-    // A `uid` is considered valid if it is alphanumeric and contains at least 3 characters.
-    validateUserId(uid) {
-        return this.validateAlphanumeric(uid, 3);
-    },
+// Convert a string to an int, and throw an error if it is NaN or outside the given bounds.
+// Return the converted number.
+export function convertStrToInt(str, label = "Number", min, max) {
+    const num = Number.parseInt(str);
+    validateNumber(num, label, min, max);
+    return num;
+}
 
-    // Throw an error if a string is not valid or is not a valid ObjectId.
-    // Return the trimmed string if it is a valid ObjectId.
-    validateObjectId(id) {
-        id = this.validateAndTrimString(id);
-        if (!ObjectId.isValid(id)) throw new Error(`Object ID ${id} is not valid!`);
-        return id;
-    },
+// Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
+// Return the converted number.
+export function convertStrToFloat(str, label = "Number", min, max) {
+    const num = Number.parseFloat(str);
+    validateNumber(num, label, min, max);
+    return num;
+}
 
-    // Throw an error if a string is not valid or is not a valid ObjectId.
-    // Return the converted ObjectID object if it is valid.
-    convertStrToObjectId(id) {
-        return ObjectId.createFromHexString(this.validateObjectId(id));
-    },
+//
+// ============ Database-Related Validation ============
+//
 
-    //
-    // ============ Misc Validation & Utility ============
-    //
+// Throw an error if a string is not valid or is not a valid `uid`.
+// A `uid` is considered valid if it is alphanumeric and contains at least 3 characters.
+// Return the trimmed `uid` (converted to lowercase for case-insensitive operations) if it is valid.
+export function validateUserId(uid) {
+    return validateAlphanumeric(uid, "User ID", 3).toLowerCase();
+}
 
-    // Remove leading and trailing spaces from a string, and replace all whitespace with a single space.
-    // Return the sanitized string, or throw an error if the string is invalid or empty.
-    sanitizeSpaces(str) {
-        str = this.validateAndTrimString(str);
-        return str.replaceAll(/\s+/, " ");
-    },
+// Throw an error if a string is not valid or is not a valid `uid`.
+// If the `uid` is valid, return a boolean indicating whether it is already in use in the DB.
+export async function isUserIdUnique(uid) {
+    uid = validateUserId(uid);
+    return !(await getAllUserIDs()).includes(uid); // return `false` if `uid` is already found in the DB
+}
 
-    // Throw an error if a variable is undefined, not an array, or an empty array.
-    // Optionally, also ensure that the array has exactly the number of specified elements.
-    // If valid, run `map` on the array using the given function and return the result.
-    validateArrayElements(arr, func, numElements = -1) {
-        if (!Array.isArray(arr) || arr.length === 0) throw new Error("Invalid or empty array input!");
-        if (numElements != -1 && arr.length != numElements) throw new Error(`Array does not have ${numElements} elements!`);
-        return arr.map(func);
-    },
-};
+// Throw an error if a string is not valid or does not represent not a valid ObjectId.
+// Return the trimmed string if it represents a valid ObjectId.
+export function validateStrAsObjectId(id, label) {
+    id = validateAndTrimString(id, label);
+    if (!ObjectId.isValid(id)) throw new ValidationError(`${label} "${id}" is not valid`);
+    return id;
+}
 
-export default exportedMethods;
+// Throw an error if a string is not valid or is not a valid ObjectId.
+// Return the converted ObjectID object if it is valid.
+export function convertStrToObjectId(id, label) {
+    return ObjectId.createFromHexString(validateStrAsObjectId(id, label));
+}
+
+//
+// ============ Misc Validation & Utility ============
+//
+
+// Remove leading and trailing spaces from a string, and replace all whitespace with a single space.
+// Return the sanitized string, or throw an error if the string is invalid or empty.
+export function sanitizeSpaces(str, label) {
+    str = validateAndTrimString(str, label);
+    return str.replaceAll(/\s+/g, " ");
+}
+
+// Throw an error if a variable is undefined, not an array, or an empty array.
+// Optionally, also ensure that the array has exactly the number of specified elements.
+// If valid, run `map` on the array using the given function and return the result.
+export function validateArrayElements(arr, label = "Array", func, numElements) {
+    if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
+    if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
+    return arr.map(func);
+}
