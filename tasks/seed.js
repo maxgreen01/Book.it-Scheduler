@@ -5,6 +5,7 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import * as userFunctions from "../data/users.js";
+import { Davailability } from "../data/availabilities.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -19,6 +20,35 @@ async function seed() {
         const lname = faker.person.lastName();
         const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
 
+        const randomSlotGenerator = () => {
+            const slots = [];
+
+            // First 18 elements: 20% probability (less probability for 12am-9am)
+            for (let i = 0; i < 18; i++) {
+                slots.push(Math.random() < 0.2 ? 1 : 0);
+            }
+
+            // Next 26 elements: 70% probability (more probability of being available 9am-10pm)
+            for (let i = 0; i < 26; i++) {
+                slots.push(Math.random() < 0.7 ? 1 : 0);
+            }
+
+            // Last 4 elements: 50% probability (50% probability of being available from 10pm onward)
+            for (let i = 0; i < 4; i++) {
+                slots.push(Math.random() < 0.5 ? 1 : 0);
+            }
+
+            return slots;
+        };
+
+        const generateWeeklyAvial = () => {
+            const weeklySlots = [];
+            for (let i = 0; i < 7; i++) {
+                weeklySlots.push(randomSlotGenerator());
+            }
+            return weeklySlots;
+        };
+
         console.log(`Adding user ${i}: ${fname} ${lname}`);
         const user = await userFunctions.createUser({
             uid: username,
@@ -27,12 +57,10 @@ async function seed() {
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
             profilePicture: `/public/images/${username}.jpg`,
-            availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
+            availability: new Davailability(generateWeeklyAvial()),
         });
         userIds.push(user._id);
     }
-
-    //
 
     // random meeting generation
     const meetingIds = [];

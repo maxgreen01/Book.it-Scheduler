@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { getAllUserIDs } from "../data/users.js";
+import { Availability, Davailability } from "../data/availabilities.js";
 
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
@@ -122,4 +123,20 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
     if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
     if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
     return arr.map(func);
+}
+
+//validate that a Object is a valid Availability Object
+export function validateAvailObj(obj) {
+    if (!(obj instanceof Availability)) {
+        throw new ValidationError(`${obj} is not a valid Availability Object!`);
+    }
+    return obj;
+}
+
+//validate that a Object is a valid Davailability Object
+export function validateDavailObj(obj) {
+    if (!(obj instanceof Davailability)) {
+        throw new ValidationError(`${obj} is not a valid Davailability Object!`);
+    }
+    return obj;
 }
