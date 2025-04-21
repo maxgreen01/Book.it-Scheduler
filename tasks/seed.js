@@ -5,7 +5,7 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import * as userFunctions from "../data/users.js";
-import { Davailability } from "../data/availabilities.js";
+import { weeklyAvailability } from "../data/availabilities.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -57,7 +57,7 @@ async function seed() {
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
             profilePicture: `/public/images/${username}.jpg`,
-            availability: new Davailability(generateWeeklyAvial()),
+            availability: new weeklyAvailability(generateWeeklyAvial()),
         });
         userIds.push(user._id);
     }

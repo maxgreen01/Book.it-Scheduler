@@ -1,3 +1,4 @@
+//Data functions for Day-Blocked availability objects
 import { validateArrayElements, ValidationError } from "../utils/validation.js";
 
 //Check if every date is the same in all the array of Availability objects
@@ -47,7 +48,7 @@ class Availability {
     //Return a new availability obj of when everyone is available
     //AvailArray: Array of Availability Objects
     //AvailArray: Array of Davailability Objects
-    commonAvail(AvailArray, dAvailArr = []) {
+    mergeAvailability(AvailArray, dAvailArr = []) {
         //validate the array of Availability Objects
         validateArrayElements(AvailArray, "Availability Array", (elem) => {
             if (!(elem instanceof Availability)) {
@@ -58,11 +59,11 @@ class Availability {
         sameDate(AvailArray);
 
         const commonDate = AvailArray[0].date;
-        let merged_slots = new Array(48).fill(0);
+        let mergedSlots = new Array(48).fill(0);
         for (let elem of AvailArray) {
             for (let i = 0; i < 48; i++) {
                 if (elem.slots[i] !== -1) {
-                    merged_slots[i] = merged_slots[i] + elem.slots[i];
+                    mergedSlots[i] = mergedSlots[i] + elem.slots[i];
                 }
             }
         }
@@ -70,7 +71,7 @@ class Availability {
         //validate the array of Davailability Objects
         if (dAvailArr.length !== 0) {
             validateArrayElements(dAvailArr, "Default Availability Array", (elem) => {
-                if (!(elem instanceof Davailability)) {
+                if (!(elem instanceof weeklyAvailability)) {
                     throw new ValidationError(`${elem} is not a valid Default Availability object!`);
                 }
             });
@@ -78,18 +79,18 @@ class Availability {
         for (let elem of dAvailArr) {
             for (let i = 0; i < 48; i++) {
                 if (elem[commonDate.getDay()].slot[i] !== -1) {
-                    merged_slots[i] = merged_slots[i] + elem[commonDate.getDay()].slot[i];
+                    mergedSlots[i] = mergedSlots[i] + elem[commonDate.getDay()].slot[i];
                 }
             }
         }
 
-        return new Availability(merged_slots, commonDate);
+        return new Availability(mergedSlots, commonDate);
     }
 }
 
 //Default Availability Object
 //Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
-class Davailability {
+class weeklyAvailability {
     arrSlots = [];
 
     constructor(inputArray) {
@@ -115,4 +116,4 @@ class Davailability {
     }
 }
 
-export { Availability, Davailability };
+export { Availability, weeklyAvailability };

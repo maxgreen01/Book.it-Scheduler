@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { getAllUserIDs } from "../data/users.js";
-import { Availability, Davailability } from "../data/availabilities.js";
+import { Availability, weeklyAvailability } from "../data/availabilities.js";
 
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
@@ -135,7 +135,7 @@ export function validateAvailObj(obj) {
 
 //validate that a Object is a valid Davailability Object
 export function validateDavailObj(obj) {
-    if (!(obj instanceof Davailability)) {
+    if (!(obj instanceof weeklyAvailability)) {
         throw new ValidationError(`${obj} is not a valid Davailability Object!`);
     }
     return obj;
