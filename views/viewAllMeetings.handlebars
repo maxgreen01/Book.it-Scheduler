@@ -1,0 +1,11 @@
+<main>
+    <h1>{{title}}</h1>
+    <ol>
+        {{#each meetingList}}
+        <li>
+            <a href="/{{this.id}}">{{this.name}}</a>
+        </li>
+        {{/each}}
+    </ol>
+    <a href="/create">Create Meeting</a>
+</main>
