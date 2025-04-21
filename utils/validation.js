@@ -126,17 +126,17 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
 }
 
 //validate that a Object is a valid Availability Object
-export function validateAvailObj(obj) {
+export function validateAvailabilityObj(obj) {
     if (!(obj instanceof Availability)) {
         throw new ValidationError(`${obj} is not a valid Availability Object!`);
     }
     return obj;
 }
 
-//validate that a Object is a valid Davailability Object
-export function validateDavailObj(obj) {
+//validate that a Object is a valid weeklyAvailability Object
+export function validateWeeklyAvailabilityObj(obj) {
     if (!(obj instanceof weeklyAvailability)) {
-        throw new ValidationError(`${obj} is not a valid Davailability Object!`);
+        throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
     }
     return obj;
 }

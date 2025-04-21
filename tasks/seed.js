@@ -41,7 +41,7 @@ async function seed() {
             return slots;
         };
 
-        const generateWeeklyAvial = () => {
+        const generateWeeklyAvailability = () => {
             const weeklySlots = [];
             for (let i = 0; i < 7; i++) {
                 weeklySlots.push(randomSlotGenerator());
@@ -57,7 +57,7 @@ async function seed() {
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
             profilePicture: `/public/images/${username}.jpg`,
-            availability: new weeklyAvailability(generateWeeklyAvial()),
+            availability: new weeklyAvailability(generateWeeklyAvailability()),
         });
         userIds.push(user._id);
     }
