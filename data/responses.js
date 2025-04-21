@@ -1,6 +1,6 @@
 import { validateStrAsObjectId, ValidationError } from "../utils/validation";
 
-class Response {
+export class Response {
     uid = null;
     availability = null;
 
@@ -16,5 +16,3 @@ class Response {
         this.availability = availabilityArr;
     }
 }
-
-export default Response;

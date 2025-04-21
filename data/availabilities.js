@@ -14,7 +14,7 @@ const sameDate = (availabilityArray) => {
     }
 };
 
-class Availability {
+export class Availability {
     //int array of 48 representing 30 mins chunks of time
     //slots[0] = 1: Available at 12:00 am
     //slots[0] = 0: Not Available at 12:30 am
@@ -90,7 +90,7 @@ class Availability {
 
 //Default Availability Object
 //Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
-class weeklyAvailability {
+export class weeklyAvailability {
     arrSlots = [];
 
     constructor(inputArray) {
@@ -115,5 +115,3 @@ class weeklyAvailability {
         }
     }
 }
-
-export { Availability, weeklyAvailability };
