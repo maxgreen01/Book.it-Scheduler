@@ -5,6 +5,8 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import * as userFunctions from "../data/users.js";
+import * as commentFunctions from "../data/comments.js";
+import { ObjectId } from "mongodb";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -32,8 +34,6 @@ async function seed() {
         userIds.push(user._id);
     }
 
-    //
-
     // random meeting generation
     const meetingIds = [];
     for (let i = 0; i < N_MTG; i++) {
@@ -52,8 +52,6 @@ async function seed() {
         //        which can be done using `modifyUserMeeting()` in `/data/users.js`
     }
 
-    //
-
     // random comment generation
     const commentIds = [];
     for (let i = 0; i < N_COM; i++) {
@@ -61,12 +59,21 @@ async function seed() {
         const uid = faker.helpers.arrayElement(userIds);
         // const meeting = faker.helpers.arrayElement(meetingIds);
 
-        // Uncomment the below when we have createComment()
-        // const comment = await commentFuncs.createComment(
-        //     uid,
-        //     faker.lorem.sentences({min: 2, max: 4})
-        // );
-        // commentIds.push(comment._id);
+        // FIXME: replace below with above when we have meeting IDs working!
+        // -- BL
+        const meeting = new ObjectId().toString();
+
+        const comment = await commentFunctions.createComment({
+            uid: uid,
+            meetingId: meeting,
+            body: faker.lorem.sentences({ min: 2, max: 4 }),
+        });
+
+        // lambda to show only a short bit of the comment
+        const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
+
+        console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
+        commentIds.push(comment._id);
     }
 
     console.log("Finished seeding the database!");
