@@ -5,14 +5,30 @@
     "main": "app.js",
     "type": "module",
     "scripts": {
-        "start": "node app.js"
+        "start": "node app.js",
+        "seed": "node tasks/seed.js",
+        "prepare": "husky",
+        "lint-staged": "lint-staged"
     },
     "author": "Max Green, Praneeth Vanguru, Brendan Lee, Alex Prikockis",
     "license": "ISC",
     "dependencies": {
-        "@faker-js/faker": "^9.6.0",
+        "bcrypt": "^5.1.1",
         "express": "^5.1.0",
+        "express-fileupload": "^1.5.1",
+        "express-handlebars": "^8.0.2",
         "handlebars": "^4.7.8",
         "mongodb": "^6.15.0"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^9.7.0",
+        "eslint": "^9.24.0",
+        "eslint-config-prettier": "^10.1.2",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.5.1",
+        "prettier": "^3.5.3"
+    },
+    "lint-staged": {
+        "*": "prettier --write --ignore-unknown"
     }
 }
