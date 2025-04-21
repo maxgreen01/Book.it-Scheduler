@@ -15,4 +15,12 @@ router.route("/:meetingId").get(async (req, res) => {
     });
 });
 
+router.route("/:meetingId/edit").get(async (req, res) => {
+    res.render("editMeeting", {
+        title: "Test Meeting EDIT",
+        meetingId: "abc123",
+        meetingDescription: "The big meetup",
+    });
+});
+
 export default router;
