@@ -4,7 +4,7 @@ import { commentsCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { validateStrAsObjectId } from "../utils/validation.js";
 
-//Constructor for comment documents
+// Constructor for comment documents
 // Set `allowUndefined` to `true` to ignore `undefined` values, i.e. create partial objects for PATCH requests.
 export async function createCommentDocument({ uid, meetingId, body }, allowUndefined = false) {
     // TODO BL: Validate input parameters properly
@@ -38,11 +38,11 @@ export async function createComment({ uid, meetingId, body }) {
     return comment;
 }
 
-//return comment with the given comment id
+// return comment with the given comment id
 export async function getCommentById(id) {
     id = validateStrAsObjectId(id);
     const collection = await commentsCollection();
-    const comment = await commentCollection.findOne({ _id: new ObjectId(id) });
+    const comment = await collection.findOne({ _id: new ObjectId(id) });
     if (!comment) throw new Error(`No comment found with ID: ${id}`);
 
     // return comment with its ids converted to strings
@@ -51,12 +51,12 @@ export async function getCommentById(id) {
     return comment;
 }
 
-//get all comments for a given meeting
+// get all comments for a given meeting
 export async function getMeetingComments(meetingId) {
     //implement me
 }
 
-//get all comments that a user has posted
+// get all comments that a user has posted
 export async function getUserComments(uid) {
     //implement me
 }
