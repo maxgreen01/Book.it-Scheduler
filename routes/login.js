@@ -10,10 +10,14 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        res.json("implement me");
+        res.render("login", { title: "Login" });
+    });
+// todo login to an existing profile (i.e. "log in") -- which route?
+router
+    .route("/signup")
+    .get(async (req, res) => {
+        res.render("signup", { title: "Sign up" });
     })
-    // todo login to an existing profile (i.e. "log in") -- which route?
-
     //
     // create a new profile (i.e. "sign up")
     .post(async (req, res) => {

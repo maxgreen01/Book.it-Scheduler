@@ -5,11 +5,11 @@ import createRoutes from "./create.js";
 import meetingsRoutes from "./meetings.js";
 
 const constructorMethod = (app) => {
-    app.use("/", rootRoutes);
     app.use("/login", loginRoutes);
     app.use("/profile", profileRoutes);
     app.use("/create", createRoutes);
     app.use("/meetings", meetingsRoutes);
+    app.use("/", rootRoutes);
 
     app.use(/(.*)/, (req, res) => {
         return res.status(404).json({ error: "Not found" });

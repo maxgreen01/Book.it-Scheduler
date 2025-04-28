@@ -1,0 +1,11 @@
+<main>
+    <h1>{{title}}</h1>
+    <img src="{{pfpUrl}}" alt="Profile picture" width="250" height="250">
+    <p>Name: {{fullName}}</p>
+    <p>TODO: Show availability</p>
+    {{#if canEdit}}
+    <button onclick="alert('TODO: Change page layout to allow editing')">Edit Profile</button>
+    {{/if}}
+    <a href="/meetings">My Meetings</a>
+    <a href="/create">Create Meeting</a>
+</main>
