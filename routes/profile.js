@@ -12,7 +12,12 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        return res.json("implement me");
+        res.render("profile", {
+            title: "My Profile",
+            canEdit: true,
+            fullName: "Alex Prikockis",
+            pfpUrl: "https://files.alexcheese.com/u/AWmGOQ.png",
+        });
 
         // todo - get current UID from session, then pass user object to HTML template
         // try {
