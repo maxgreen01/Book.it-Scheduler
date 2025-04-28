@@ -2,32 +2,8 @@
 import { commentsCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
-
-// Constructor for comment documents
-export function createCommentDocument({ uid, meetingId, body }) {
-    // TODO BL: Sanitize comment body for security vulnerabilities
-    // (currently only validated as string)
-
-    uid = validateUserId(uid);
-    meetingId = convertStrToObjectId(meetingId, "Meeting ID");
-    body = validateAndTrimString(body, "Comment Text", false);
-    let timestamp = new Date();
-
-    // create and return document
-    const comment = {
-        uid: uid,
-        meetingId: meetingId,
-        body: body,
-        dateCreated: timestamp,
-        dateUpdated: timestamp,
-        reactions: {
-            likes: [],
-            dislikes: [],
-        },
-    };
-
-    return comment;
-}
+import { createCommentDocument } from "../public/js/documentValidation.js";
+export { createCommentDocument } from "../public/js/documentValidation.js";
 
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {
