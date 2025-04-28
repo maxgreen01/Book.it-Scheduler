@@ -1,4 +1,4 @@
-import * as validation from "./validation.js";
+import * as validation from "./clientValidation.js";
 
 // Construct a user document given an object containing the required fields, or throw an error if any fields are invalid.
 // Set `allowUndefined` to `true` to ignore `undefined` values, i.e. create partial objects for PATCH requests.

@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 import { getAllUserIDs } from "../data/users.js";
-import "../public/js/validation.js";
+import "../public/js/clientValidation.js";
 
 // Re-export common validation also used client-side
-export * from "../public/js/validation.js";
+export * from "../public/js/clientValidation.js";
 
 //
 // ============ Database-Related Validation ============

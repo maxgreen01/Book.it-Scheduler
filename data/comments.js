@@ -2,8 +2,8 @@
 import { commentsCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
-import { createCommentDocument } from "../public/js/dbValidation.js";
-export { createCommentDocument } from "../public/js/dbValidation.js";
+import { createCommentDocument } from "../public/js/documentValidation.js";
+export { createCommentDocument } from "../public/js/documentValidation.js";
 
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {

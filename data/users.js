@@ -1,9 +1,9 @@
 // Data functions for user profile objects
 
-import * as validation from "../public/js/validation.js";
+import * as validation from "../public/js/clientValidation.js";
 import { usersCollection } from "../config/mongoCollections.js";
-import { createUserDocument } from "../public/js/dbValidation.js";
-export { createUserDocument } from "../public/js/dbValidation.js";
+import { createUserDocument } from "../public/js/documentValidation.js";
+export { createUserDocument } from "../public/js/documentValidation.js";
 
 // create a user object and save it to the DB, then return the added object
 export async function createUser({ uid, password, firstName, lastName, description, profilePicture, availability }) {
