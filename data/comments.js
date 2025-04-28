@@ -1,11 +1,9 @@
 //Data functions for Comment objects.
-//(C)reate and (D)elete
 import { commentsCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
 
 // Constructor for comment documents
-// Set `allowUndefined` to `true` to ignore `undefined` values, i.e. create partial objects for PATCH requests.
 export function createCommentDocument({ uid, meetingId, body }) {
     // TODO BL: Sanitize comment body for security vulnerabilities
     // (currently only validated as string)
