@@ -30,3 +30,29 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     }
     return user;
 }
+
+// Constructor for comment documents
+export function createCommentDocument({ uid, meetingId, body }) {
+    // TODO BL: Sanitize comment body for security vulnerabilities
+    // (currently only validated as string)
+
+    uid = validateUserId(uid);
+    meetingId = convertStrToObjectId(meetingId, "Meeting ID");
+    body = validateAndTrimString(body, "Comment Text", false);
+    let timestamp = new Date();
+
+    // create and return document
+    const comment = {
+        uid: uid,
+        meetingId: meetingId,
+        body: body,
+        dateCreated: timestamp,
+        dateUpdated: timestamp,
+        reactions: {
+            likes: [],
+            dislikes: [],
+        },
+    };
+
+    return comment;
+}
