@@ -12,6 +12,8 @@ const sameDate = (availabilityArray) => {
             throw new ValidationError(`Expected all elements to have the same Date, but the dates ${initialDate} and ${elem.date} are different!`);
         }
     }
+
+    //Replace with validateArrayElements
 };
 
 export class Availability {
@@ -41,26 +43,31 @@ export class Availability {
         if (!(date instanceof Date) && !skipDateCheck) {
             throw new ValidationError(`${date} is not a valid Date Object!`);
         }
+
+        //move to validation.js
+
         this.slots = array;
         this.date = date;
     }
 
     //Return a new availability obj of when everyone is available
     //AvailArray: Array of Availability Objects
-    //AvailArray: Array of Davailability Objects
-    mergeAvailability(AvailArray, dAvailArr = []) {
+    //AvailArray: Array of WeeklyAvailability Objects
+    static mergeAvailability(availArray, dAvailArr = []) {
+        //TODO: if a user has other events booked, take those in a parameter and remove user availability
+
         //validate the array of Availability Objects
-        validateArrayElements(AvailArray, "Availability Array", (elem) => {
+        validateArrayElements(availArray, "Availability Array", (elem) => {
             if (!(elem instanceof Availability)) {
                 throw new ValidationError(`${elem} is not a valid Availability object`);
             }
             return elem;
         });
-        sameDate(AvailArray);
+        sameDate(availArray);
 
-        const commonDate = AvailArray[0].date;
+        const commonDate = availArray[0].date;
         let mergedSlots = new Array(48).fill(0);
-        for (let elem of AvailArray) {
+        for (let elem of availArray) {
             for (let i = 0; i < 48; i++) {
                 if (elem.slots[i] !== -1) {
                     mergedSlots[i] = mergedSlots[i] + elem.slots[i];
@@ -90,10 +97,11 @@ export class Availability {
 
 //Default Availability Object
 //Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
-export class weeklyAvailability {
+export class WeeklyAvailability {
     arrSlots = [];
 
     constructor(inputArray) {
+        //Use validation function
         if (!Array.isArray(inputArray) || inputArray.length !== 7) {
             throw new ValidationError(`Array ${inputArray} should be an array of 7 elements`);
         }

@@ -140,3 +140,5 @@ export function validateWeeklyAvailabilityObj(obj) {
     }
     return obj;
 }
+
+//Add more in-depth validation stuff for
