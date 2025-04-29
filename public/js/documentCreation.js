@@ -36,9 +36,9 @@ export function createCommentDocument({ uid, meetingId, body }) {
     // TODO BL: Sanitize comment body for security vulnerabilities
     // (currently only validated as string)
 
-    uid = validateUserId(uid);
-    meetingId = convertStrToObjectId(meetingId, "Meeting ID");
-    body = validateAndTrimString(body, "Comment Text", false);
+    uid = validation.validateUserId(uid);
+    meetingId = validation.convertStrToObjectId(meetingId, "Meeting ID");
+    body = validation.validateAndTrimString(body, "Comment Text", false);
     let timestamp = new Date();
 
     // create and return document
