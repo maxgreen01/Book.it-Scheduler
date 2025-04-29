@@ -12,8 +12,6 @@ const sameDate = (availabilityArray) => {
             throw new ValidationError(`Expected all elements to have the same Date, but the dates ${initialDate} and ${elem.date} are different!`);
         }
     }
-
-    //Replace with validateArrayElements
 };
 
 export class Availability {
@@ -75,7 +73,7 @@ export class Availability {
             }
         }
 
-        //validate the array of Davailability Objects
+        //validate the array of weeklyAvailability Objects
         if (dAvailArr.length !== 0) {
             validateArrayElements(dAvailArr, "Default Availability Array", (elem) => {
                 if (!(elem instanceof weeklyAvailability)) {
