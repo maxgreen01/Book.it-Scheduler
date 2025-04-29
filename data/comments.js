@@ -1,13 +1,13 @@
 //Data functions for Comment objects.
 import { commentsCollection } from "../config/mongoCollections.js";
-import { ObjectId } from "mongodb";
-import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
-import { createCommentDocument } from "../public/js/documentValidation.js";
-export { createCommentDocument } from "../public/js/documentValidation.js";
+import { convertStrToObjectId, validateAndTrimString, validateUserId } from "../utils/validation.js";
+import { createCommentDocument } from "../public/js/documentCreation.js";
+export { createCommentDocument } from "../public/js/documentCreation.js";
 
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {
     const comment = createCommentDocument({ uid, meetingId, body });
+    comment.meetingId = convertStrToObjectId(comment.meetingId, "Meeting ID String");
     const collection = await commentsCollection();
     const insertResponse = await collection.insertOne(comment);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment: ${body}`);
