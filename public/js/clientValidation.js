@@ -99,3 +99,39 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
     if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
     return arr.map(func);
 }
+
+//validate that a Object is a valid Availability Object
+export function validateAvailabilityObj(obj, skipDateCheck) {
+    if (!(obj instanceof Availability)) {
+        throw new ValidationError(`${obj} is not a valid Availability Object!`);
+    }
+    if (!(obj.date instanceof Date) && !skipDateCheck) {
+        throw new ValidationError(`${date} is not a valid Date Object!`);
+    }
+    if (obj.slots.length !== 48) {
+        throw new ValidationError(`${obj.slots} is not a valid slots array of 48 elements!`);
+    }
+    for (let elem of obj.slots) {
+        if (!Number.isInteger(elem)) {
+            throw new ValidationError(`${elem} is not a valid Integer in the slots array {$obj.slots}!`);
+        }
+    }
+    return obj;
+}
+
+//validate that a Object is a valid weeklyAvailability Object
+export function validateWeeklyAvailabilityObj(obj) {
+    if (!(obj instanceof weeklyAvailability)) {
+        throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
+    }
+    if (obj.arrSlots.length !== 7) {
+        throw new ValidationError(`${obj.arrSlots} is not a valid arrSlots array of 7 elements!`);
+    }
+    for (let i = 0; i < 7; i++) {
+        if (!(obj.arrSlots[i] instanceof Availability)) {
+            throw new ValidationError(`${obj.arrSlots[i]} is not a valid Availability Object!`);
+        }
+        validateAvailabilityObj(obj.arrSlots[i], true);
+    }
+    return obj;
+}
