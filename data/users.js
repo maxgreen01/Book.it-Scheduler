@@ -69,7 +69,7 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
 // `isAdd` should be `true` to add the meetingId to the user, or `false` to remove the meetingId.
 export async function modifyUserMeeting(uid, meetingId, isAdd) {
     uid = validation.validateUserId(uid);
-    meetingId = validation.validateStrAsObjectId(meetingId);
+    meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
     const action = isAdd ? "$push" : "$pull";
 
     const collection = await usersCollection();

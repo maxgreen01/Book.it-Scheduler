@@ -17,16 +17,8 @@ export async function isUserIdUnique(uid) {
     return !(await getAllUserIDs()).includes(uid); // return `false` if `uid` is already found in the DB
 }
 
-// Throw an error if a string is not valid or does not represent not a valid ObjectId.
-// Return the trimmed string if it represents a valid ObjectId.
-export function validateStrAsObjectId(id, label) {
-    id = clientValidation.validateAndTrimString(id, label);
-    if (!ObjectId.isValid(id)) throw new clientValidation.ValidationError(`${label} "${id}" is not valid`);
-    return id;
-}
-
 // Throw an error if a string is not valid or is not a valid ObjectId.
 // Return the converted ObjectID object if it is valid.
 export function convertStrToObjectId(id, label) {
-    return ObjectId.createFromHexString(validateStrAsObjectId(id, label));
+    return ObjectId.createFromHexString(clientValidation.validateStrAsObjectId(id, label));
 }

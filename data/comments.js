@@ -1,6 +1,6 @@
 //Data functions for Comment objects.
 import { commentsCollection } from "../config/mongoCollections.js";
-import { convertStrToObjectId, validateAndTrimString, validateUserId } from "../utils/validation.js";
+import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
 import { createCommentDocument } from "../public/js/documentCreation.js";
 export { createCommentDocument } from "../public/js/documentCreation.js";
 
@@ -9,7 +9,7 @@ export async function createComment({ uid, meetingId, body }) {
     const comment = createCommentDocument({ uid, meetingId, body });
     const collection = await commentsCollection();
     const insertResponse = await collection.insertOne(comment);
-    if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment: ${body}`);
+    if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment with body "${body}"`);
 
     // return comment with its ids converted to strings
     comment._id = comment._id.toString();
@@ -21,7 +21,7 @@ export async function getCommentById(id) {
     id = convertStrToObjectId(id, "Comment ID");
     const collection = await commentsCollection();
     const comment = await collection.findOne({ _id: id });
-    if (!comment) throw new Error(`No comment found with ID: ${id}`);
+    if (!comment) throw new Error(`No comment found with ID "${id}"`);
 
     // return comment with its ids converted to strings
     comment._id = comment._id.toString();
@@ -63,9 +63,10 @@ export async function getUserComments(uid) {
 export async function getMeetingComments(meetingId) {
     //TODO PV: Good idea to query meetings DB if meetingId is a real ID
     //Throw if it isn't.
+    meetingId = validateStrAsObjectId(meetingId, "Meeting ID");
     const collection = await commentsCollection();
     let comments = await collection.find({ meetingId: meetingId }).toArray();
-    if (!comments) throw new Error(`Could not get comments from meeting ID ${meetingId}`);
+    if (!comments) throw new Error(`Could not get comments from meeting ID "${meetingId}"`);
 
     //return all comments with id's mapped to strings
     comments = comments.map((comm) => {
@@ -77,10 +78,10 @@ export async function getMeetingComments(meetingId) {
 
 //remove comment and return it back
 export async function deleteComment(id) {
-    id = convertStrToObjectId(id, "Comment ID String");
+    id = convertStrToObjectId(id, "Comment ID");
     const collection = await commentsCollection();
     const removed = await collection.findOneAndDelete({ _id: id });
-    if (!removed) throw new Error(`Failed to delete comment with ID ${id}`);
+    if (!removed) throw new Error(`Failed to delete comment with ID "${id}"`);
 
     // return comment with its ids converted to strings
     removed._id = removed._id.toString();
@@ -90,12 +91,12 @@ export async function deleteComment(id) {
 //edit and save new text to an existing comment, returning the updated comment
 export async function updateComment(id, newBody) {
     id = convertStrToObjectId(id, "Comment ID");
-    newBody = validateAndTrimString(newBody, "Comment Text", false);
+    newBody = validateAndTrimString(newBody, "Comment Body", false);
     let timestamp = new Date();
 
     const collection = await commentsCollection();
     const updated = await collection.findOneAndUpdate({ _id: id }, { $set: { body: newBody, dateUpdated: timestamp } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Failed to update comment with ID ${id}`);
+    if (!updated) throw new Error(`Failed to update comment with ID "${id}"`);
 
     // return comment with its ids converted to strings
     updated._id = updated._id.toString();
@@ -128,7 +129,7 @@ export async function reactToComment(id, uid, reaction) {
             },
         }
     );
-    if (!updated) throw new Error(`Failed to react to comment with ID ${comment._id}`);
+    if (!updated) throw new Error(`Failed to react to comment with ID "${comment._id}"`);
 
     //the operation was an "un-react", so early return
     if ((hasLiked && reaction == "like") || (hasDisliked && reaction == "dislike")) {
