@@ -7,14 +7,12 @@ export { createCommentDocument } from "../public/js/documentCreation.js";
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {
     const comment = createCommentDocument({ uid, meetingId, body });
-    comment.meetingId = convertStrToObjectId(comment.meetingId, "Meeting ID String");
     const collection = await commentsCollection();
     const insertResponse = await collection.insertOne(comment);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment: ${body}`);
 
     // return comment with its ids converted to strings
     comment._id = comment._id.toString();
-    comment.meetingId = comment.meetingId.toString();
     return comment;
 }
 
@@ -27,7 +25,6 @@ export async function getCommentById(id) {
 
     // return comment with its ids converted to strings
     comment._id = comment._id.toString();
-    comment.meetingId = comment.meetingId.toString();
     return comment;
 }
 
@@ -40,7 +37,6 @@ export async function getAllComments() {
     //return all comments with id's mapped to strings
     comments = comments.map((comm) => {
         comm._id = comm._id.toString();
-        comm.meetingId = comm.meetingId.toString();
         return comm;
     });
     return comments;
@@ -58,7 +54,6 @@ export async function getUserComments(uid) {
     //return all comments with id's mapped to strings
     comments = comments.map((comm) => {
         comm._id = comm._id.toString();
-        comm.meetingId = comm.meetingId.toString();
         return comm;
     });
     return comments;
@@ -68,7 +63,6 @@ export async function getUserComments(uid) {
 export async function getMeetingComments(meetingId) {
     //TODO PV: Good idea to query meetings DB if meetingId is a real ID
     //Throw if it isn't.
-    meetingId = convertStrToObjectId(meetingId, "Meeting ID");
     const collection = await commentsCollection();
     let comments = await collection.find({ meetingId: meetingId }).toArray();
     if (!comments) throw new Error(`Could not get comments from meeting ID ${meetingId}`);
@@ -76,7 +70,6 @@ export async function getMeetingComments(meetingId) {
     //return all comments with id's mapped to strings
     comments = comments.map((comm) => {
         comm._id = comm._id.toString();
-        comm.meetingId = comm.meetingId.toString();
         return comm;
     });
     return comments;
@@ -84,14 +77,13 @@ export async function getMeetingComments(meetingId) {
 
 //remove comment and return it back
 export async function deleteComment(id) {
-    id = convertStrToObjectId(id, "Comment ID");
+    id = convertStrToObjectId(id, "Comment ID String");
     const collection = await commentsCollection();
     const removed = await collection.findOneAndDelete({ _id: id });
     if (!removed) throw new Error(`Failed to delete comment with ID ${id}`);
 
     // return comment with its ids converted to strings
     removed._id = removed._id.toString();
-    removed.meetingId = removed.meetingId.toString();
     return removed;
 }
 
@@ -107,7 +99,6 @@ export async function updateComment(id, newBody) {
 
     // return comment with its ids converted to strings
     updated._id = updated._id.toString();
-    updated.meetingId = updated.meetingId.toString();
     return updated;
 }
 
