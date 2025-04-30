@@ -80,6 +80,15 @@ export function validateUserId(uid) {
     return validateAlphanumeric(uid, "User ID", 3).toLowerCase();
 }
 
+// Throw an error if a string is not valid or does not represent not a valid ObjectId.
+// Return the trimmed string if it represents a valid ObjectId.
+export function validateStrAsObjectId(id, label) {
+    id = validateAndTrimString(id, label);
+    const validObjectIdRegex = /^[0-9a-fA-F]{24}$/; // replaces ObjectId.isValid() so this can be used on client side
+    if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} "${id}" is not valid`);
+    return id;
+}
+
 //
 // ============ Misc Validation & Utility ============
 //
