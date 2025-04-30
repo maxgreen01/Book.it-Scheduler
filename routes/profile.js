@@ -12,7 +12,7 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        res.render("profile", {
+        return res.render("profile", {
             title: "My Profile",
             canEdit: true,
             fullName: "Alex Prikockis",
@@ -91,7 +91,7 @@ router
 
 // view someone else's profile
 router.route("/:uid").get(async (req, res) => {
-    // validate ID and retrieve
+    // validate ID and retrieve other's profile
     try {
         const user = await userFunctions.getUserById(req.params.uid);
         return res.json(user);
