@@ -7,6 +7,7 @@ import express from "express";
 import configRoutes from "./routes/index.js";
 import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
+import session from "express-session";
 
 const app = express();
 
@@ -17,6 +18,15 @@ const app = express();
 app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+    session({
+        name: "AuthenticationState",
+        secret: "some secret string!",
+        resave: false,
+        saveUninitialized: false,
+    })
+);
 
 const profilePictureUpload = fileUpload({
     limits: {
