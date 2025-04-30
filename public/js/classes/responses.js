@@ -1,4 +1,4 @@
-import { validateStrAsObjectId, ValidationError } from "../utils/validation";
+import { validateAvailabilityObj, validateStrAsObjectId } from "../../../utils/validation";
 
 export class Response {
     uid = null;
@@ -8,10 +8,7 @@ export class Response {
         validateStrAsObjectId(suid, "Uid for Response Object");
         this.uid = suid;
         validateArrayElements(AvailArray, "Availability Array", (elem) => {
-            if (!(elem instanceof Availability)) {
-                throw new ValidationError(`${elem} is not a valid Availability object`);
-            }
-            return elem;
+            validateAvailabilityObj(elem);
         });
         this.availability = availabilityArr;
     }
