@@ -1,28 +1,35 @@
 import express from "express";
 import { ValidationError, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import * as userFunctions from "../data/users.js";
-import path from "node:path";
+import * as profileUtils from "../utils/profileUtils.js";
+import { createUser, updateUser } from "../data/users.js";
 
 const router = express.Router();
 
+// log in to an existing account
 router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        res.render("login", { title: "Login" });
+        return res.render("login", { title: "Login" });
+    })
+    // log in
+    .post(async (req, res) => {
+        return res.json("implement me");
     });
+
 // todo login to an existing profile (i.e. "log in") -- which route?
+// create a new account
 router
     .route("/signup")
+    // serve HTML
     .get(async (req, res) => {
-        res.render("signup", { title: "Sign up" });
+        return res.render("signup", { title: "Sign up" });
     })
-    //
     // create a new profile (i.e. "sign up")
     .post(async (req, res) => {
         // ensure non-empty request body
-        let data = req.body;
+        const data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(res, 400, "Request body is empty");
         }
@@ -34,33 +41,36 @@ router
             return routeUtils.renderError(res, 400, err.message);
         }
 
-        // process profile picture, if one is supplied
-        // fixme MG - move this into a function somewhere (duplicated in `profile.js`). don't want to pass a bunch of vars or deal with handling returns/throws
-        const pfpFile = req.files?.profilePicture;
-        if (pfpFile) {
-            // rename the file
-            const extension = pfpFile.name.split(".").pop();
-            const filepath = `/public/images/${data.uid}.${extension}`;
-
-            // upload the file to the server
-            try {
-                await pfpFile.mv(path.join(routeUtils.__rootdir, filepath));
-            } catch (err) {
-                // todo MG - maybe fail with a warning instead of stopping everything
-                return routeUtils.renderError(res, 500, err.message);
-            }
-
-            // file successfully uploaded, so save its path
-            data.profilePicture = filepath;
-        } else {
-            // assign default profile picture
-            data.profilePicture = routeUtils.defaultProfilePicture;
-        }
+        // assign default profile picture (which may be updated later in this route)
+        data.profilePicture = profileUtils.defaultProfilePicture;
 
         // validate all inputs and add the user to the DB
         let user;
         try {
-            user = await userFunctions.createUser(data);
+            user = await createUser(data);
+        } catch (err) {
+            if (err instanceof ValidationError) {
+                return routeUtils.renderError(res, 400, err.message);
+            } else {
+                return routeUtils.renderError(res, 500, err.message);
+            }
+        }
+
+        // upload & assign profile picture, if one is supplied
+        // note: profile picture logic happens AFTER creating the account to ensure all user info is valid before modifying the server's filesystem
+        try {
+            const pfpFile = req.files?.profilePicture;
+            if (typeof pfpFile === "object") {
+                // make sure only one file is submitted
+                if (!Array.isArray(pfpFile)) {
+                    const profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
+
+                    // update the user's profile picture in the database
+                    await updateUser(req.body.uid, { profilePicture: profilePicture });
+                } else {
+                    return routeUtils.renderError(res, 400, "Only one image can be submitted");
+                }
+            }
         } catch (err) {
             if (err instanceof ValidationError) {
                 return routeUtils.renderError(res, 400, err.message);

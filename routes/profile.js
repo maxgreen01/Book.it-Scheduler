@@ -1,9 +1,8 @@
 import express from "express";
 import { ValidationError, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import * as userFunctions from "../data/users.js";
-import path from "node:path";
-import fs from "node:fs/promises";
+import * as profileUtils from "../utils/profileUtils.js";
+import { getUserById, updateUser } from "../data/users.js";
 
 const router = express.Router();
 
@@ -35,7 +34,7 @@ router
     // update current user's profile
     .patch(async (req, res) => {
         // ensure non-empty request body
-        let data = req.body;
+        const data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(res, 400, "Request body is empty");
         }
@@ -47,39 +46,31 @@ router
             return routeUtils.renderError(res, 400, err.message);
         }
 
-        // process profile picture, if one is supplied
-        const pfpFile = req.files?.profilePicture;
-        if (pfpFile) {
-            // remove the existing profile picture (if it isn't the default)
-            try {
-                const user = await userFunctions.getUserById(data.uid);
-
-                if (user.profilePicture !== routeUtils.defaultProfilePicture) {
-                    await fs.unlink(user.profilePicture);
+        // update profile picture, if one is supplied
+        try {
+            const pfpFile = req.files?.profilePicture;
+            if (typeof pfpFile === "object") {
+                // make sure only one file is submitted
+                if (!Array.isArray(pfpFile)) {
+                    data.profilePicture = await profileUtils.updateProfilePicture(data.uid, pfpFile);
+                } else {
+                    return routeUtils.renderError(res, 400, "Only one image can be submitted");
                 }
-            } catch (err) {
+            }
+            // profile picture not provided, so don't change anything existing profile picture
+        } catch (err) {
+            if (err instanceof ValidationError) {
+                return routeUtils.renderError(res, 400, err.message);
+            } else {
                 return routeUtils.renderError(res, 500, err.message);
             }
-
-            // rename the file
-            const extension = pfpFile.name.split(".").pop();
-            const filepath = `/public/images/${data.uid}.${extension}`;
-
-            // upload the file to the server
-            try {
-                await pfpFile.mv(path.join(routeUtils.__rootdir, filepath));
-            } catch (err) {
-                return routeUtils.renderError(res, 500, err.message);
-            }
-
-            // file successfully uploaded, so save its path
-            data.profilePicture = filepath;
         }
 
         // validate all inputs and add the user to the DB
         try {
-            await userFunctions.updateUser(req.body.uid, data);
-            return res.redirect(req.get("Referrer") || "/"); // return to the page that called this route
+            await updateUser(req.body.uid, data);
+
+            return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
             if (err instanceof ValidationError) {
                 return routeUtils.renderError(res, 400, err.message);
@@ -93,7 +84,7 @@ router
 router.route("/:uid").get(async (req, res) => {
     // validate ID and retrieve other's profile
     try {
-        const user = await userFunctions.getUserById(req.params.uid);
+        const user = await getUserById(req.params.uid);
         return res.json(user);
 
         // return res.render("profilePage", { user: user }); // todo implement HTML template

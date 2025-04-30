@@ -11,14 +11,14 @@ export class ValidationError extends Error {
 //
 
 // Throw an error if a variable is undefined, not a string, or has length outside the specified bounds.
-// If `minLen` is `undefined`, ensure the string is not empty. To allow empty strings, use `minLen = 0`.
+// If `minLen` is `undefined`, throw an error if the string is empty. To allow empty strings, use `minLen = 0`.
 // Return the trimmed string if it is valid.
 export function validateAndTrimString(str, label = "String", minLen, maxLen) {
-    if (typeof str !== "string") throw new Error(`${label} must be a string`);
+    if (typeof str !== "string") throw new ValidationError(`${label} must be a string`);
     const trimmed = str.trim();
-    if (typeof minLen === "undefined" && trimmed.length === 0) throw new Error(`${label} cannot be empty`);
-    if (trimmed.length < minLen) throw new Error(`${label} is shorter than ${minLen} character(s)`);
-    if (trimmed.length > maxLen) throw new Error(`${label} is longer than ${maxLen} character(s)`);
+    if (typeof minLen === "undefined" && trimmed.length === 0) throw new ValidationError(`${label} cannot be empty`);
+    if (trimmed.length < minLen) throw new ValidationError(`${label} is shorter than ${minLen} character(s)`);
+    if (trimmed.length > maxLen) throw new ValidationError(`${label} is longer than ${maxLen} character(s)`);
     return trimmed;
 }
 
@@ -51,14 +51,14 @@ export function validateAlphabeticalExtended(str, label = "String", minLen, maxL
 //
 
 // Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
-// Return the given number.
+// Return the given number if it is valid.
 export function validateNumber(num, label = "Number", min, max) {
     if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} "${num}" is invalid or out of range`);
     return num;
 }
 
 // Convert a string to an int, and throw an error if it is NaN or outside the given bounds.
-// Return the converted number.
+// Return the converted number if it is valid.
 export function convertStrToInt(str, label = "Number", min, max) {
     const num = Number.parseInt(str);
     validateNumber(num, label, min, max);
@@ -66,7 +66,7 @@ export function convertStrToInt(str, label = "Number", min, max) {
 }
 
 // Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
-// Return the converted number.
+// Return the converted number if it is valid.
 export function convertStrToFloat(str, label = "Number", min, max) {
     const num = Number.parseFloat(str);
     validateNumber(num, label, min, max);
@@ -104,11 +104,22 @@ export function sanitizeSpaces(str, label) {
     return str.replaceAll(/\s+/g, " ");
 }
 
-// Throw an error if a variable is undefined, not an array, or an empty array.
-// Optionally, also ensure that the array has exactly the number of specified elements.
+// Throw an error if a variable is undefined, or not an array.
+// If `numElements` is `undefined`, throw an error if the array is empty.
+// Otherwise, throw an error if the array does not have exactly the specified number of elements.
 // If valid, run `map` on the array using the given function and return the result.
 export function validateArrayElements(arr, label = "Array", func, numElements) {
-    if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
-    if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
+    if (!Array.isArray(arr)) throw new ValidationError(`${label} must be an array`);
+    if (typeof numElements === "undefined" && arr.length === 0) throw new ValidationError(`${label} cannot be empty`);
+    if (typeof numElements !== "undefined" && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
     return arr.map(func);
+}
+
+// Throw an error if the type (extension) of a file does not match one of the allowed image types.
+// Return the file extension if it is one of the allowed image types.
+export function validateImageFileType(fileName, label) {
+    fileName = validateAndTrimString(fileName, label);
+    const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
+    if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
+    return match[1].toLowerCase(); // return the matched file extension
 }
