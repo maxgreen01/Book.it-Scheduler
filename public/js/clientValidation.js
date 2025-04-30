@@ -89,28 +89,6 @@ export function validateStrAsObjectId(id, label) {
     return id;
 }
 
-//
-// ============ Misc Validation & Utility ============
-//
-
-// Remove leading and trailing spaces from a string, and replace all whitespace with a single space.
-// Return the sanitized string, or throw an error if the string is invalid or empty.
-export function sanitizeSpaces(str, label) {
-    str = validateAndTrimString(str, label);
-    return str.replaceAll(/\s+/g, " ");
-}
-
-// Throw an error if a variable is undefined, not an array, or an empty array.
-// Optionally, also ensure that the array has exactly the number of specified elements.
-// If valid, run `map` on the array using the given function and return the result.
-export function validateArrayElements(arr, label = "Array", func, numElements) {
-    if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
-    if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
-    return arr.map(func);
-}
-
-import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-
 //validate that a Object is a valid Availability Object
 export function validateAvailabilityObj(obj, skipDateCheck) {
     if (!(obj instanceof Availability)) {
@@ -150,3 +128,25 @@ export function validateWeeklyAvailabilityObj(obj) {
     }
     return obj;
 }
+
+//
+// ============ Misc Validation & Utility ============
+//
+
+// Remove leading and trailing spaces from a string, and replace all whitespace with a single space.
+// Return the sanitized string, or throw an error if the string is invalid or empty.
+export function sanitizeSpaces(str, label) {
+    str = validateAndTrimString(str, label);
+    return str.replaceAll(/\s+/g, " ");
+}
+
+// Throw an error if a variable is undefined, not an array, or an empty array.
+// Optionally, also ensure that the array has exactly the number of specified elements.
+// If valid, run `map` on the array using the given function and return the result.
+export function validateArrayElements(arr, label = "Array", func, numElements) {
+    if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
+    if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
+    return arr.map(func);
+}
+
+import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
