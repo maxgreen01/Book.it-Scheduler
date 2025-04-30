@@ -7,6 +7,8 @@ export class ValidationError extends Error {
 }
 
 import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
+import { Note } from "./classes/notes.js";
+import { Response } from "./classes/responses.js";
 
 //
 // ============ String Validation ============
@@ -102,7 +104,7 @@ export function validateStrAsObjectId(id, label) {
     return id;
 }
 
-//validate that a Object is a valid Availability Object
+//validate that an Object is a valid Availability Object
 export function validateAvailabilityObj(obj, skipDateCheck) {
     if (!(obj instanceof Availability)) {
         throw new ValidationError(`${obj} is not a valid Availability Object!`);
@@ -122,7 +124,7 @@ export function validateAvailabilityObj(obj, skipDateCheck) {
     return obj;
 }
 
-//validate that a Object is a valid weeklyAvailability Object
+//validate that an Object is a valid weeklyAvailability Object
 export function validateWeeklyAvailabilityObj(obj) {
     if (!(obj instanceof WeeklyAvailability)) {
         throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
@@ -141,6 +143,24 @@ export function validateWeeklyAvailabilityObj(obj) {
         validateAvailabilityObj(obj.arrSlots[i], true);
     }
     return obj;
+}
+
+//validate that an Object is a valid Notes object
+export function validateNotesObj(obj) {
+    if (!(obj instanceof Note)) {
+        throw new ValidationError(`${obj} is not a valid Notes Object!`);
+    }
+    obj.uid = validateUserId(obj.uid);
+    obj.noteString = validateAndTrimString(obj.noteString, "Note String", 3, 5000);
+}
+
+//validate that an Object is a valid Responses object
+export function validateResponseObj(obj) {
+    if (!(obj instanceof Response)) {
+        throw new ValidationError(`${obj} is not a valid Response Object!`);
+    }
+    obj.uid = validateUserId(obj.uid);
+    validateAvailabilityObj(obj.availability);
 }
 
 //

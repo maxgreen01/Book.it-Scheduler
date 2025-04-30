@@ -7,10 +7,11 @@ export class Note {
     uid = null;
     noteString = null;
 
+    //TODO: What does suid mean?????
     constructor(suid, newNote) {
         suid = validateStrAsObjectId(suid);
         this.uid = suid;
-        newNote = validateAndTrimString(newNote);
+        newNote = validateAndTrimString(newNote, "Note String", 3, 5000);
         this.noteString = newNote;
     }
 }

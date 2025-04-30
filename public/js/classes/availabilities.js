@@ -78,23 +78,24 @@ export class WeeklyAvailability {
     arrSlots = [];
 
     constructor(inputArray) {
-        //Use validation function
-        if (!Array.isArray(inputArray) || inputArray.length !== 7) {
-            throw new ValidationError(`Array ${inputArray} should be an array of 7 elements`);
-        }
+        validateArrayElements(
+            inputArray,
+            "Input Array for Weekly Availability",
+            (elem) => {
+                validateArrayElements(
+                    elem,
+                    "Sub-Input Array for Weekly Availability",
+                    (subElem) => {
+                        validateIntRange(subElem, "Availability Slot Integer", 0, 1);
+                    },
+                    48
+                );
+            },
+            7
+        );
         let i = 0;
+
         for (let elem of inputArray) {
-            validateArrayElements(
-                elem,
-                "Slots Array",
-                (elem) => {
-                    if (!Number.isInteger(elem)) {
-                        throw new ValidationError(`${elem} is not a valid Integer!`);
-                    }
-                    return elem;
-                },
-                48
-            );
             this.arrSlots[i] = new Availability(elem, i, true);
             i++;
         }
