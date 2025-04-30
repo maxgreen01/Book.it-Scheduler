@@ -1,5 +1,5 @@
 //Data functions for Day-Blocked availability objects
-import { validateArrayElements, ValidationError } from "../clientValidation.js";
+import { validateArrayElements, validateAvailabilityObj, validateIntRange, validateWeeklyAvailabilityObj, ValidationError } from "../clientValidation.js";
 
 //Check if every date is the same in all the array of Availability objects
 const sameDate = (availabilityArray) => {
@@ -17,22 +17,19 @@ const sameDate = (availabilityArray) => {
 export class Availability {
     //int array of 48 representing 30 mins chunks of time
     //slots[0] = 1: Available at 12:00 am
-    //slots[0] = 0: Not Available at 12:30 am
+    //slots[1] = 0: Not Available at 12:30 am
     //and so on...
     slots = null;
     //the date that the Availability is representing
     date = null;
 
-    constructor(array = new Array(48).fill(0), date = null, skipDateCheck = false) {
+    constructor(intArray, date = null, skipDateCheck = false) {
         //check that each element of the array is an int and it's 48 elements
         validateArrayElements(
-            array,
+            intArray,
             "Slots Array",
             (elem) => {
-                if (!Number.isInteger(elem)) {
-                    throw new ValidationError(`${elem} is not a valid Integer!`);
-                }
-                return elem;
+                validateIntRange(elem, "Availability Slot Integer", 0, Number.MAX_SAFE_INTEGER);
             },
             48
         );
@@ -44,22 +41,19 @@ export class Availability {
 
         //move to validation.js
 
-        this.slots = array;
+        this.slots = intArray;
         this.date = date;
     }
 
     //Return a new availability obj of when everyone is available
-    //AvailArray: Array of Availability Objects
-    //AvailArray: Array of WeeklyAvailability Objects
-    static mergeAvailability(availArray, dAvailArr = []) {
+    //availArray: Array of Availability Objects
+    //weeklyAvailArr: Array of WeeklyAvailability Objects
+    static mergeAvailability(availArray) {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects
         validateArrayElements(availArray, "Availability Array", (elem) => {
-            if (!(elem instanceof Availability)) {
-                throw new ValidationError(`${elem} is not a valid Availability object`);
-            }
-            return elem;
+            validateAvailabilityObj(elem);
         });
         sameDate(availArray);
 
@@ -73,28 +67,13 @@ export class Availability {
             }
         }
 
-        //validate the array of weeklyAvailability Objects
-        if (dAvailArr.length !== 0) {
-            validateArrayElements(dAvailArr, "Default Availability Array", (elem) => {
-                if (!(elem instanceof weeklyAvailability)) {
-                    throw new ValidationError(`${elem} is not a valid Default Availability object!`);
-                }
-            });
-        }
-        for (let elem of dAvailArr) {
-            for (let i = 0; i < 48; i++) {
-                if (elem[commonDate.getDay()].slot[i] !== -1) {
-                    mergedSlots[i] = mergedSlots[i] + elem[commonDate.getDay()].slot[i];
-                }
-            }
-        }
-
         return new Availability(mergedSlots, commonDate);
     }
 }
 
 //Default Availability Object
 //Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
+//FIX ME: When initializing the Weekly Availability Object in the user's profile page make sure to fill it in as 1s!
 export class WeeklyAvailability {
     arrSlots = [];
 

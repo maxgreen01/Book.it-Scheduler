@@ -75,6 +75,13 @@ export function convertStrToFloat(str, label = "Number", min, max) {
     return num;
 }
 
+export function validateIntRange(num, label = "Number", min, max) {
+    if (!Number.isInteger(num)) {
+        throw new ValidationError(`The number ${num} was not recognized as a valid Integer!`);
+    }
+    return validateNumber(num, label, min, max);
+}
+
 //
 // ============ Database-Related Validation ============
 //
@@ -108,6 +115,7 @@ export function validateAvailabilityObj(obj, skipDateCheck) {
     }
     for (let elem of obj.slots) {
         if (!Number.isInteger(elem)) {
+            validateIntRange(elem, "Availability Int Slot", 0, Number.MAX_SAFE_INTEGER);
             throw new ValidationError(`${elem} is not a valid Integer in the slots array {$obj.slots}!`);
         }
     }
