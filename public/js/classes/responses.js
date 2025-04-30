@@ -1,4 +1,4 @@
-import { validateAvailabilityObj, validateStrAsObjectId } from "../../../utils/validation";
+import { validateAvailabilityObj, validateStrAsObjectId } from "../clientValidation.js";
 
 export class Response {
     uid = null;
