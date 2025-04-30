@@ -10,36 +10,40 @@ export class ValidationError extends Error {
 // ============ String Validation ============
 //
 
-// Throw an error if a variable is undefined, not a string, or an empty string (unless `ignoreEmpty` is `true`).
+// Throw an error if a variable is undefined, not a string, or has length outside the specified bounds.
+// If `minLen` is `undefined`, throw an error if the string is empty. To allow empty strings, use `minLen = 0`.
 // Return the trimmed string if it is valid.
-export function validateAndTrimString(str, label = "String", ignoreEmpty) {
-    if (typeof str !== "string" || (!ignoreEmpty && str.trim().length === 0)) throw new ValidationError(`${label} "${str}" is invalid or empty`);
-    return str.trim();
+export function validateAndTrimString(str, label = "String", minLen, maxLen) {
+    if (typeof str !== "string") throw new ValidationError(`${label} must be a string`);
+    const trimmed = str.trim();
+    if (typeof minLen === "undefined" && trimmed.length === 0) throw new ValidationError(`${label} cannot be empty`);
+    if (trimmed.length < minLen) throw new ValidationError(`${label} is shorter than ${minLen} character(s)`);
+    if (trimmed.length > maxLen) throw new ValidationError(`${label} is longer than ${maxLen} character(s)`);
+    return trimmed;
 }
 
-// Throw an error if the trimmed string does not match the given regex, or has length lower than the specified minimum.
+// Throw an error if the trimmed string does not match the given regex, or has length outside the specified bounds.
 // Return the trimmed string if it is valid.
-export function validateStrUsingRegex(str, regex, label = "String", errorMsg = "disallowed", minLen) {
-    str = validateAndTrimString(str);
+export function validateStrUsingRegex(str, regex, label = "String", minLen, maxLen, errorMsg = "disallowed") {
+    str = validateAndTrimString(str, label, minLen, maxLen);
     if (!str.match(regex)) throw new ValidationError(`${label} "${str}" contains ${errorMsg} characters`);
-    if (str.length < minLen) throw new ValidationError(`${label} "${str}" is shorter than ${minLen} characters`);
     return str;
 }
 
-// Throw an error if the trimmed string contains any letters other than a-z or A-Z, or has length lower than the specified minimum.
+// Throw an error if the trimmed string contains any letters other than a-z or A-Z, or has length outside the specified bounds.
 // Return the trimmed string if it is valid.
-export function validateAlphabetical(str, label = "String", minLen) {
-    return validateStrUsingRegex(str, /^[a-zA-Z]+$/, label, "non-alphabetical", minLen);
+export function validateAlphabetical(str, label = "String", minLen, maxLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z]+$/, label, minLen, maxLen, "non-alphabetical");
 }
 
-// same as `validateAlphabetical`, but hyphens and apostrophes are also allowed in the string (for user names)
-export function validateAlphabeticalExtended(str, label = "String", minLen) {
-    return validateStrUsingRegex(str, /^[a-zA-Z'-]+$/, label, "non-alphabetical", minLen);
+// Same as `validateAlphabetical`, but numbers are also allowed in the string
+export function validateAlphanumeric(str, label = "String", minLen, maxLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z0-9]+$/, label, minLen, maxLen, "non-alphanumeric");
 }
 
-// same as `validateAlphabetical`, but numbers are also allowed in the string
-export function validateAlphanumeric(str, label = "String", minLen) {
-    return validateStrUsingRegex(str, /^[a-zA-Z0-9]+$/, label, "non-alphanumeric", minLen);
+// Same as `validateAlphabetical`, but hyphens, apostrophes, and spaces are also allowed in the string (for user's first/last name)
+export function validateAlphabeticalExtended(str, label = "String", minLen, maxLen) {
+    return validateStrUsingRegex(str, /^[a-zA-Z'-]+$/, label, minLen, maxLen, "disallowed");
 }
 
 //
@@ -47,14 +51,14 @@ export function validateAlphanumeric(str, label = "String", minLen) {
 //
 
 // Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
-// Return the given number.
+// Return the given number if it is valid.
 export function validateNumber(num, label = "Number", min, max) {
     if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} "${num}" is invalid or out of range`);
     return num;
 }
 
 // Convert a string to an int, and throw an error if it is NaN or outside the given bounds.
-// Return the converted number.
+// Return the converted number if it is valid.
 export function convertStrToInt(str, label = "Number", min, max) {
     const num = Number.parseInt(str);
     validateNumber(num, label, min, max);
@@ -62,7 +66,7 @@ export function convertStrToInt(str, label = "Number", min, max) {
 }
 
 // Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
-// Return the converted number.
+// Return the converted number if it is valid.
 export function convertStrToFloat(str, label = "Number", min, max) {
     const num = Number.parseFloat(str);
     validateNumber(num, label, min, max);
@@ -74,10 +78,10 @@ export function convertStrToFloat(str, label = "Number", min, max) {
 //
 
 // Throw an error if a string is not valid or is not a valid `uid`.
-// A `uid` is considered valid if it is alphanumeric and contains at least 3 characters.
+// A `uid` is considered valid if it is alphanumeric and contains between 3 and 30 characters.
 // Return the trimmed `uid` (converted to lowercase for case-insensitive operations) if it is valid.
 export function validateUserId(uid) {
-    return validateAlphanumeric(uid, "User ID", 3).toLowerCase();
+    return validateAlphanumeric(uid, "User ID", 3, 30).toLowerCase();
 }
 
 // Throw an error if a string is not valid or does not represent not a valid ObjectId.
@@ -85,7 +89,7 @@ export function validateUserId(uid) {
 export function validateStrAsObjectId(id, label) {
     id = validateAndTrimString(id, label);
     const validObjectIdRegex = /^[0-9a-fA-F]{24}$/; // replaces ObjectId.isValid() so this can be used on client side
-    if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} "${id}" is not valid`);
+    if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} "${id}" does not represent a valid ObjectId string`);
     return id;
 }
 
@@ -100,11 +104,22 @@ export function sanitizeSpaces(str, label) {
     return str.replaceAll(/\s+/g, " ");
 }
 
-// Throw an error if a variable is undefined, not an array, or an empty array.
-// Optionally, also ensure that the array has exactly the number of specified elements.
+// Throw an error if a variable is undefined, or not an array.
+// If `numElements` is `undefined`, throw an error if the array is empty.
+// Otherwise, throw an error if the array does not have exactly the specified number of elements.
 // If valid, run `map` on the array using the given function and return the result.
 export function validateArrayElements(arr, label = "Array", func, numElements) {
-    if (!Array.isArray(arr) || (!numElements && arr.length === 0)) throw new ValidationError(`${label} is invalid or empty`);
-    if (numElements && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
+    if (!Array.isArray(arr)) throw new ValidationError(`${label} must be an array`);
+    if (typeof numElements === "undefined" && arr.length === 0) throw new ValidationError(`${label} cannot be empty`);
+    if (typeof numElements !== "undefined" && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
     return arr.map(func);
+}
+
+// Throw an error if the type (extension) of a file does not match one of the allowed image types.
+// Return the file extension if it is one of the allowed image types.
+export function validateImageFileType(fileName, label) {
+    fileName = validateAndTrimString(fileName, label);
+    const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
+    if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
+    return match[1].toLowerCase(); // return the matched file extension
 }

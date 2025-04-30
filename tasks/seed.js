@@ -28,7 +28,7 @@ async function seed() {
             firstName: fname,
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
-            profilePicture: `/public/images/${username}.jpg`,
+            profilePicture: `${username}.jpg`,
             availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
         });
         userIds.push(user._id);
