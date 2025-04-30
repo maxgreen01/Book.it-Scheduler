@@ -15,14 +15,14 @@ router.route("/:meetingId").get(async (req, res) => {
 
     try {
         //plug meeting comments into page from db
-        const comments = await getAllComments();
-        // const comments = await getMeetingComments(meetingId)
+        // const comments = await getAllComments();
+        const comments = await getMeetingComments(meetingId);
         res.render("viewMeeting", {
             title: "Test Meeting",
             comments: comments,
         });
     } catch (e) {
-        return renderError(res, 404, e.message);
+        return renderError(res, 404, e);
     }
 });
 

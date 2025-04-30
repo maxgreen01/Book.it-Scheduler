@@ -21,17 +21,20 @@ async function seed() {
         const lname = faker.person.lastName();
         const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
 
+        //FIXME: dont actually add user to db since its currently broken
+
         console.log(`Adding user ${i}: ${fname} ${lname}`);
-        const user = await userFunctions.createUser({
-            uid: username,
-            password: await bcrypt.hash(faker.internet.password(), 10),
-            firstName: fname,
-            lastName: lname,
-            description: faker.lorem.sentences({ min: 0, max: 2 }),
-            profilePicture: `/public/images/${username}.jpg`,
-            availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
-        });
-        userIds.push(user._id);
+        // const user = await userFunctions.createUser({
+        //     uid: username,
+        //     password: await bcrypt.hash(faker.internet.password(), 10),
+        //     firstName: fname,
+        //     lastName: lname,
+        //     description: faker.lorem.sentences({ min: 0, max: 2 }),
+        //     profilePicture: `/public/images/${username}.jpg`,
+        //     availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
+        // });
+        // userIds.push(user._id);
+        userIds.push(username);
     }
 
     // random meeting generation
@@ -68,6 +71,29 @@ async function seed() {
             meetingId: meeting,
             body: faker.lorem.sentences({ min: 2, max: 4 }),
         });
+
+        // lambda to show only a short bit of the comment
+        const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
+
+        console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
+        commentIds.push(comment._id);
+    }
+
+    // TEST MEETING BRANCH
+
+    // create comments for meeting test123
+    for (let i = 0; i < 8; i++) {
+        // randomly select a user and meeting for this comment
+        const uid = faker.helpers.arrayElement(userIds);
+        const meeting = "test123"; //for the test123 meeting
+
+        const comment = await commentFunctions.createComment({
+            uid: uid,
+            meetingId: meeting,
+            body: faker.lorem.sentences({ min: 2, max: 4 }),
+        });
+
+        console.log(comment.meetingId);
 
         // lambda to show only a short bit of the comment
         const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);

@@ -1,7 +1,8 @@
 //Data functions for Comment objects.
 import { commentsCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
-import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
+import { convertStrToObjectId, validateAndTrimString, validateUserId } from "../utils/validation.js";
+// import { validateStrAsObjectId } from "../utils/validation.js"
 import { createCommentDocument } from "../public/js/documentValidation.js";
 export { createCommentDocument } from "../public/js/documentValidation.js";
 
@@ -68,7 +69,9 @@ export async function getUserComments(uid) {
 export async function getMeetingComments(meetingId) {
     //TODO PV: Good idea to query meetings DB if meetingId is a real ID
     //Throw if it isn't.
-    meetingId = convertStrToObjectId(meetingId, "Meeting ID");
+
+    // replace when validation works
+    // meetingId = convertStrToObjectId(meetingId, "Meeting ID");
     const collection = await commentsCollection();
     let comments = await collection.find({ meetingId: meetingId }).toArray();
     if (!comments) throw new Error(`Could not get comments from meeting ID ${meetingId}`);
