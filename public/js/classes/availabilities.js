@@ -48,7 +48,7 @@ export class Availability {
     //Return a new availability obj of when everyone is available
     //availArray: Array of Availability Objects
     //weeklyAvailArr: Array of WeeklyAvailability Objects
-    static mergeAvailability(availArray) {
+    static mergeAvailability(availArray, startTime = 0, endTime = 48) {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects
@@ -60,7 +60,7 @@ export class Availability {
         const commonDate = availArray[0].date;
         let mergedSlots = new Array(48).fill(0);
         for (let elem of availArray) {
-            for (let i = 0; i < 48; i++) {
+            for (let i = startTime; i < endTime; i++) {
                 if (elem.slots[i] !== -1) {
                     mergedSlots[i] = mergedSlots[i] + elem.slots[i];
                 }
