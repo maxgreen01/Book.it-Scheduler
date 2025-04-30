@@ -1,10 +1,13 @@
 <main>
-    <h1>{{title}}</h1>
-    <p>{{meetingDescription}}</p>
-    <p>TODO: other meeting info + availability display</p>
-    {{#if canEdit}}
-    <a href="/{{meetingId}}/edit"><button>Edit Meeting</button></a>
-    {{/if}}
-    <a href="/meetings">My Meetings</a>
-    <a href="/create">Create Meeting</a>
+    <div class="grid-container">
+        <div class="calendar">
+            <h2>Calendar Here</h2>
+        </div>
+        <div class="notes">
+            <h2>Notes</h2>
+        </div>
+        <div class="comments">
+            <h2>Comments</h2>
+        </div>
+    </div>
 </main>
