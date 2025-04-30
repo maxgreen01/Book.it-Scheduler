@@ -1,3 +1,7 @@
+import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
+import { Note } from "./classes/notes.js";
+import { Response } from "./classes/responses.js";
+
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
     constructor(message) {
@@ -77,11 +81,12 @@ export function convertStrToFloat(str, label = "Number", min, max) {
     return num;
 }
 
-export function validateIntRange(num, label = "Number", min, max) {
-    if (!Number.isInteger(num)) {
-        throw new ValidationError(`The number ${num} was not recognized as a valid Integer!`);
+export function validIntRange(int, label = "Number", min, max) {
+    const num = validateNumber(int, label, min, max);
+    if (!Number.isInteger(int)) {
+        throw new ValidationError(`${num} is does not have a type of Integer!`);
     }
-    return validateNumber(num, label, min, max);
+    return num;
 }
 
 //
@@ -105,7 +110,7 @@ export function validateStrAsObjectId(id, label) {
 }
 
 //validate that an Object is a valid Availability Object
-export function validateAvailabilityObj(obj, skipDateCheck) {
+export function validateAvailabilityObj(obj, skipDateCheck = false) {
     if (!(obj instanceof Availability)) {
         throw new ValidationError(`${obj} is not a valid Availability Object!`);
     }
@@ -124,6 +129,7 @@ export function validateAvailabilityObj(obj, skipDateCheck) {
     return obj;
 }
 
+//validate that an Object is a valid weeklyAvailability Object
 //validate that an Object is a valid weeklyAvailability Object
 export function validateWeeklyAvailabilityObj(obj) {
     if (!(obj instanceof WeeklyAvailability)) {

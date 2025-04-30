@@ -143,3 +143,5 @@ export async function reactToComment(id, uid, reaction) {
         await collection.updateOne({ _id: commentId }, { $addToSet: { "reactions.dislikes": uid } });
     }
 }
+
+await getCommentById("68123216e4bde9efe8b313ce").then(console.log);
