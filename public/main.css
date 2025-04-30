@@ -89,12 +89,26 @@ nav a:hover {
     border: 1px solid #d1d8e0;
     border-radius: 8px;
     padding: 15px;
+    height: 100%; /* Specifies a fixed height */
+    overflow-y: auto; /* Enables scrolling */
+    scroll-behavior: smooth;
 }
 .notes {
     background: #ffffff;
     border: 1px solid #d1d8e0;
     border-radius: 8px;
     padding: 15px;
+}
+
+/* Comment objects */
+.comment {
+    border-bottom: 1px solid #d1d8e0;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+.comment:last-child {
+    border-bottom: none;
 }
 
 /* this can get reused for if we want a mouse-over effect on elements */

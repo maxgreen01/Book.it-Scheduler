@@ -5,9 +5,23 @@
         </div>
         <div class="notes">
             <h2>Notes</h2>
+            <p>Add a private note.</p>
         </div>
         <div class="comments">
             <h2>Comments</h2>
+            {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
+            <p>{{comments.length}} comments</p>
+            {{#each comments}}
+            <div class="comment">
+                <p>Author: {{this.uid}}</p>
+                <p>Text: {{this.body}}</p>
+                <p>Created at: {{this.dateCreated}}</p>
+                <p>Last changes made: {{this.dateUpdated}}</p>
+            </div>
+            {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
+            <p>0 comments</p>
+            <p>Hint: try me with test meeting Id test123</p>
+            {{/if}}
         </div>
     </div>
 </main>
