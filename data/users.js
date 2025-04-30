@@ -7,11 +7,12 @@ export { createUserDocument } from "../public/js/documentCreation.js";
 
 // create a user object and save it to the DB, then return the added object
 export async function createUser({ uid, password, firstName, lastName, description, profilePicture, availability }) {
-    if (!(await validation.isUserIdUnique(uid))) throw new Error(`User ID "${uid}" is not unique`);
-
     // set up the document that will be saved to the DB
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
     user.meetings = [];
+
+    // make sure username is unique
+    if (await validation.isUserIdTaken(user._id)) throw new Error(`User ID "${user._id}" is already taken`);
 
     // run the DB operation
     const collection = await usersCollection();
@@ -43,6 +44,16 @@ export async function getUserById(uid) {
     const user = await collection.findOne({ _id: uid });
     if (!user) throw new Error(`Could not retrieve the user with ID "${uid}"`);
     return user;
+}
+
+// check whether a user exists with the specified ID
+export async function doesUserExist(uid) {
+    try {
+        await getUserById(uid);
+        return true;
+    } catch (err) {
+        return false;
+    }
 }
 
 // remove the user with the specified ID from the DB, and return true to indicate success
