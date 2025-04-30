@@ -58,36 +58,46 @@ export function createCommentDocument({ uid, meetingId, body }) {
 }
 
 //Constructor for meeting documents
-export function createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }) {
-    name = validation.sanitizeSpaces(validation.validateAndTrimString(name, "Meeting Name", 3));
-    description = validation.validateAndTrimString(description, "Meeting Description", true);
-    owner = validation.validateUserId(owner);
-    duration = validation.validIntRange(duration, "Meeting Duration", 1, 48);
-    for (let date of dates) {
-        if (!(date instanceof Date)) {
-            throw new validation.ValidationError(`The date ${date} is not a valid Date Object!`);
+export function createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }, allowUndefined = false) {
+    if (!allowUndefined || typeof name !== "undefined") name = validation.sanitizeSpaces(validation.validateAndTrimString(name, "Meeting Name", 3));
+    if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Meeting Description", true);
+    if (!allowUndefined || typeof owner !== "undefined") owner = validation.validateUserId(owner);
+    if (!allowUndefined || typeof duration !== "undefined") duration = validation.validateIntRange(duration, "Meeting Duration", 1, 48);
+    if (!allowUndefined || typeof dates !== "undefined") {
+        for (let date of dates) {
+            if (!(date instanceof Date)) {
+                throw new validation.ValidationError(`The date ${date} is not a valid Date Object!`);
+            }
         }
     }
-    timeStart = validation.validIntRange(timeStart, "Meeting Starting Time", 1, 48);
-    timeEnd = validation.validIntRange(timeEnd, "Meeting Ending Time", 1, 48);
-    if (!Array.isArray(users)) {
-        throw new validation.ValidationError(`${users} was expected to be an array!`);
+    if (!allowUndefined || typeof timeStart !== "undefined") timeStart = validation.validateIntRange(timeStart, "Meeting Starting Time", 1, 48);
+    if (!allowUndefined || typeof timeEnd !== "undefined") timeEnd = validation.validateIntRange(timeEnd, "Meeting Ending Time", 1, 48);
+    if (!allowUndefined || typeof users !== "undefined") {
+        if (!Array.isArray(users)) {
+            throw new validation.ValidationError(`${users} was expected to be an array!`);
+        }
+        users.map((user) => validation.validateUserId(user));
     }
-    users.map((user) => validation.validateUserId(user));
-    bookingStatus = validation.validIntRange(bookingStatus, "Meeting Booking Status", -1, 1);
-    if (bookedTime !== null) {
-        bookedTime = validation.validateAvailabilityObj(bookedTime);
+    if (!allowUndefined || typeof bookingStatus !== "undefined") bookingStatus = validation.validateIntRange(bookingStatus, "Meeting Booking Status", -1, 1);
+    if (!allowUndefined || typeof bookedTime !== "undefined") {
+        if (bookedTime !== null) {
+            bookedTime = validation.validateAvailabilityObj(bookedTime);
+        }
     }
-    if (!Array.isArray(responses)) {
-        throw new validation.ValidationError(`${responses} was expected to be an array!`);
+    if (!allowUndefined || typeof responses !== "undefined") {
+        if (!Array.isArray(responses)) {
+            throw new validation.ValidationError(`${responses} was expected to be an array!`);
+        }
+        responses.map((response) => {
+            validation.validateResponseObj(response);
+        });
     }
-    responses.map((response) => {
-        validation.validateResponseObj(response);
-    });
-    if (!Array.isArray(notes)) {
-        throw new validation.ValidationError(`${notes} was expected to be an array!`);
+    if (!allowUndefined || typeof notes !== "undefined") {
+        if (!Array.isArray(notes)) {
+            throw new validation.ValidationError(`${notes} was expected to be an array!`);
+        }
+        notes.map((note) => validation.validateNoteObj(note));
     }
-    notes.map((note) => validation.validateNoteObj(note));
     const meeting = {
         name,
         description,
@@ -102,5 +112,9 @@ export function createMeetingDocument({ name, description, duration, owner, date
         responses,
         notes,
     };
+    if (allowUndefined) {
+        // delete undefined properties from the final object
+        for (const key of Object.keys(meeting)) if (meeting[key] === undefined) delete meeting[key];
+    }
     return meeting;
 }

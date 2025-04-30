@@ -10,10 +10,6 @@ export class ValidationError extends Error {
     }
 }
 
-import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-import { Note } from "./classes/notes.js";
-import { Response } from "./classes/responses.js";
-
 //
 // ============ String Validation ============
 //
@@ -81,7 +77,7 @@ export function convertStrToFloat(str, label = "Number", min, max) {
     return num;
 }
 
-export function validIntRange(int, label = "Number", min, max) {
+export function validateIntRange(int, label = "Number", min, max) {
     const num = validateNumber(int, label, min, max);
     if (!Number.isInteger(int)) {
         throw new ValidationError(`${num} is does not have a type of Integer!`);
@@ -152,7 +148,7 @@ export function validateWeeklyAvailabilityObj(obj) {
 }
 
 //validate that an Object is a valid Notes object
-export function validateNotesObj(obj) {
+export function validateNoteObj(obj) {
     if (!(obj instanceof Note)) {
         throw new ValidationError(`${obj} is not a valid Notes Object!`);
     }
