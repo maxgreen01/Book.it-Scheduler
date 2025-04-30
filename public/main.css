@@ -1,16 +1,28 @@
 /* Stylesheet used by the main.handlebars default view */
 /* By default is applied to all HTML pages on the site */
 
+body {
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    /* line-height: 1.6; */
+    background-color: #f8f8f8;
+    color: #333;
+}
+
 /* Nav bar rules */
 header {
     background: #6a5acd;
     color: white;
     width: 100%;
 }
+
+/* Placeholder: Can replace with a logo png or anything else */
 .title-text {
     font-size: 24px;
     margin: 0;
 }
+
+/* flexible div containing header elements */
 .bar {
     width: 90%;
     margin: 0 auto;
@@ -20,6 +32,7 @@ header {
     padding: 5px 0;
 }
 
+/* nav bar elements */
 nav ul {
     margin: 0;
     padding: 0;
@@ -40,15 +53,7 @@ nav a:hover {
     color: #ff7f50;
 }
 
-body {
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    /* line-height: 1.6; */
-    background-color: #f8f8f8;
-    color: #333;
-}
-
-/* squished screen */
+/* reformat navbar on squished screen */
 @media (max-width: 700px) {
     .bar {
         flex-direction: column;
@@ -63,7 +68,7 @@ body {
     }
 }
 
-/* Meeting page comments section */
+/* View meeting page */
 .grid-container {
     display: grid;
     grid-template-columns: 1.5fr 1fr; /* Two columns */
@@ -91,6 +96,10 @@ body {
     border-radius: 8px;
     padding: 15px;
 }
+
+/* this can get reused for if we want a mouse-over effect on elements */
+/* might be nice for clickables like buttons and cells on the calendar */
+/* left out for now */
 
 /* .comments:hover, .notes:hover {
     background-color: #f7fafc; 
