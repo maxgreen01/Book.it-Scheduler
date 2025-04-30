@@ -109,6 +109,8 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
     return arr.map(func);
 }
 
+import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
+
 //validate that a Object is a valid Availability Object
 export function validateAvailabilityObj(obj, skipDateCheck) {
     if (!(obj instanceof Availability)) {
@@ -130,15 +132,19 @@ export function validateAvailabilityObj(obj, skipDateCheck) {
 
 //validate that a Object is a valid weeklyAvailability Object
 export function validateWeeklyAvailabilityObj(obj) {
-    if (!(obj instanceof weeklyAvailability)) {
+    if (!(obj instanceof WeeklyAvailability)) {
         throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
     }
     if (obj.arrSlots.length !== 7) {
         throw new ValidationError(`${obj.arrSlots} is not a valid arrSlots array of 7 elements!`);
     }
     for (let i = 0; i < 7; i++) {
-        if (!(obj.arrSlots[i] instanceof Availability)) {
+        const AvailabilityElem = obj.arrSlots[i];
+        if (!(AvailabilityElem instanceof Availability)) {
             throw new ValidationError(`${obj.arrSlots[i]} is not a valid Availability Object!`);
+        }
+        if (AvailabilityElem.date !== i) {
+            throw new ValidationError(`Date ${obj.arrSlots[i].Date} does not match the expect date of ${i}!`);
         }
         validateAvailabilityObj(obj.arrSlots[i], true);
     }

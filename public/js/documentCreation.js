@@ -11,7 +11,7 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", true);
     if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture");
-    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo - validate Timeslot objects
+    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateWeeklyAvailabilityObj(availability);
 
     // ============= construct the document =============
     const user = {

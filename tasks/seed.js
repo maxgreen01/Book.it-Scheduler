@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
 import { ObjectId } from "mongodb";
-import { weeklyAvailability } from "../data/availabilities.js";
+import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -59,7 +59,7 @@ async function seed() {
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
             profilePicture: `/public/images/${username}.jpg`,
-            availability: new weeklyAvailability(generateWeeklyAvailability()),
+            availability: new WeeklyAvailability(generateWeeklyAvailability()),
         });
         userIds.push(user._id);
     }
