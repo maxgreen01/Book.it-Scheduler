@@ -1,4 +1,4 @@
-import { validateArrayElements, validateAvailabilityObj, validateResponseObj, validateStrAsObjectId } from "../clientValidation.js";
+import { validateArrayElements, validateAvailabilityObj, validateStrAsObjectId } from "../clientValidation.js";
 import { Availability } from "./availabilities.js";
 
 export class Response {

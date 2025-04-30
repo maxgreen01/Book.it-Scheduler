@@ -1,5 +1,5 @@
 //Data functions for Day-Blocked availability objects
-import { validateArrayElements, validateAvailabilityObj, validateIntRange, validateWeeklyAvailabilityObj, ValidationError } from "../clientValidation.js";
+import { validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
 //Check if every date is the same in all the array of Availability objects
 const sameDate = (availabilityArray) => {
