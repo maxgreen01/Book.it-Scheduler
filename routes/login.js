@@ -1,8 +1,9 @@
 import express from "express";
+import bcrypt from "bcrypt";
 import { ValidationError, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
-import { createUser, updateUser } from "../data/users.js";
+import { createUser, getUserById, updateUser } from "../data/users.js";
 
 const router = express.Router();
 
@@ -15,8 +16,22 @@ router
     })
     // log in
     .post(async (req, res) => {
-        return res.json("implement me");
+        try {
+            const userId = validateUserId(req.body.uid);
+            const user = await getUserById(userId);
+            await bcrypt.compare(req.body.password, user.password);
+            delete user.password;
+            req.session.user = user;
+            res.redirect("/profile");
+        } catch {
+            return routeUtils.renderError(res, 400, "Either userId or password is invalid");
+        }
     });
+
+router.route("/logout").get(async (req, res) => {
+    req.session.destroy();
+    return res.redirect("/");
+});
 
 // todo login to an existing profile (i.e. "log in") -- which route?
 // create a new account
@@ -47,6 +62,9 @@ router
         // validate all inputs and add the user to the DB
         let user;
         try {
+            // TODO: remove this temp fix when availability can be entered on the page
+            data.availability = [0, 0, 0, 0, 0, 0, 0];
+            data.password = await bcrypt.hash(data.password, 10);
             user = await createUser(data);
         } catch (err) {
             if (err instanceof ValidationError) {
@@ -80,6 +98,8 @@ router
         }
 
         // todo create auth session here?
+        delete user.password;
+        req.session.user = user;
 
         return res.redirect("/profile"); // go to the newly created profile page
     });
