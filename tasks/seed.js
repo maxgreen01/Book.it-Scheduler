@@ -8,6 +8,10 @@ import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
 import { ObjectId } from "mongodb";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { createMeeting, modifyNoteOfMeeting } from "../data/meetings.js";
+import { ValidationError } from "../utils/validation.js";
+import { timeEnd } from "console";
+import { Note } from "../public/js/classes/notes.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -70,8 +74,48 @@ async function seed() {
         // randomly select users for this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
+        const changeDateToStart = (date) => {
+            if (!(date instanceof Date)) {
+                throw new ValidationError(`Date ${date} is not a valid date object!`);
+            }
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+        };
+
+        const randomDate = changeDateToStart(faker.date.future());
+        let meetingDates = [];
+
+        const meetingLengthDays = faker.number.int({ min: 1, max: 7 });
+        for (let i = 0; i < meetingLengthDays; i++) {
+            let dateToAdd = new Date(randomDate);
+            dateToAdd.setDate(dateToAdd.getDate() + i);
+            meetingDates.push(dateToAdd);
+        }
+
+        const meetingStart = faker.number.int({ min: 1, max: 40 });
+        const meetingEnd = faker.number.int({ min: meetingStart, max: 42 });
+
+        const newMeeting = {
+            name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
+            description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
+            duration: faker.number.int({ min: 1, max: 20 }),
+            owner: faker.helpers.arrayElement(meetingUsers),
+            dates: meetingDates,
+            timeStart: meetingStart,
+            timeEnd: meetingEnd,
+            users: meetingUsers,
+        };
+
+        const addedMeeting = await createMeeting(newMeeting);
+
+        for (let user of meetingUsers) {
+            const newNote = new Note(user, faker.lorem.sentences(faker.number.int({ min: 3, max: 10 })));
+            await modifyNoteOfMeeting(addedMeeting._id, newNote);
+        }
         // Uncomment the below when we have createMeeting()
-        // console.log(`Adding comment ${i}`);
+
+        console.log(`Adding meeting #${i} with name: ${addedMeeting.name}`);
+        meetingIds.push(addedMeeting._id);
+
         // const meeting = await meetingFuncs.createMeeting(
         //     // (...)
         // );

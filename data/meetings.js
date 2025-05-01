@@ -8,13 +8,13 @@ export { createMeetingDocument } from "../public/js/documentCreation.js";
 
 // Create a meeting object save it to the DB, and then return the added object
 export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }) {
-    const ownerExists = !(await validation.isUserIdTaken(owner));
+    const ownerExists = await validation.isUserIdTaken(owner);
     if (!ownerExists) {
         throw new Error(`User ID: ${owner} could not be found as a valid user!`);
     }
     const meeting = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus, bookedTime, responses, notes });
     for (let user of users) {
-        const userExists = !(await validation.isUserIdTaken(user));
+        const userExists = await validation.isUserIdTaken(user);
         if (!userExists) {
             throw new Error(`User ID: ${user} could not be found as a valid user!`);
         }
@@ -37,16 +37,21 @@ export async function getAllMeetings() {
     const collection = await meetingsCollection();
     const meetings = await collection.find({}).toArray();
     if (!meetings) throw new Error("Could not retrieve all meetings");
+    meetings.map((meeting) => meeting._id.toString());
     return meetings;
 }
 
 // return the meeting the with passed in mid parameter
 export async function getMeetingById(mid) {
     mid = validation.validateStrAsObjectId(mid, "Meeting ID");
-    const collection = await usersCollection();
-    const meeting = await collection.findOne({ _id: validation.convertStrToObjectId(mid) });
-    if (!meeting) throw new Error(`Could not retrieve the meeting with ID: ${mid}`);
-    return mid;
+    const collection = await meetingsCollection();
+    mid = validation.convertStrToObjectId(mid);
+    const meeting = await collection.findOne({ _id: mid });
+    if (!meeting) {
+        throw new Error(`Could not retrieve the meeting with ID: ${mid}`);
+    }
+    meeting._id = meeting._id.toString();
+    return meeting;
 }
 
 // check whether a meeting exists with the specified ID
@@ -65,6 +70,7 @@ export async function deleteMeeting(mid) {
     const collection = await meetingsCollection();
     const removed = await collection.findOneAndDelete({ _id: validation.convertStrToObjectId(mid) });
     if (!removed) throw new Error(`Could not delete the meeting with ID: ${mid}`);
+    removed._id = removed._id.toString();
     return removed;
 }
 
@@ -77,6 +83,7 @@ export async function updateMeeting(mid, { name, description, duration, owner, d
 
     const updated = await collection.findOneAndUpdate({ _id: ObjectId(mid) }, { $set: newMeetingFields }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    updated._id = updated._id.toString();
     return updated;
 }
 
@@ -88,26 +95,30 @@ export async function addResponseToMeeting(mid, responseObjArr) {
     let responses = foundMeeting.responses;
     for (let newResponse of responseObjArr) {
         validation.validateResponseObj(newResponse);
-        responses.append(newResponse);
+        responses.push(newResponse);
     }
-    const updated = await collection.findOneAndUpdate({ _id: ObjectId(mid) }, { $set: { responses } }, { returnDocument: "after" });
+    mid = validation.convertStrToObjectId(mid);
+    const updated = await collection.findOneAndUpdate({ _id: mid }, { $set: { responses } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    updated._id = updated._id.toString();
     return updated;
 }
 
 //Add the new note, and filter out the old note of that user had a note
 export async function modifyNoteOfMeeting(mid, noteObj) {
-    mid = validation.validMeeting(mid);
-    noteObj = validation.validNoteObjExtended(noteObj);
+    mid = await validation.validMeeting(mid);
+    noteObj = await validation.validNoteObjExtended(noteObj);
     const collection = await meetingsCollection();
     const foundMeeting = await getMeetingById(mid);
     let notes = foundMeeting.notes;
     notes.filter((note) => {
         return note.uid !== noteObj.uid;
     });
-    notes.append(noteObj);
-    const updated = await collection.findOneAndUpdate({ _id: ObjectId(mid) }, { $set: { notes } }, { returnDocument: "after" });
+    notes.push(noteObj);
+    mid = validation.convertStrToObjectId(mid);
+    const updated = await collection.findOneAndUpdate({ _id: mid }, { $set: { notes } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    updated._id = updated._id.toString();
     return updated;
 }
 
@@ -116,16 +127,3 @@ export async function findCommonAvailabilityOfMeeting(mid) {
     const foundMeeting = await getMeetingById(mid);
     return Response.mergeResponsesToAvailability(foundMeeting.responses, foundMeeting.timeStart, foundMeeting.timeEnd);
 }
-
-const newMeeting = {
-    name: "Test meeting",
-    description: "A test meeting",
-    duration: 12,
-    owner: "Mgreen",
-    dates: [new Date()],
-    timeStart: 10,
-    timeEnd: 20,
-    users: ["Mgreen"],
-};
-
-console.log(await createMeeting(newMeeting));

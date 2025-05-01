@@ -29,12 +29,13 @@ export async function validMeeting(mid) {
     if (!meetingExists) {
         throw new Error(`Could not find the meeting with id: ${mid}`);
     }
+    return mid;
 }
 
 //Normal validation on the Response Object, but also use the data function to check if the Response Object contains a valid ID
 export async function validResponseObjExtended(responseObj) {
     clientValidation.validateResponseObj(responseObj);
-    const userExists = !(await isUserIdTaken(responseObj.uid));
+    const userExists = await isUserIdTaken(responseObj.uid);
     if (!userExists) {
         throw new Error(`User with id ${responseObj.uid} does not exist!`);
     }
@@ -44,7 +45,7 @@ export async function validResponseObjExtended(responseObj) {
 //Normal validation on the Note Object, but also use the data function to check if the Response Object contains a valid ID
 export async function validNoteObjExtended(noteObj) {
     clientValidation.validateNoteObj(noteObj);
-    const userExists = !(await isUserIdTaken(noteObj.uid));
+    const userExists = await isUserIdTaken(noteObj.uid);
     if (!userExists) throw new Error(`User with id ${noteObj.uid} does not exist!`);
     return noteObj;
 }

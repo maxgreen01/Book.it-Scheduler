@@ -59,8 +59,8 @@ export function createCommentDocument({ uid, meetingId, body }) {
 
 //Constructor for meeting documents
 export function createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }, allowUndefined = false) {
-    if (!allowUndefined || typeof name !== "undefined") name = validation.sanitizeSpaces(validation.validateAndTrimString(name, "Meeting Name", 3));
-    if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Meeting Description", true);
+    if (!allowUndefined || typeof name !== "undefined") name = validation.sanitizeSpaces(validation.validateAndTrimString(name, "Meeting Name", 3, 40));
+    if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Meeting Description", 3, 500);
     if (!allowUndefined || typeof owner !== "undefined") owner = validation.validateUserId(owner);
     if (!allowUndefined || typeof duration !== "undefined") duration = validation.validateIntRange(duration, "Meeting Duration", 1, 48);
     if (!allowUndefined || typeof dates !== "undefined") {

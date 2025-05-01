@@ -8,7 +8,7 @@ const sameDate = (availabilityArray) => {
     }
     let initialDate = availabilityArray[0].date;
     for (let elem of availabilityArray) {
-        if (elem.date.getTime() !== initialDate.getTime()) {
+        if (elem.date.getFullYear() !== initialDate.getFullYear() || elem.date.getMonth() !== initialDate.getMonth() || elem.date.getDate() !== initialDate.getDate()) {
             throw new ValidationError(`Expected all elements to have the same Date, but the dates ${initialDate} and ${elem.date} are different!`);
         }
     }

@@ -157,12 +157,31 @@ export function validateNoteObj(obj) {
 }
 
 //validate that an Object is a valid Responses object
-export function validateResponseObj(obj) {
+export function validateResponseObj(obj, allowedDateArr = undefined) {
     if (!(obj instanceof Response)) {
         throw new ValidationError(`${obj} is not a valid Response Object!`);
     }
     obj.uid = validateUserId(obj.uid);
     validateAvailabilityObj(obj.availability);
+    //check if the date object is part of the allowedDateArray is that array is defined
+    if (allowedDateArr !== undefined) {
+        validateArrayElements(allowedDateArr, "Allowed Date Array", (date) => {
+            if (!(date instanceof Date)) {
+                throw new ValidationError(`Date (${date}) is not a valid date object!`);
+            }
+        });
+        const availabilityDate = obj.availability.date;
+        const sameDate = (firstDate, secondDate) => {
+            return firstDate.getFullYear() === secondDate.getFull() && firstDate.getMonth() === secondDate.getMonth() && firstDate.getDate() === secondDate.getDate();
+        };
+        const dateInArray = allowedDateArr.some((date) => {
+            sameDate(date, availabilityDate);
+        });
+        if (!dateInArray) {
+            throw new ValidationError(`Date ${availabilityDate} of the Availability object was not one of the dates in the Allow Date Array`);
+        }
+    }
+    return obj;
 }
 
 //
