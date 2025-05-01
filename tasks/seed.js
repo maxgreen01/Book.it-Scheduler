@@ -19,7 +19,14 @@ async function seed() {
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
         const lname = faker.person.lastName();
-        const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
+        let username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
+
+        if (i == 0) {
+            username = "username";
+        }
+        if (i == 1) {
+            username = "USERNAME";
+        }
 
         console.log(`Adding user ${i}: ${fname} ${lname}`);
         const user = await userFunctions.createUser({
@@ -32,6 +39,7 @@ async function seed() {
             availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
         });
         userIds.push(user._id);
+        console.log(await userFunctions.getUserById(user._id));
     }
 
     // random meeting generation
