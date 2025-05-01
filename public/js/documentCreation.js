@@ -6,10 +6,10 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     // ============= validate inputs =============
 
     if (!allowUndefined || typeof uid !== "undefined") uid = validation.validateUserId(uid);
-    if (!allowUndefined || typeof password !== "undefined") password = validation.validateAndTrimString(password, "Password"); // should be hashed already
-    if (!allowUndefined || typeof firstName !== "undefined") firstName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(firstName, "First Name", 1));
-    if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1));
-    if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", true);
+    if (!allowUndefined || typeof password !== "undefined") password = validation.validateAndTrimString(password, "Password"); // should be hashed already // todo MG this needs to be revised and be given a min/max length
+    if (!allowUndefined || typeof firstName !== "undefined") firstName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(firstName, "First Name", 1, 30));
+    if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1, 30));
+    if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", 0, 300);
     if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture");
     if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo - validate Timeslot objects
 
@@ -36,15 +36,10 @@ export function createCommentDocument({ uid, meetingId, body }) {
     // TODO BL: Sanitize comment body for security vulnerabilities
     // (currently only validated as string)
 
-    // uid = validateUserId(uid);
-    // meetingId = convertStrToObjectId(meetingId, "Meeting ID");
-    // body = validateAndTrimString(body, "Comment Text", false);
-
-    //modified validation code since it wasn't working
     uid = validation.validateUserId(uid);
-    meetingId = validation.validateAndTrimString(meetingId, "Meeting ID");
-    body = validation.validateAndTrimString(body, "Comment Text", false);
-    let timestamp = new Date();
+    meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
+    body = validation.validateAndTrimString(body, "Comment Body", 1, 500);
+    const timestamp = new Date();
 
     // create and return document
     const comment = {

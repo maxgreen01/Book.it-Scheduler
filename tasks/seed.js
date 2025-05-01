@@ -24,17 +24,16 @@ async function seed() {
         //FIXME: dont actually add user to db since its currently broken
 
         console.log(`Adding user ${i}: ${fname} ${lname}`);
-        // const user = await userFunctions.createUser({
-        //     uid: username,
-        //     password: await bcrypt.hash(faker.internet.password(), 10),
-        //     firstName: fname,
-        //     lastName: lname,
-        //     description: faker.lorem.sentences({ min: 0, max: 2 }),
-        //     profilePicture: `/public/images/${username}.jpg`,
-        //     availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
-        // });
-        // userIds.push(user._id);
-        userIds.push(username);
+        const user = await userFunctions.createUser({
+            uid: username,
+            password: await bcrypt.hash(faker.internet.password(), 10),
+            firstName: fname,
+            lastName: lname,
+            description: faker.lorem.sentences({ min: 0, max: 2 }),
+            profilePicture: `${username}.jpg`,
+            availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
+        });
+        userIds.push(user._id);
     }
 
     // random meeting generation

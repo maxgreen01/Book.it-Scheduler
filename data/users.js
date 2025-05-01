@@ -1,17 +1,18 @@
 // Data functions for user profile objects
 
-import * as validation from "../public/js/clientValidation.js";
+import * as validation from "../utils/validation.js";
 import { usersCollection } from "../config/mongoCollections.js";
-import { createUserDocument } from "../public/js/documentValidation.js";
-export { createUserDocument } from "../public/js/documentValidation.js";
+import { createUserDocument } from "../public/js/documentCreation.js";
+export { createUserDocument } from "../public/js/documentCreation.js";
 
 // create a user object and save it to the DB, then return the added object
 export async function createUser({ uid, password, firstName, lastName, description, profilePicture, availability }) {
-    if (!(await validation.isUserIdUnique(uid))) throw new Error(`User ID "${uid}" is not unique`);
-
     // set up the document that will be saved to the DB
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
     user.meetings = [];
+
+    // make sure username is unique
+    if (await validation.isUserIdTaken(user._id)) throw new Error(`User ID "${user._id}" is already taken`);
 
     // run the DB operation
     const collection = await usersCollection();
@@ -45,6 +46,16 @@ export async function getUserById(uid) {
     return user;
 }
 
+// check whether a user exists with the specified ID
+export async function doesUserExist(uid) {
+    try {
+        await getUserById(uid);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
 // remove the user with the specified ID from the DB, and return true to indicate success
 export async function deleteUser(uid) {
     uid = validation.validateUserId(uid);
@@ -69,7 +80,7 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
 // `isAdd` should be `true` to add the meetingId to the user, or `false` to remove the meetingId.
 export async function modifyUserMeeting(uid, meetingId, isAdd) {
     uid = validation.validateUserId(uid);
-    meetingId = validation.validateStrAsObjectId(meetingId);
+    meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
     const action = isAdd ? "$push" : "$pull";
 
     const collection = await usersCollection();
