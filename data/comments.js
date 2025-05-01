@@ -1,11 +1,14 @@
 //Data functions for Comment objects.
 import { commentsCollection } from "../config/mongoCollections.js";
-import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId } from "../utils/validation.js";
+import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId, validMeeting } from "../utils/validation.js";
 import { createCommentDocument } from "../public/js/documentCreation.js";
+import { getMeetingById } from "./meetings.js";
 export { createCommentDocument } from "../public/js/documentCreation.js";
 
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {
+    const foundMeeting = await getMeetingById(meetingId);
+    if (!foundMeeting.users.includes(uid)) throw new Error(`User ${uid} isn't a part of the meeting ${meetingId} so a comment can't be added by them!`);
     const comment = createCommentDocument({ uid, meetingId, body });
     const collection = await commentsCollection();
     const insertResponse = await collection.insertOne(comment);
@@ -64,6 +67,7 @@ export async function getMeetingComments(meetingId) {
     //TODO PV: Good idea to query meetings DB if meetingId is a real ID
     //Throw if it isn't.
     meetingId = validateStrAsObjectId(meetingId, "Meeting ID");
+    await validMeeting(meetingId);
     const collection = await commentsCollection();
     let comments = await collection.find({ meetingId: meetingId }).toArray();
     if (!comments) throw new Error(`Could not get comments from meeting ID "${meetingId}"`);
