@@ -151,7 +151,7 @@ export function validateNotesObj(obj) {
         throw new ValidationError(`${obj} is not a valid Notes Object!`);
     }
     obj.uid = validateUserId(obj.uid);
-    obj.noteString = validateAndTrimString(obj.noteString, "Note String", 3, 5000);
+    obj.noteString = validateAndTrimString(obj.noteString, "Note String", 1, 5000);
 }
 
 //validate that an Object is a valid Responses object
