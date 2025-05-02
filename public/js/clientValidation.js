@@ -205,9 +205,7 @@ export function validateImageFileType(fileName, label) {
 
 export function validateObjectKeys(obj, validKeys, label = "Object") {
     const currKeys = Object.keys(obj);
-    const disAllowedFields = currKeys.filter((key) => {
-        !validKeys.includes(key);
-    });
+    const disAllowedFields = currKeys.filter((key) => !validKeys.includes(key));
     if (disAllowedFields > 0) {
         throw new ValidationError(`Disallowed fields ${disAllowedFields} in ${label}`);
     }
