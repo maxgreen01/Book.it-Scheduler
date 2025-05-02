@@ -79,7 +79,7 @@ export function convertStrToFloat(str, label = "Number", min, max) {
 
 // Throw an error if a string is not valid or is not a valid `uid`.
 // A `uid` is considered valid if it is alphanumeric and contains between 3 and 30 characters.
-// Return the trimmed `uid` (converted to lowercase for case-insensitive operations) if it is valid.
+// Return the trimmed `uid` if it is valid.
 export function validateUserId(uid) {
     return validateAlphanumeric(uid, "User ID", 3, 30);
 }
