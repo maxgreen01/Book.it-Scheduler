@@ -41,7 +41,7 @@ export async function getAllUserIDs() {
 export async function getUserById(uid) {
     uid = validation.validateUserId(uid);
     const collection = await usersCollection();
-    const user = await collection.findOne({ _id: uid });
+    const user = await collection.findOne({ _id: validation.uidToCaseInsensitive(uid) });
     if (!user) throw new Error(`Could not retrieve the user with ID "${uid}"`);
     return user;
 }
@@ -60,7 +60,7 @@ export async function doesUserExist(uid) {
 export async function deleteUser(uid) {
     uid = validation.validateUserId(uid);
     const collection = await usersCollection();
-    const removed = await collection.findOneAndDelete({ _id: uid });
+    const removed = await collection.findOneAndDelete({ _id: validation.uidToCaseInsensitive(uid) });
     if (!removed) throw new Error(`Could not delete the user with ID "${uid}"`);
     return true; // todo MG - maybe return something more useful
 }
@@ -71,7 +71,7 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
     const collection = await usersCollection();
     const newFields = createUserDocument({ password, firstName, lastName, description, profilePicture, availability }, true);
 
-    const updated = await collection.findOneAndUpdate({ _id: uid }, { $set: newFields }, { returnDocument: "after" });
+    const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { $set: newFields }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the user with ID "${uid}"`);
     return updated;
 }
@@ -84,7 +84,7 @@ export async function modifyUserMeeting(uid, meetingId, isAdd) {
     const action = isAdd ? "$push" : "$pull";
 
     const collection = await usersCollection();
-    const updated = await collection.findOneAndUpdate({ _id: uid }, { [action]: { meetings: meetingId } }, { returnDocument: "after" });
+    const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { [action]: { meetings: meetingId } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not ${isAdd ? "add" : "remove"} meeting ID "${meetingId}" ${isAdd ? "to" : "from"} the user with ID "${uid}"`);
     return updated;
 }

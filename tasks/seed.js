@@ -20,7 +20,7 @@ async function seed() {
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
         const lname = faker.person.lastName();
-        const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
+        let username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
 
         const randomSlotGenerator = () => {
             const slots = [];
