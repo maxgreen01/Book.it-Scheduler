@@ -9,7 +9,7 @@ const router = express.Router();
 
 // log in to an existing account
 router
-    .route("/")
+    .route("/login")
     // serve HTML
     .get(async (req, res) => {
         return res.render("login", { title: "Login" });
@@ -28,9 +28,9 @@ router
         }
     });
 
-router.route("/logout").get(async (req, res) => {
+router.route("/signout").get(async (req, res) => {
     req.session.destroy();
-    return res.redirect("/");
+    return res.render("signout", { title: "Signed out" });
 });
 
 // todo login to an existing profile (i.e. "log in") -- which route?

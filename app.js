@@ -76,7 +76,7 @@ app.use((err, req, res, next) => {
 // ================ routing ================
 //
 
-app.post("/login/signup", profilePictureUpload);
+app.post("/signup", profilePictureUpload);
 app.patch("/profile", profilePictureUpload);
 
 configRoutes(app);
