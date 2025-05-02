@@ -69,13 +69,13 @@ app.use(rewriteUnsupportedBrowserMethods);
 // prevent unauthenticated access to meeting and profile routes
 app.use(["/meetings", "/profile", "/create"], async (req, res, next) => {
     if (req.session.user) next();
-    return res.redirect("/login");
+    else res.redirect("/login");
 });
 
 // prevent authenticated users from viewing auth-related routes
 app.use(["/login", "/signup"], async (req, res, next) => {
-    if (req.session.user) return res.redirect("/profile");
-    next();
+    if (req.session.user) res.redirect("/profile");
+    else next();
 });
 
 // Fallback error handler
