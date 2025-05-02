@@ -106,9 +106,11 @@ export function validateStrAsObjectId(id, label) {
 
 //validate that an Object is a valid Availability Object
 export function validateAvailabilityObj(obj, skipDateCheck) {
+    const allowedKeys = ["slots", "date"];
     if (!(obj instanceof Availability)) {
         throw new ValidationError(`${obj} is not a valid Availability Object!`);
     }
+    obj = validateObjectKeys(obj, allowedKeys, "Availability Object");
     if (!(obj.date instanceof Date) && !skipDateCheck) {
         throw new ValidationError(`${date} is not a valid Date Object!`);
     }
@@ -129,6 +131,8 @@ export function validateWeeklyAvailabilityObj(obj) {
     if (!(obj instanceof WeeklyAvailability)) {
         throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
     }
+    const allowedFields = ["arrSlots"];
+    obj = validateObjectKeys(obj, allowedFields, "Weekly Availability Objects");
     if (obj.arrSlots.length !== 7) {
         throw new ValidationError(`${obj.arrSlots} is not a valid arrSlots array of 7 elements!`);
     }
@@ -147,20 +151,25 @@ export function validateWeeklyAvailabilityObj(obj) {
 
 //validate that an Object is a valid Notes object
 export function validateNotesObj(obj) {
+    const allowedKeys = ["uid", "noteString"];
     if (!(obj instanceof Note)) {
         throw new ValidationError(`${obj} is not a valid Notes Object!`);
     }
+    obj = validateObjectKeys(obj, allowedKeys, "Note Object");
     obj.uid = validateUserId(obj.uid);
     obj.noteString = validateAndTrimString(obj.noteString, "Note String", 1, 5000);
 }
 
 //validate that an Object is a valid Responses object
 export function validateResponseObj(obj) {
+    const allowedKeys = ["uid", "noteString"];
     if (!(obj instanceof Response)) {
         throw new ValidationError(`${obj} is not a valid Response Object!`);
     }
+    obj = validateObjectKeys(obj, allowedKeys, "Response Object");
     obj.uid = validateUserId(obj.uid);
-    validateAvailabilityObj(obj.availability);
+    obj.availability = validateAvailabilityObj(obj.availability);
+    return obj;
 }
 
 //
@@ -192,4 +201,15 @@ export function validateImageFileType(fileName, label) {
     const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
     return match[1].toLowerCase(); // return the matched file extension
+}
+
+export function validateObjectKeys(obj, validKeys, label = "Object") {
+    const currKeys = Object.keys(obj);
+    const disAllowedFields = currKeys.filter((key) => {
+        !validKeys.includes(key);
+    });
+    if (disAllowedFields > 0) {
+        throw new ValidationError(`Disallowed fields ${disAllowedFields} in ${label}`);
+    }
+    return obj;
 }
