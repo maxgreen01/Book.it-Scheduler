@@ -65,6 +65,19 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 };
 app.use(rewriteUnsupportedBrowserMethods);
 
+// TODO: move routes of the form /:meetingId to /meetings/:meetingId, else they won't get hit by this
+// prevent unauthenticated access to meeting and profile routes
+app.use(["/meetings", "/profile", "/create"], async (req, res, next) => {
+    if (req.session.user) next();
+    return res.redirect("/login");
+});
+
+// prevent authenticated users from viewing auth-related routes
+app.use(["/login", "/signup"], async (req, res, next) => {
+    if (req.session.user) return res.redirect("/profile");
+    next();
+});
+
 // Fallback error handler
 app.use((err, req, res, next) => {
     console.error("route error:");
