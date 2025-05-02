@@ -1,13 +1,28 @@
 <main>
     <div class="grid-container">
-        <div class="calendar">
+        <div class="calendar-section">
             <h2>Calendar Here</h2>
+            <div class="calendar">
+                <div class="title-header">Month of event?</div>
+                <div class="time-column">1,2,3PM etc...</div>
+                {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
+                <div class="calendar-column">
+                    <div class="calendar-column-header">{{index_of ../days @index}}</div>
+                    <div class="calendar-cells">
+                        {{!-- spawn all 48 timeslots --}} {{#each this}} {{!-- color is based off of the matrix values in each timeslot cell --}}
+                        <div class="timeslot" style="background-color: rgba(128, 0, 128, {{multiplyOpacity this}});">{{this}}</div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/each}}
+            </div>
         </div>
-        <div class="notes">
+
+        <div class="notes-section">
             <h2>Notes</h2>
             <p>Add a private note.</p>
         </div>
-        <div class="comments">
+        <div class="comments-section">
             <h2>Comments</h2>
             {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
             <p>{{comments.length}} comments</p>
@@ -20,7 +35,7 @@
             </div>
             {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
             <p>0 comments</p>
-            <p>Hint: try me with test meeting Id test123</p>
+            <p>Hint: try me with test meeting Id 1234abcd1234abcd1234abcd</p>
             {{/if}}
         </div>
     </div>

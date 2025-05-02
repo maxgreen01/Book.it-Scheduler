@@ -4,6 +4,18 @@ import { renderError } from "../utils/routeUtils.js";
 
 const router = express.Router();
 
+const testMatrix = [
+    //random generated garbage meeting 7x48
+    [1, 0, 2, 0, 1, 1, 0, 3, 1, 2, 0, 0, 2, 1, 0, 0, 1, 1, 2, 0, 0, 0, 1, 1, 3, 1, 1, 2, 0, 0, 1, 1, 4, 2, 0, 0, 1, 1, 2, 0, 3, 1, 0, 0, 1, 2, 1, 0],
+    [0, 1, 2, 1, 1, 0, 0, 1, 2, 0, 1, 3, 1, 1, 0, 0, 2, 0, 1, 1, 1, 3, 1, 0, 0, 1, 2, 0, 1, 1, 2, 0, 3, 1, 0, 1, 0, 2, 1, 4, 0, 0, 1, 2, 0, 1, 1, 0],
+    [0, 2, 1, 1, 0, 3, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 0, 2, 1, 1, 3, 0, 1, 0, 1, 2, 0, 0, 1, 1, 2, 0, 4, 1, 0, 2, 0, 1, 0, 3, 1, 1, 0, 0, 2, 1, 1, 0],
+    [1, 0, 0, 1, 2, 1, 3, 0, 0, 1, 1, 0, 2, 1, 0, 0, 2, 1, 1, 0, 3, 0, 1, 1, 2, 0, 1, 1, 0, 1, 3, 0, 2, 0, 0, 1, 1, 0, 2, 4, 0, 1, 1, 2, 0, 0, 1, 1],
+    [0, 1, 1, 0, 2, 1, 1, 0, 0, 1, 2, 0, 1, 0, 3, 1, 1, 2, 0, 0, 1, 1, 0, 3, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 3, 1, 1, 0, 0, 4, 1, 2, 0, 1, 1, 0, 2, 1],
+    [1, 0, 2, 1, 0, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 3, 1, 0, 0, 2, 1, 1, 0, 0, 1, 2, 0, 4, 1, 0, 2, 1, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 2, 1, 1, 0],
+    [0, 1, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 3, 0, 1, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 3, 1, 0, 1, 1, 2, 0, 0, 1, 0, 4, 1, 1, 0, 2, 1, 0, 3, 1, 1, 0, 0, 1],
+];
+const testDays = ["S", "M", "Tu", "W", "Th", "F", "S"];
+
 // landing page
 router.route("/").get(async (req, res) => {
     return res.render("home", { title: "Book.it Meeting Scheduler" });
@@ -18,11 +30,12 @@ router
 
         try {
             //plug meeting comments into page from db
-            // const comments = await getAllComments();
             const comments = await getMeetingComments(meetingId);
             res.render("viewMeeting", {
                 title: "Test Meeting",
                 comments: comments,
+                days: testDays,
+                meeting: testMatrix,
             });
         } catch (e) {
             return renderError(res, 404, e);

@@ -7,6 +7,12 @@ import express from "express";
 import configRoutes from "./routes/index.js";
 import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
+import Handlebars from "handlebars";
+
+//constant defining the darkest a shaded box on the calendar can be
+// MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
+// FIXME BL: There is maybe a way to dynamically update this based on # meeting attendees
+const MAX_USERS = 4;
 
 const app = express();
 
@@ -35,6 +41,25 @@ app.set("view engine", "handlebars");
 //
 // ================ custom middlewares ================
 //
+
+// Little handlebars helper to multiply inline the alpha value of the cell background
+// Ex: rgba(128, 0, 128, (opacity value)) replace value with {{multiplyOpacity 4}} where 0 is blank
+Handlebars.registerHelper("multiplyOpacity", function (value) {
+    const opacity = Math.min(1, value / MAX_USERS);
+    return opacity.toFixed(2);
+});
+
+// Handlebar helper to grab elements from potentially out-of-block arrays by index
+// example, grab day array elements while iterating under scope of meeting arrays
+// checkout: https://stackoverflow.com/a/18763906
+/*
+
+days: [...] <- access this by index (days[i]) out of scope
+meetings: [ [@index property refers to this while iterating], [...], [...], ...]
+ */
+Handlebars.registerHelper("index_of", function (context, index) {
+    return context && context[index];
+});
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     // If the user posts to the server with a property called _method, rewrite the request's method to be that method

@@ -84,15 +84,13 @@ async function seed() {
     for (let i = 0; i < 8; i++) {
         // randomly select a user and meeting for this comment
         const uid = faker.helpers.arrayElement(userIds);
-        const meeting = "test123"; //for the test123 meeting
+        const meeting = "1234abcd1234abcd1234abcd"; //for the test meeting
 
         const comment = await commentFunctions.createComment({
             uid: uid,
             meetingId: meeting,
             body: faker.lorem.sentences({ min: 2, max: 4 }),
         });
-
-        console.log(comment.meetingId);
 
         // lambda to show only a short bit of the comment
         const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
