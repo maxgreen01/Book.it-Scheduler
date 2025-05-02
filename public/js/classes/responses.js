@@ -5,10 +5,9 @@ export class Response {
     uid = null;
     availability = null;
 
-    //TODO: What does suid mean??????
-    constructor(suid, availabilityArr) {
-        validateStrAsObjectId(suid, "Uid for Response Object");
-        this.uid = suid;
+    constructor(uid, availabilityArr) {
+        validateStrAsObjectId(uid, "Uid for Response Object");
+        this.uid = uid;
         validateArrayElements(AvailArray, "Availability Array", (elem) => {
             validateAvailabilityObj(elem);
         });
