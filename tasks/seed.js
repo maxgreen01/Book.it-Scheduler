@@ -8,7 +8,7 @@ import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
 import { ObjectId } from "mongodb";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
-import { createMeeting, modifyNoteOfMeeting } from "../data/meetings.js";
+import { createMeeting, getMeetingById, modifyNoteOfMeeting } from "../data/meetings.js";
 import { ValidationError } from "../utils/validation.js";
 import { timeEnd } from "console";
 import { Note } from "../public/js/classes/notes.js";
@@ -113,7 +113,7 @@ async function seed() {
         }
         // Uncomment the below when we have createMeeting()
 
-        console.log(`Adding meeting #${i} with name: ${addedMeeting.name}`);
+        console.log(`Adding meeting #${i}: ${addedMeeting.name}`);
         meetingIds.push(addedMeeting._id);
 
         // const meeting = await meetingFuncs.createMeeting(
@@ -130,15 +130,13 @@ async function seed() {
     const commentIds = [];
     for (let i = 0; i < N_COM; i++) {
         // randomly select a user and meeting for this comment
-        const uid = faker.helpers.arrayElement(userIds);
-        // const meeting = faker.helpers.arrayElement(meetingIds);
-
-        // FIXME: replace below with above when we have meeting IDs working!
-        // -- BL
-        const meeting = new ObjectId().toString();
+        const meeting = faker.helpers.arrayElement(meetingIds);
+        let meetingUser = await getMeetingById(meeting);
+        meetingUser = meetingUser.users;
+        meetingUser = faker.helpers.arrayElement(meetingUser);
 
         const comment = await commentFunctions.createComment({
-            uid: uid,
+            uid: meetingUser,
             meetingId: meeting,
             body: faker.lorem.sentences({ min: 2, max: 4 }),
         });

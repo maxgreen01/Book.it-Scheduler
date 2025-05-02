@@ -73,7 +73,7 @@ export class Availability {
 
 //Default Availability Object
 //Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
-//FIX ME: When initializing the Weekly Availability Object in the user's profile page make sure to fill it in as 1s!
+//FIXME: When initializing the Weekly Availability Object in the user's profile page make sure to fill it in as 1s!
 export class WeeklyAvailability {
     arrSlots = [];
 
