@@ -24,7 +24,8 @@ router.route("/").get(async (req, res) => {
 router
     .route("/:meetingId")
     .get(async (req, res) => {
-        //NOTE: dont do validation for now so we can use test Ids
+        // TODO: Move the :meetingId routes under /meetings
+        // NOTE: dont do validation for now so we can use test Ids
         // can render a 400 with route-level validation once we do
         const meetingId = req.params.meetingId;
 
