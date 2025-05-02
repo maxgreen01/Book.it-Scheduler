@@ -1,4 +1,4 @@
-import { validateArrayElements, validateAvailabilityObj, validateStrAsObjectId } from "../clientValidation.js";
+import { validateArrayElements, validateAvailabilityObj, validateUserId } from "../clientValidation.js";
 import { Availability } from "./availabilities.js";
 
 export class Response {
@@ -6,7 +6,7 @@ export class Response {
     availability = null;
 
     constructor(uid, availabilityArr) {
-        validateStrAsObjectId(uid, "Uid for Response Object");
+        validateUserId(uid, "UID for Response Object");
         this.uid = uid;
         validateArrayElements(availabilityArr, "Availability Array", (elem) => {
             validateAvailabilityObj(elem);

@@ -8,7 +8,7 @@ export class Note {
     noteString = null;
 
     constructor(uid, newNote) {
-        uid = validateStrAsObjectId(uid);
+        uid = validateUserId(uid);
         this.uid = uid;
         newNote = validateAndTrimString(newNote, "Note String", 1, 5000);
         this.noteString = newNote;

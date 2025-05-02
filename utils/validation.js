@@ -44,7 +44,7 @@ export async function validResponseObjExtended(responseObj) {
 
 //Normal validation on the Note Object, but also use the data function to check if the Response Object contains a valid ID
 export async function validNoteObjExtended(noteObj) {
-    clientValidation.validateNoteObj(noteObj);
+    clientValidation.validateNotesObj(noteObj);
     const userExists = await isUserIdTaken(noteObj.uid);
     if (!userExists) throw new Error(`User with id ${noteObj.uid} does not exist!`);
     return noteObj;
