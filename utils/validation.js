@@ -16,6 +16,15 @@ export async function isUserIdTaken(uid) {
     return doesUserExist(uid);
 }
 
+// Throw an error if a string is not valid or is not a valid `uid`.
+// Returns a MongoDB query property defining a regular expression from a `uid`
+// The expression treats the username as case insensitive when used in queries
+// USAGE: collection.findOne({ userId: uidToCaseInsensitive(uid) })
+export function uidToCaseInsensitive(uid) {
+    uid = clientValidation.validateUserId(uid);
+    return { $regex: new RegExp(`^${uid}$`, "i") };
+}
+
 // Throw an error if a string is not valid or is not a valid ObjectId.
 // Return the converted ObjectID object if it is valid.
 export function convertStrToObjectId(id, label) {

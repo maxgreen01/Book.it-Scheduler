@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
 import { ObjectId } from "mongodb";
+import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -19,7 +20,36 @@ async function seed() {
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
         const lname = faker.person.lastName();
-        const username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
+        let username = `${fname}${lname}${faker.number.int({ max: 1000 })}`.replaceAll(/[-']/g, ""); // remove special characters from username
+
+        const randomSlotGenerator = () => {
+            const slots = [];
+
+            // First 18 elements: 20% probability (less probability for 12am-9am)
+            for (let i = 0; i < 18; i++) {
+                slots.push(Math.random() < 0.2 ? 1 : 0);
+            }
+
+            // Next 26 elements: 70% probability (more probability of being available 9am-10pm)
+            for (let i = 0; i < 26; i++) {
+                slots.push(Math.random() < 0.7 ? 1 : 0);
+            }
+
+            // Last 4 elements: 50% probability (50% probability of being available from 10pm onward)
+            for (let i = 0; i < 4; i++) {
+                slots.push(Math.random() < 0.5 ? 1 : 0);
+            }
+
+            return slots;
+        };
+
+        const generateWeeklyAvailability = () => {
+            const weeklySlots = [];
+            for (let i = 0; i < 7; i++) {
+                weeklySlots.push(randomSlotGenerator());
+            }
+            return weeklySlots;
+        };
 
         //FIXME: dont actually add user to db since its currently broken
 
@@ -31,7 +61,7 @@ async function seed() {
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
             profilePicture: `${username}.jpg`,
-            availability: [0, 0, 0, 0, 0, 0, 0], // todo add random Timeslot objects
+            availability: new WeeklyAvailability(generateWeeklyAvailability()),
         });
         userIds.push(user._id);
     }

@@ -11,7 +11,7 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1, 30));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", 0, 300);
     if (!allowUndefined || typeof profilePicture !== "undefined") profilePicture = validation.validateAndTrimString(profilePicture, "Profile Picture");
-    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateArrayElements(availability, "Availability", (timeslot) => timeslot, 7); // todo - validate Timeslot objects
+    if (!allowUndefined || typeof availability !== "undefined") availability = validation.validateWeeklyAvailabilityObj(availability);
 
     // ============= construct the document =============
     const user = {
@@ -38,7 +38,7 @@ export function createCommentDocument({ uid, meetingId, body }) {
 
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    body = validation.validateAndTrimString(body, "Comment Body", 1, 500);
+    body = validation.validateAndTrimString(body, "Comment Body", 1, 5000);
     const timestamp = new Date();
 
     // create and return document
