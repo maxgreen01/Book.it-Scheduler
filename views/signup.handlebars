@@ -1,5 +1,6 @@
 <main>
     <h1>{{title}}</h1>
+    <p id="error"></p>
     <form method="POST" name="signup" id="signup" enctype="multipart/form-data">
         <label for="firstNameInput">First Name:</label>
         <input name="firstName" id="firstNameInput" type="text" />
@@ -22,3 +23,5 @@
         <input type="submit" value="Sign up" />
     </form>
 </main>
+
+<script type="module" src="/public/js/validateAuthForms.js"></script>
