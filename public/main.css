@@ -4,14 +4,13 @@
 body {
     margin: 0 auto;
     font-family: Arial, sans-serif;
-    /* line-height: 1.6; */
     background-color: #f8f8f8;
     color: #333;
 }
 
 /* Nav bar rules */
 header {
-    background: #6a5acd;
+    background-color: #6a5acd;
     color: white;
     width: 100%;
 }
@@ -53,7 +52,7 @@ nav a:hover {
     color: #ff7f50;
 }
 
-/* reformat navbar on squished screen */
+/* reformat navbar when screen gets squished */
 @media (max-width: 700px) {
     .bar {
         flex-direction: column;
@@ -71,33 +70,129 @@ nav a:hover {
 /* View meeting page */
 .grid-container {
     display: grid;
-    grid-template-columns: 1.5fr 1fr; /* Two columns */
-    grid-template-rows: 1fr 1.5fr; /* Two rows */
-    height: 100vh; /* Full height */
-    gap: 10px;
-    padding: 10px 20px;
+    grid-template-columns: 3fr 1fr; /* 3/4 and 1/4 width */
+    grid-template-rows: auto auto 300px;
+    grid-template-areas:
+        "title-bar title-bar"
+        "calendar-section response-section"
+        "comments-section notes-section";
+    gap: 1rem;
+    margin: 2rem;
 }
+.title-bar {
+    overflow: hidden;
+    grid-area: title-bar;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-bottom: 2px solid #d1d8e0;
+    border-radius: 8px;
+}
+.calendar-section,
+.notes-section,
+.comments-section,
+.response-section {
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 1rem;
+    border: 1px solid #d1d8e0;
+}
+
 .calendar-section {
-    grid-row: 1 / -1; /* Spans all rows */
-    background: #ffffff;
-    border: 1px solid #d1d8e0;
-    border-radius: 8px;
-    padding: 15px;
-}
-.comments-section {
-    background: #ffffff;
-    border: 1px solid #d1d8e0;
-    border-radius: 8px;
-    padding: 15px;
-    height: 100%; /* Specifies a fixed height */
-    overflow-y: auto; /* Enables scrolling */
-    scroll-behavior: smooth;
+    grid-area: calendar-section;
+    overflow-x: auto;
 }
 .notes-section {
-    background: #ffffff;
-    border: 1px solid #d1d8e0;
-    border-radius: 8px;
-    padding: 15px;
+    overflow: auto;
+    grid-area: notes-section;
+}
+.comments-section {
+    overflow: auto;
+    grid-area: comments-section;
+}
+
+.response-section {
+    grid-area: response-section;
+}
+
+/* calendar elements */
+.calendar {
+    display: grid;
+    grid-template-columns: 100px repeat(var(--day-count), minmax(100px, auto)); /* pass --day-count through a style tag in handlebars */
+    grid-template-rows: auto;
+    background-color: #ffffff;
+    width: max-content;
+}
+
+/* contains calendar element as one entity */
+.calendar-wrapper {
+    width: 100%;
+    /* padding-bottom: 0.5rem; */
+}
+
+/* header spans whole element */
+.calendar-title-header {
+    grid-column: 2 / -1; /* skip first row */
+    grid-row: 1;
+    background-color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #d1d8e0;
+}
+
+/* Time column next to the calendar */
+.time-column {
+    grid-row: 2;
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+}
+.time-column-timestamp {
+    text-align: right;
+    vertical-align: top;
+    font-size: 12px;
+    height: 12px;
+}
+
+/* Each Day gets a column on the grid */
+.calendar-column {
+    grid-row: 2;
+    grid-column: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #d1d8e0;
+    border-bottom: 1px solid #d1d8e0;
+}
+/* put a border on the last column */
+.calendar-column:nth-last-of-type(1) {
+    border-right: 1px solid #d1d8e0;
+}
+
+/*  Section of day column containing the day header */
+.calendar-column-header {
+    background-color: #f5f5f5;
+    text-align: center;
+    height: 18px;
+    font-weight: bold;
+    padding: 0.25rem;
+    border-bottom: 1px solid #d1d8e0;
+}
+#time-column-header {
+    background-color: #ffffff;
+    border: none;
+}
+
+/* Section of day column containing the slots */
+.calendar-cells {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* the actual cells of the columns */
+.timeslot {
+    height: 12px;
+    /* border: 1px solid #d1d8e0; */
+    overflow: hidden;
 }
 
 /* Comment objects */
@@ -106,7 +201,6 @@ nav a:hover {
     padding: 10px 0;
     margin-bottom: 10px;
 }
-
 .comment:last-child {
     border-bottom: none;
 }

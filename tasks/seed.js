@@ -110,7 +110,7 @@ async function seed() {
 
     // TEST MEETING BRANCH
 
-    // create comments for meeting test123
+    // create comments for meeting test
     for (let i = 0; i < 8; i++) {
         // randomly select a user and meeting for this comment
         const uid = faker.helpers.arrayElement(userIds);

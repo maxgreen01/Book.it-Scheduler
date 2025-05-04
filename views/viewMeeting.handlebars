@@ -1,27 +1,45 @@
 <main>
     <div class="grid-container">
+        {{!-- header for meeting details --}}
+        <div class="title-bar">
+            <h1>Meeting View Page</h1>
+        </div>
+
+        {{!-- Container for calendar element + details --}}
         <div class="calendar-section">
             <h2>Calendar Here</h2>
-            <div class="calendar">
-                <div class="title-header">Month of event?</div>
-                <div class="time-column">1,2,3PM etc...</div>
-                {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
-                <div class="calendar-column">
-                    <div class="calendar-column-header">{{index_of ../days @index}}</div>
-                    <div class="calendar-cells">
-                        {{!-- spawn all 48 timeslots --}} {{#each this}} {{!-- color is based off of the matrix values in each timeslot cell --}}
-                        <div class="timeslot" style="background-color: rgba(128, 0, 128, {{multiplyOpacity this}});">{{this}}</div>
+
+            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}} {{!-- This is the only fix I could find for css grid acting weird --}}
+            <div class="calendar-wrapper">
+                <div class="calendar" style="--day-count: {{meeting.length}}">
+                    <div class="calendar-title-header">Header details here</div>
+                    <div class="time-column">
+                        <div id="time-column-header" class="calendar-column-header">{{index_of ../days @index}}</div>
+                        {{#each timeColumn}}
+                        <div class="time-column-timestamp">{{this}}</div>
                         {{/each}}
                     </div>
+                    {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
+                    <div class="calendar-column">
+                        <div class="calendar-column-header">{{index_of ../days @index}}</div>
+                        <div class="calendar-cells">
+                            {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
+                            <div class="timeslot" style="background-color: rgba(128, 0, 128, {{multiplyOpacity this}});"></div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
                 </div>
-                {{/each}}
             </div>
         </div>
 
-        <div class="notes-section">
-            <h2>Notes</h2>
-            <p>Add a private note.</p>
+        {{!-- Container for filling in respondee info --}}
+        <div class="response-section">
+            <h2>Responses & Other</h2>
+            <p>fill remaining space</p>
         </div>
+
+        {{!-- scrollable container for comments --}}
         <div class="comments-section">
             <h2>Comments</h2>
             {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
@@ -37,6 +55,12 @@
             <p>0 comments</p>
             <p>Hint: try me with test meeting Id 1234abcd1234abcd1234abcd</p>
             {{/if}}
+        </div>
+
+        {{!-- Container for note --}}
+        <div class="notes-section">
+            <h2>Notes</h2>
+            <p>Add a private note.</p>
         </div>
     </div>
 </main>
