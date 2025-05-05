@@ -1,6 +1,6 @@
 //Data functions for Comment objects.
 import { commentsCollection } from "../config/mongoCollections.js";
-import { convertStrToObjectId, validateAndTrimString, validateStrAsObjectId, validateUserId, validMeeting } from "../utils/validation.js";
+import { convertStrToObjectId, isUserIdTaken, uidToCaseInsensitive, validateAndTrimString, validateStrAsObjectId, validateUserId, validMeeting } from "../utils/validation.js";
 import { createCommentDocument } from "../public/js/documentCreation.js";
 import { getMeetingById } from "./meetings.js";
 export { createCommentDocument } from "../public/js/documentCreation.js";
@@ -47,11 +47,12 @@ export async function getAllComments() {
 
 // get all comments that a user has posted
 export async function getUserComments(uid) {
-    //TODO MG: Good idea to query users DB if UID is a real ID
-    //Throw if it isn't.
+    //Throw if uid is not a real user ID
     uid = validateUserId(uid);
+    if (!(await isUserIdTaken(uid))) throw new Error(`User ${uid} not found`);
+
     const collection = await commentsCollection();
-    let comments = await collection.find({ uid: uid }).toArray();
+    let comments = await collection.find({ uid: uidToCaseInsensitive(uid) }).toArray();
     if (!comments) throw new Error(`Could not get user ${uid}'s comments`);
 
     //return all comments with id's mapped to strings
@@ -95,7 +96,7 @@ export async function deleteComment(id) {
 //edit and save new text to an existing comment, returning the updated comment
 export async function updateComment(id, newBody) {
     id = convertStrToObjectId(id, "Comment ID");
-    newBody = validateAndTrimString(newBody, "Comment Body", false);
+    newBody = validateAndTrimString(newBody, "Comment Body", 1, 5000);
     let timestamp = new Date();
 
     const collection = await commentsCollection();
@@ -115,6 +116,7 @@ export async function reactToComment(id, uid, reaction) {
     }
 
     uid = validateUserId(uid);
+    if (!(await isUserIdTaken(uid))) throw new Error(`User ${uid} not found`);
     const comment = await getCommentById(id);
     const commentId = convertStrToObjectId(comment._id);
     const collection = await commentsCollection();

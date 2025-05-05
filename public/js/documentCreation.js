@@ -39,7 +39,7 @@ export function createCommentDocument({ uid, meetingId, body }) {
 
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    body = validation.validateAndTrimString(body, "Comment Body", 1, 500);
+    body = validation.validateAndTrimString(body, "Comment Body", 1, 5000);
     const timestamp = new Date();
     // create and return document
     const comment = {
