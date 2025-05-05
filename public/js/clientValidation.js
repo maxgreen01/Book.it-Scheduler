@@ -1,5 +1,4 @@
 import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-import { Note } from "./classes/notes.js";
 import { Response } from "./classes/responses.js";
 
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
@@ -130,6 +129,13 @@ export function isSameDay(firstDate, secondDate) {
     return firstDate.getFullYear() === secondDate.getFullYear() && firstDate.getMonth() === secondDate.getMonth() && firstDate.getDate() === secondDate.getDate();
 }
 
+// Validate that an object is a valid JS Date Object.
+// Return the original object if it is valid.
+export function validateDateObj(obj) {
+    if (!(obj instanceof Date)) throw new ValidationError(`${obj} is not a valid Date Object`);
+    return obj;
+}
+
 // Validate that an object is a valid Availability Object.
 // If `skipDateCheck == true`, don't validate that `obj.date` is a valid JS Date Object.
 // Return the validated object if it is valid.
@@ -140,16 +146,9 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
     // FIXME - maybe make this (and the similar funcs) Duck-Typed, i.e. remove the instanceof checks
     //       this would allow reusing these functions in the class constructors
     if (!(obj instanceof Availability)) throw new ValidationError(`${obj} is not a valid Availability Object`);
-    if (!(obj.date instanceof Date) && !skipDateCheck) throw new ValidationError(`${obj.date} is not a valid Date Object`);
+    if (!skipDateCheck) obj.date = validateDateObj(obj.date);
 
-    obj.slots = validateArrayElements(
-        obj.slots,
-        "Availability Object's Slots",
-        (slot) => {
-            return validateIntRange(slot, "Availability Object's Slot", 0);
-        },
-        48
-    );
+    obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
 
     // FIXME - if using Duck Typing, maybe we can directly construct the Availability Object here
     return obj;
@@ -163,30 +162,15 @@ export function validateWeeklyAvailabilityObj(obj) {
 
     if (!(obj instanceof WeeklyAvailability)) throw new ValidationError(`${obj} is not a valid WeeklyAvailability Object`);
 
-    obj.days = validateArrayElements(
-        obj.days,
-        "WeeklyAvailability Days",
-        (availabilityObj) => {
-            return validateAvailabilityObj(availabilityObj, true);
-        },
-        7
-    );
+    obj.days = validateArrayElements(obj.days, "WeeklyAvailability Days", (availabilityObj) => validateAvailabilityObj(availabilityObj, true), 7);
 
     return obj;
 }
 
-// Validate that an object is a valid Notes object.
-// Return the validated object if it is valid.
-export function validateNotesObj(obj) {
-    const allowedKeys = ["uid", "noteString"];
-    obj = validateObjectKeys(obj, allowedKeys, "Note Object");
-
-    if (!(obj instanceof Note)) throw new ValidationError(`${obj} is not a valid Notes Object`);
-
-    obj.uid = validateUserId(obj.uid);
-    obj.noteString = validateAndTrimString(obj.noteString, "Note String", 1, 5000);
-
-    return obj;
+// Validate that a string is a valid Note body.
+// Return the validated body if it is valid.
+export function validateNoteBody(str) {
+    return validateAndTrimString(str, "Note Body", 1, 5000);
 }
 
 // Validate that an object is a valid Responses Object.
@@ -199,17 +183,12 @@ export function validateResponseObj(obj, allowedDates = undefined) {
     if (!(obj instanceof Response)) throw new ValidationError(`${obj} is not a valid Response Object`);
 
     obj.uid = validateUserId(obj.uid);
-    obj.availabilities = validateArrayElements(obj.availabilities, "Response Object's Availability Array", (elem) => {
-        return validateAvailabilityObj(elem);
-    });
+    obj.availabilities = validateArrayElements(obj.availabilities, "Response Object's Availability Array", (elem) => validateAvailabilityObj(elem));
 
     if (allowedDates !== undefined) {
         // Make sure the `date` of each Availability object is a valid date, with no duplicate dates
 
-        validateArrayElements(allowedDates, "Allowed Response Dates", (date) => {
-            // FIXME this check is performed somewhat often, but how could it be made into a helper function?
-            if (!(date instanceof Date)) throw new ValidationError(`${date} is not a valid Date Object`);
-        });
+        allowedDates = validateArrayElements(allowedDates, "Allowed Response Dates", (date) => validateDateObj(date));
 
         // make sure each of the Availability objects has a `date` corresponding to one of the specified dates.
         // FIXME make sure there aren't multiple Availability objects with the same Date -- could remove from `allowedDates`?

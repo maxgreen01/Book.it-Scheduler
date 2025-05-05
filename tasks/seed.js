@@ -7,9 +7,7 @@ import bcrypt from "bcrypt";
 import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
-import { createMeeting, getMeetingById, modifyNoteOfMeeting } from "../data/meetings.js";
-import { ValidationError } from "../utils/validation.js";
-import { Note } from "../public/js/classes/notes.js";
+import { createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -73,14 +71,11 @@ async function seed() {
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
         const changeDateToStart = (date) => {
-            if (!(date instanceof Date)) {
-                throw new ValidationError(`Date ${date} is not a valid date object!`);
-            }
             return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
         };
 
         const randomDate = changeDateToStart(faker.date.future());
-        let meetingDates = [];
+        const meetingDates = [];
 
         const meetingLengthDays = faker.number.int({ min: 1, max: 7 });
         for (let i = 0; i < meetingLengthDays; i++) {
@@ -100,14 +95,13 @@ async function seed() {
             dates: meetingDates,
             timeStart: meetingStart,
             timeEnd: meetingEnd,
-            users: meetingUsers,
         };
 
         const addedMeeting = await createMeeting(newMeeting);
 
         for (let user of meetingUsers) {
-            const newNote = new Note(user, faker.lorem.sentences(faker.number.int({ min: 3, max: 10 })));
-            await modifyNoteOfMeeting(addedMeeting._id, newNote);
+            const note = faker.lorem.sentences(faker.number.int({ min: 3, max: 10 }));
+            await updateMeetingNote(addedMeeting._id, user, note);
         }
         // Uncomment the below when we have createMeeting()
 
@@ -128,14 +122,14 @@ async function seed() {
     const commentIds = [];
     for (let i = 0; i < N_COM; i++) {
         // randomly select a user and meeting for this comment
-        const meeting = faker.helpers.arrayElement(meetingIds);
-        let meetingUser = await getMeetingById(meeting);
-        meetingUser = meetingUser.users;
-        meetingUser = faker.helpers.arrayElement(meetingUser);
+        const meetingId = faker.helpers.arrayElement(meetingIds);
+        const meeting = await getMeetingById(meetingId);
+        // fixme uncomment when response submission (and therefore updating the `users` property) is implemented
+        /* const userId = faker.helpers.arrayElement(meeting.users);
 
         const comment = await commentFunctions.createComment({
-            uid: meetingUser,
-            meetingId: meeting,
+            uid: userId,
+            meetingId: meetingId,
             body: faker.lorem.sentences({ min: 2, max: 4 }),
         });
 
@@ -143,7 +137,7 @@ async function seed() {
         const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
 
         console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
-        commentIds.push(comment._id);
+        commentIds.push(comment._id); */
     }
 
     console.log("Finished seeding the database!");

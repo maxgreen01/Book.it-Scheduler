@@ -10,15 +10,11 @@ export class Response {
 
     constructor(uid, availabilityArr) {
         this.uid = validateUserId(uid, "UID for Response Object");
-        this.availabilities = validateArrayElements(availabilityArr, "Availability Array", (elem) => {
-            return validateAvailabilityObj(elem);
-        });
+        this.availabilities = validateArrayElements(availabilityArr, "Availability Array", (elem) => validateAvailabilityObj(elem));
     }
 
     static mergeResponsesToAvailability(responseArr, startTime = 0, endTime = 48) {
-        responseArr = validateArrayElements(responseArr, "Array Availability Objects", (availability) => {
-            return validateAvailabilityObj(availability);
-        });
+        responseArr = validateArrayElements(responseArr, "Array Availability Objects", (availability) => validateAvailabilityObj(availability));
 
         // FIXME - only merge availabilities that correspond to the same date -- maybe using `isSameDate` in validation file
         let availabilityObjs;

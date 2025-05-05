@@ -4,28 +4,22 @@ import * as validation from "../utils/validation.js";
 import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
-import { ObjectId } from "mongodb";
 import { Response } from "../public/js/classes/responses.js";
 
 // Create a meeting object save it to the DB, and then return the added object
-export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }) {
-    const ownerExists = await validation.isUserIdTaken(owner);
-    if (!ownerExists) {
-        throw new Error(`User ID: ${owner} could not be found as a valid user!`);
-    }
-    const meeting = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus, bookedTime, responses, notes });
-    for (let user of users) {
-        const userExists = await validation.isUserIdTaken(user);
-        if (!userExists) {
-            throw new Error(`User ID: ${user} could not be found as a valid user!`);
-        }
-    }
-    for (let response of responses) {
-        validation.validResponseObjExtended(response);
-    }
-    for (let note of notes) {
-        validation.validNoteObjExtended(note);
-    }
+export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd }) {
+    // set up the document that will be saved to the DB
+    const meeting = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd });
+    meeting.bookingStatus = 0; // todo make an enum for status code meanings
+    meeting.bookedTime = null;
+    meeting.users = [];
+    meeting.responses = [];
+    meeting.notes = {};
+
+    // make sure owner actually exists
+    await validation.validateUserExists(meeting.owner);
+
+    // run the DB operation
     const collection = await meetingsCollection();
     const insertResponse = await collection.insertOne(meeting);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`Could not add meeting "${meeting.name}" to the database`);
@@ -53,42 +47,38 @@ export async function getMeetingById(mid) {
     return meeting;
 }
 
-// check whether a meeting exists with the specified ID
-export async function doesMeetingExist(mid) {
-    try {
-        await getMeetingById(mid);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
 // delete the meeting with the passed in mid parameter
 export async function deleteMeeting(mid) {
-    mid = await validation.validMeeting(mid);
+    // make sure meeting actually exists
+    mid = await validation.validateMeetingExists(mid);
+
     const collection = await meetingsCollection();
     const removed = await collection.findOneAndDelete({ _id: validation.convertStrToObjectId(mid) });
-    if (!removed) throw new Error(`Could not delete the meeting with ID: ${mid}`);
+    if (!removed) throw new Error(`Could not delete the meeting with ID "${mid}"`);
     removed._id = removed._id.toString();
     return removed;
 }
 
-//update certain fields (only the non undefined ones) with the meeting with the Object ID
-//returns the new Meeting Object
-export async function updateMeeting(mid, { name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus, bookedTime, responses, notes }) {
-    mid = await validation.validMeeting(mid);
-    const collection = await meetingsCollection();
-    const newMeetingFields = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus, bookedTime, responses, notes }, true);
+// Update certain fields (only the non-`undefined` ones) of the meeting with the specified ID.
+// Return the updated meeting object if operation is successful.
+export async function updateMeeting(mid, { name, description, duration }) {
+    // make sure meeting actually exists
+    mid = await validation.validateMeetingExists(mid);
 
-    const updated = await collection.findOneAndUpdate({ _id: ObjectId(mid) }, { $set: newMeetingFields }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    const collection = await meetingsCollection();
+    const newFields = createMeetingDocument({ name, description, duration }, true);
+
+    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: newFields }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }
 
 //Adds the array of responseObjs to the specified meeting with the id
 export async function addResponseToMeeting(mid, responseObjArr) {
-    mid = await validation.validMeeting(mid);
+    // make sure meeting actually exists
+    mid = await validation.validateMeetingExists(mid);
+
     const collection = await meetingsCollection();
     const foundMeeting = await getMeetingById(mid);
     let responses = foundMeeting.responses;
@@ -96,33 +86,34 @@ export async function addResponseToMeeting(mid, responseObjArr) {
         validation.validateResponseObj(newResponse);
         responses.push(newResponse);
     }
-    mid = validation.convertStrToObjectId(mid);
-    const updated = await collection.findOneAndUpdate({ _id: mid }, { $set: { responses } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }
 
-//Add the new note, and filter out the old note of that user had a note
-export async function modifyNoteOfMeeting(mid, noteObj) {
-    mid = await validation.validMeeting(mid);
-    noteObj = await validation.validNoteObjExtended(noteObj);
+// Update (or add) a user's note on a meeting
+export async function updateMeetingNote(mid, uid, body) {
+    // make sure meeting and user actually exist
+    mid = await validation.validateMeetingExists(mid);
+    uid = await validation.validateUserExists(uid);
+
+    body = validation.validateNoteBody(body);
+
     const collection = await meetingsCollection();
-    const foundMeeting = await getMeetingById(mid);
-    let notes = foundMeeting.notes;
-    notes.filter((note) => {
-        return note.uid !== noteObj.uid;
-    });
-    notes.push(noteObj);
-    mid = validation.convertStrToObjectId(mid);
-    const updated = await collection.findOneAndUpdate({ _id: mid }, { $set: { notes } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not update the meeting with ID: ${mid}`);
+    // todo make sure case-insensitivity works as intended here
+    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { [`notes.${uid}`]: body } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }
+
+// todo add data func for editing booking status (including bookingTime and cancellation)
 
 export async function findCommonAvailabilityOfMeeting(mid) {
-    mid = validation.validMeeting(mid);
+    // make sure meeting actually exists
+    mid = await validation.validateMeetingExists(mid);
+
     const foundMeeting = await getMeetingById(mid);
     return Response.mergeResponsesToAvailability(foundMeeting.responses, foundMeeting.timeStart, foundMeeting.timeEnd);
 }

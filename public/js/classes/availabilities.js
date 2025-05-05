@@ -1,4 +1,4 @@
-import { isSameDay, validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
+import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
 // Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
 const enforceAllSameDate = (availabilityArray, commonDate) => {
@@ -23,19 +23,10 @@ export class Availability {
         // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
 
         // validate the time slots
-        intArray = validateArrayElements(
-            intArray,
-            "Slots Array",
-            (elem) => {
-                return validateIntRange(elem, "Availability Slot Integer", 0);
-            },
-            48
-        );
+        intArray = validateArrayElements(intArray, "Slots Array", (elem) => validateIntRange(elem, "Availability Slot Integer", 0), 48);
 
-        //OPTIONAL: Check if date is a valid date object
-        if (!(date instanceof Date) && !skipDateCheck) {
-            throw new ValidationError(`${date} is not a valid Date Object!`);
-        }
+        // OPTIONAL: Check if date is a valid date object
+        if (!skipDateCheck) date = validateDateObj(date);
 
         //move to validation.js
 
@@ -49,9 +40,7 @@ export class Availability {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects
-        availArray = validateArrayElements(availArray, "Availability Array", (elem) => {
-            return validateAvailabilityObj(elem);
-        });
+        availArray = validateArrayElements(availArray, "Availability Array", (elem) => validateAvailabilityObj(elem));
         const commonDate = availArray[0].date;
         enforceAllSameDate(availArray, commonDate);
 
@@ -81,14 +70,7 @@ export class WeeklyAvailability {
             inputArray,
             "Input Array for Weekly Availability",
             (elem) => {
-                return validateArrayElements(
-                    elem,
-                    "Sub-Input Array for Weekly Availability",
-                    (subElem) => {
-                        return validateIntRange(subElem, "Availability Slot Integer", 0, 1);
-                    },
-                    48
-                );
+                return validateArrayElements(elem, "Sub-Input Array for Weekly Availability", (subElem) => validateIntRange(subElem, "Availability Slot Integer", 0, 1), 48);
             },
             7
         );
