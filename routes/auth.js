@@ -20,7 +20,9 @@ router
         try {
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
-            await bcrypt.compare(req.body.password, user.password);
+            if (!(await bcrypt.compare(req.body.password, user.password))) {
+                return routeUtils.renderError(res, 400, "Either userId or password is invalid");
+            }
             delete user.password;
             req.session.user = user;
             res.redirect("/profile");
