@@ -1,35 +1,33 @@
-//Data functions for Day-Blocked availability objects
-import { validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
+import { isSameDay, validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
-//Check if every date is the same in all the array of Availability objects
-const sameDate = (availabilityArray) => {
-    if (!Array.isArray(availabilityArray) || availabilityArray.length === 0) {
-        throw new ValidationError("Array is empty or not a valid array!");
-    }
-    let initialDate = availabilityArray[0].date;
-    for (let elem of availabilityArray) {
-        if (elem.date.getFullYear() !== initialDate.getFullYear() || elem.date.getMonth() !== initialDate.getMonth() || elem.date.getDate() !== initialDate.getDate()) {
-            throw new ValidationError(`Expected all elements to have the same Date, but the dates ${initialDate} and ${elem.date} are different!`);
+// Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
+const enforceAllSameDate = (availabilityArray, commonDate) => {
+    for (const availability of availabilityArray) {
+        if (!isSameDay(availability.date, commonDate)) {
+            throw new ValidationError(`Expected all array elements to have the same Date, but the dates ${commonDate} and ${availability.date} have different ones`);
         }
     }
 };
 
 export class Availability {
-    //int array of 48 representing 30 mins chunks of time
-    //slots[0] = 1: Available at 12:00 am
-    //slots[1] = 0: Not Available at 12:30 am
-    //and so on...
+    // int array of 48 representing 30 mins chunks of time
+    // slots[0] = 1: Available at 12:00 am
+    // slots[1] = 0: Not Available at 12:30 am
+    // and so on...
     slots = null;
-    //the date that the Availability is representing
+
+    // the date that this object corresponds to
     date = null;
 
     constructor(intArray, date = null, skipDateCheck = false) {
-        //check that each element of the array is an int and it's 48 elements
-        validateArrayElements(
+        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
+
+        // validate the time slots
+        intArray = validateArrayElements(
             intArray,
             "Slots Array",
             (elem) => {
-                validateIntRange(elem, "Availability Slot Integer", 0, Number.MAX_SAFE_INTEGER);
+                return validateIntRange(elem, "Availability Slot Integer", 0);
             },
             48
         );
@@ -45,59 +43,60 @@ export class Availability {
         this.date = date;
     }
 
-    //Return a new availability obj of when everyone is available
-    //availArray: Array of Availability Objects
-    //weeklyAvailArr: Array of WeeklyAvailability Objects
+    // Return a new availability obj of when everyone is available
+    // availArray: Array of Availability Objects
     static mergeAvailability(availArray, startTime = 0, endTime = 48) {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects
-        validateArrayElements(availArray, "Availability Array", (elem) => {
-            validateAvailabilityObj(elem);
+        availArray = validateArrayElements(availArray, "Availability Array", (elem) => {
+            return validateAvailabilityObj(elem);
         });
-        sameDate(availArray);
-
         const commonDate = availArray[0].date;
-        let mergedSlots = new Array(48).fill(0);
-        for (let elem of availArray) {
+        enforceAllSameDate(availArray, commonDate);
+
+        // actually merge the timeslots of each Availability Object
+        const mergedSlots = new Array(48).fill(0);
+        for (const availability of availArray) {
             for (let i = startTime; i < endTime; i++) {
-                if (elem.slots[i] !== -1) {
-                    mergedSlots[i] = mergedSlots[i] + elem.slots[i];
-                }
+                mergedSlots[i] += availability.slots[i];
             }
         }
 
+        // construct the resulting object
         return new Availability(mergedSlots, commonDate);
     }
 }
 
-//Default Availability Object
-//Arrslot is a array of 7 Availability Object with the index corresponding to the Day of the Week
+// Weekly (Default) Availability Object
 //FIXME: When initializing the Weekly Availability Object in the user's profile page make sure to fill it in as 1s!
 export class WeeklyAvailability {
-    arrSlots = [];
+    // Array of 7 Availability Objects, with the index corresponding to the day of the week (with 0 meaning Sunday)
+    days = [];
 
     constructor(inputArray) {
-        validateArrayElements(
+        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
+
+        inputArray = validateArrayElements(
             inputArray,
             "Input Array for Weekly Availability",
             (elem) => {
-                validateArrayElements(
+                return validateArrayElements(
                     elem,
                     "Sub-Input Array for Weekly Availability",
                     (subElem) => {
-                        validateIntRange(subElem, "Availability Slot Integer", 0, 1);
+                        return validateIntRange(subElem, "Availability Slot Integer", 0, 1);
                     },
                     48
                 );
             },
             7
         );
-        let i = 0;
 
-        for (let elem of inputArray) {
-            this.arrSlots[i] = new Availability(elem, i, true);
-            i++;
+        // actually populate the object with Availability Objects
+        // FIXME - if the data is validated above, we can probably return the converted object directly from the validation function
+        for (const data of inputArray) {
+            this.days.push(new Availability(data, undefined, true));
         }
     }
 }

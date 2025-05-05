@@ -6,11 +6,9 @@ import bcrypt from "bcrypt";
 
 import * as userFunctions from "../data/users.js";
 import * as commentFunctions from "../data/comments.js";
-import { ObjectId } from "mongodb";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { createMeeting, getMeetingById, modifyNoteOfMeeting } from "../data/meetings.js";
 import { ValidationError } from "../utils/validation.js";
-import { timeEnd } from "console";
 import { Note } from "../public/js/classes/notes.js";
 
 // define the seed procedure, which is called below

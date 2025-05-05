@@ -23,13 +23,13 @@ export function convertStrToObjectId(id, label) {
     return ObjectId.createFromHexString(clientValidation.validateStrAsObjectId(id, label));
 }
 
-export async function validMeeting(mid) {
-    mid = clientValidation.validateStrAsObjectId(mid);
-    const meetingExists = await doesMeetingExist(mid);
+export async function validMeeting(id) {
+    id = clientValidation.validateStrAsObjectId(id);
+    const meetingExists = await doesMeetingExist(id);
     if (!meetingExists) {
-        throw new Error(`Could not find the meeting with id: ${mid}`);
+        throw new Error(`Could not find the meeting with id: ${id}`);
     }
-    return mid;
+    return id;
 }
 
 //Normal validation on the Response Object, but also use the data function to check if the Response Object contains a valid ID

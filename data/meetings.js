@@ -1,10 +1,11 @@
-//Data functions for Meeting objects
+// Data functions for Meeting objects
+
 import * as validation from "../utils/validation.js";
-import { meetingsCollection, usersCollection } from "../config/mongoCollections.js";
+import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
-import { ObjectId, ReturnDocument } from "mongodb";
-import { Response } from "../public/js/classes/responses.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
+import { ObjectId } from "mongodb";
+import { Response } from "../public/js/classes/responses.js";
 
 // Create a meeting object save it to the DB, and then return the added object
 export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd, users, bookingStatus = 0, bookedTime = null, responses = [], notes = [] }) {
@@ -43,12 +44,10 @@ export async function getAllMeetings() {
 
 // return the meeting the with passed in mid parameter
 export async function getMeetingById(mid) {
-    mid = validation.validateStrAsObjectId(mid, "Meeting ID");
     const collection = await meetingsCollection();
-    mid = validation.convertStrToObjectId(mid);
-    const meeting = await collection.findOne({ _id: mid });
+    const meeting = await collection.findOne({ _id: validation.convertStrToObjectId(mid) });
     if (!meeting) {
-        throw new Error(`Could not retrieve the meeting with ID: ${mid}`);
+        throw new Error(`Could not retrieve the meeting with ID "${mid}"`);
     }
     meeting._id = meeting._id.toString();
     return meeting;
