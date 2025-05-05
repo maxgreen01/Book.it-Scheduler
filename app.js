@@ -11,7 +11,7 @@ import Handlebars from "handlebars";
 
 //constant defining the darkest a shaded box on the calendar can be
 // MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
-// FIXME BL: There is maybe a way to dynamically update this based on # meeting attendees
+// TODO BL: There is maybe a way to dynamically update this based on # meeting attendees
 const MAX_USERS = 4;
 
 const app = express();
