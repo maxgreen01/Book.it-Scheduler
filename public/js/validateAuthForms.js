@@ -20,8 +20,8 @@ function validateSignup(event) {
                 description,
                 uid,
                 password,
-                profilePicture: null, // TODO pfp
-                availability: null, // TODO availability
+                profilePicture: undefined, // TODO pfp
+                availability: undefined, // TODO availability
             },
             true
         ); // TODO remove true when above is implemented
