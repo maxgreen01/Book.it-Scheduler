@@ -13,15 +13,18 @@ function validateSignup(event) {
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
     try {
-        const user = createUserDocument({
-            firstName,
-            lastName,
-            description,
-            uid,
-            password,
-            profilePicture: "0", // TODO pfp
-            availability: [0, 0, 0, 0, 0, 0, 0], // TODO availability
-        });
+        const user = createUserDocument(
+            {
+                firstName,
+                lastName,
+                description,
+                uid,
+                password,
+                profilePicture: null, // TODO pfp
+                availability: null, // TODO availability
+            },
+            true
+        ); // TODO remove true when above is implemented
     } catch (e) {
         event.preventDefault();
         setError(e);

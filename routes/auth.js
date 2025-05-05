@@ -4,6 +4,7 @@ import { ValidationError, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, getUserById, updateUser } from "../data/users.js";
+import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 const router = express.Router();
 
@@ -63,7 +64,7 @@ router
         let user;
         try {
             // TODO: remove this temp fix when availability can be entered on the page
-            data.availability = [0, 0, 0, 0, 0, 0, 0];
+            data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
             data.password = await bcrypt.hash(data.password, 10);
             user = await createUser(data);
         } catch (err) {
