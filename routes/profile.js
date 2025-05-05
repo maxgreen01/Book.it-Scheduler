@@ -14,8 +14,8 @@ router
         return res.render("profile", {
             title: "My Profile",
             canEdit: true,
-            fullName: "Alex Prikockis",
-            pfpUrl: "https://files.alexcheese.com/u/AWmGOQ.png",
+            fullName: `${req.session.user.firstName} ${req.session.user.lastName}`,
+            pfpUrl: `/public/images/${req.session.user.profilePicture}`,
         });
 
         // todo - get current UID from session, then pass user object to HTML template

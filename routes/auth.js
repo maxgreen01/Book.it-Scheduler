@@ -87,6 +87,7 @@ router
 
                     // update the user's profile picture in the database
                     await updateUser(req.body.uid, { profilePicture: profilePicture });
+                    user.profilePicture = profilePicture;
                 } else {
                     return routeUtils.renderError(res, 400, "Only one image can be submitted");
                 }
