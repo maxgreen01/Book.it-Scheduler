@@ -1,11 +1,13 @@
 import { validatePassword, validateUserId } from "./clientValidation.js";
 import { createUserDocument } from "./documentCreation.js";
 
+// Set error text in html element with id "error"
 function setError(err) {
     const errNode = document.getElementById("error");
     errNode.innerHTML = `${err.message}`;
 }
 
+// If signup form fields are not valid, prevent submission and display an error
 function validateSignup(event) {
     const firstName = document.getElementById("firstNameInput").value;
     const lastName = document.getElementById("lastNameInput").value;
@@ -31,6 +33,7 @@ function validateSignup(event) {
     }
 }
 
+// If login form fields are not valid, prevent submission and display an error
 function validateLogin(event) {
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
@@ -43,6 +46,7 @@ function validateLogin(event) {
     }
 }
 
+// Attach event handlers
 const signupForm = document.getElementById("signup");
 const loginForm = document.getElementById("login");
 

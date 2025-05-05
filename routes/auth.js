@@ -31,12 +31,12 @@ router
         }
     });
 
+// sign out, removing session info
 router.route("/signout").get(async (req, res) => {
     req.session.destroy();
     return res.render("signout", { title: "Signed out" });
 });
 
-// todo login to an existing profile (i.e. "log in") -- which route?
 // create a new account
 router
     .route("/signup")
