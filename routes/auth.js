@@ -67,7 +67,6 @@ router
         try {
             // TODO: remove this temp fix when availability can be entered on the page
             data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
-            data.password = await bcrypt.hash(data.password, 10);
             user = await createUser(data);
         } catch (err) {
             if (err instanceof ValidationError) {

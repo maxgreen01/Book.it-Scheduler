@@ -1,5 +1,6 @@
 // Data functions for user profile objects
 
+import bcrypt from "bcrypt";
 import * as validation from "../utils/validation.js";
 import { usersCollection } from "../config/mongoCollections.js";
 import { createUserDocument } from "../public/js/documentCreation.js";
@@ -13,6 +14,9 @@ export async function createUser({ uid, password, firstName, lastName, descripti
 
     // make sure username is unique
     if (await validation.isUserIdTaken(user._id)) throw new Error(`User ID "${user._id}" is already taken`);
+
+    // hash password
+    user.password = await bcrypt.hash(user.password, 10);
 
     // run the DB operation
     const collection = await usersCollection();

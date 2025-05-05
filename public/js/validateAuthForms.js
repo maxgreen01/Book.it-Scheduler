@@ -1,4 +1,4 @@
-import { validateAndTrimString, validateUserId } from "./clientValidation.js";
+import { validatePassword, validateUserId } from "./clientValidation.js";
 import { createUserDocument } from "./documentCreation.js";
 
 function setError(err) {
@@ -36,7 +36,7 @@ function validateLogin(event) {
     const password = document.getElementById("passwordInput").value;
     try {
         validateUserId(uid);
-        validateAndTrimString(password, "Password"); // TODO revise
+        validatePassword(password);
     } catch (e) {
         event.preventDefault();
         setError(e);
