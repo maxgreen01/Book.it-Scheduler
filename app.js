@@ -10,11 +10,6 @@ import fileUpload from "express-fileupload";
 import session from "express-session";
 import Handlebars from "handlebars";
 
-//constant defining the darkest a shaded box on the calendar can be
-// MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
-// TODO BL: There is maybe a way to dynamically update this based on # meeting attendees
-const MAX_USERS = 4;
-
 const app = express();
 
 //
@@ -55,10 +50,15 @@ app.use(
 // Logging middleware
 app.use("/", async (req, res, next) => {
     const timestamp = new Date().toUTCString();
-    const auth = req.session.user ? req.session.user._id : "?";
+    const auth = req.session?.user?._id ?? "?";
     console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
     next();
 });
+
+// constant defining the darkest a shaded box on the calendar can be
+// MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
+// TODO BL: There is maybe a way to dynamically update this based on # meeting attendees
+const MAX_USERS = 4;
 
 // Little handlebars helper to multiply inline the alpha value of the cell background
 // Ex: rgba(128, 0, 128, (opacity value)) replace value with {{multiplyOpacity 4}} where 0 is blank
@@ -92,20 +92,20 @@ app.use(rewriteUnsupportedBrowserMethods);
 
 // TODO: move routes of the form /:meetingId to /meetings/:meetingId, else they won't get hit by this
 // prevent unauthenticated access to meeting and profile routes
-app.use(["/meetings", "/profile", "/create"], async (req, res, next) => {
-    if (req.session.user) next();
+app.use(["/meetings", "/profile", "/create", "/signout"], async (req, res, next) => {
+    if (typeof req.session?.user !== "undefined") next();
     else res.redirect("/login");
 });
 
 // prevent authenticated users from viewing auth-related routes
 app.use(["/login", "/signup"], async (req, res, next) => {
-    if (req.session.user) res.redirect("/profile");
+    if (typeof req.session?.user !== "undefined") res.redirect("/profile");
     else next();
 });
 
 // Fallback error handler
 app.use((err, req, res, next) => {
-    console.error("route error:");
+    console.error("Route error:");
     console.error(err);
     res.sendStatus(500);
 });

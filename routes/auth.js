@@ -13,7 +13,7 @@ router
     .route("/login")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("login", { title: "Login", loggedIn: req.session?.user });
+        return res.render("login", { title: "Login", ...routeUtils.prepareRenderOptions(req) });
     })
     // log in
     .post(async (req, res) => {
@@ -21,20 +21,20 @@ router
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
             if (!(await bcrypt.compare(req.body.password, user.password))) {
-                return routeUtils.renderError(res, 400, "Either userId or password is invalid");
+                return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
             }
             delete user.password;
             req.session.user = user;
             res.redirect("/profile");
         } catch {
-            return routeUtils.renderError(res, 400, "Either userId or password is invalid");
+            return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
         }
     });
 
 // sign out, removing session info
 router.route("/signout").get(async (req, res) => {
     req.session.destroy();
-    return res.render("signout", { title: "Signed out" });
+    return res.render("signout", { title: "Signed out", ...routeUtils.prepareRenderOptions(req) });
 });
 
 // create a new account
@@ -42,21 +42,21 @@ router
     .route("/signup")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("signup", { title: "Sign up" });
+        return res.render("signup", { title: "Sign up", ...routeUtils.prepareRenderOptions(req) });
     })
     // create a new profile (i.e. "sign up")
     .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(res, 400, "Request body is empty");
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
         // validate User ID
         try {
             data.uid = validateUserId(data.uid);
         } catch (err) {
-            return routeUtils.renderError(res, 400, err.message);
+            return routeUtils.renderError(req, res, 400, err.message);
         }
 
         // assign default profile picture (which may be updated later in this route)
@@ -70,9 +70,9 @@ router
             user = await createUser(data);
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(req, res, 400, err.message);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(req, res, 500, err.message);
             }
         }
 
@@ -88,14 +88,14 @@ router
                     // update the user's profile picture in the database
                     await updateUser(req.body.uid, { profilePicture: profilePicture });
                 } else {
-                    return routeUtils.renderError(res, 400, "Only one image can be submitted");
+                    return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
                 }
             }
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(req, res, 400, err.message);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(req, res, 500, err.message);
             }
         }
 
