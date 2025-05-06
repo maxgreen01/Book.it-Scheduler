@@ -51,6 +51,8 @@ async function seed() {
             return weeklySlots;
         };
 
+        //FIXME: dont actually add user to db since its currently broken
+
         console.log(`Adding user ${i}: ${fname} ${lname}`);
         const user = await userFunctions.createUser({
             uid: username,
@@ -92,6 +94,27 @@ async function seed() {
         // FIXME: replace below with above when we have meeting IDs working!
         // -- BL
         const meeting = new ObjectId().toString();
+
+        const comment = await commentFunctions.createComment({
+            uid: uid,
+            meetingId: meeting,
+            body: faker.lorem.sentences({ min: 2, max: 4 }),
+        });
+
+        // lambda to show only a short bit of the comment
+        const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
+
+        console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
+        commentIds.push(comment._id);
+    }
+
+    // TEST MEETING BRANCH
+
+    // create comments for meeting test
+    for (let i = 0; i < 8; i++) {
+        // randomly select a user and meeting for this comment
+        const uid = faker.helpers.arrayElement(userIds);
+        const meeting = "1234abcd1234abcd1234abcd"; //for the test meeting
 
         const comment = await commentFunctions.createComment({
             uid: uid,
