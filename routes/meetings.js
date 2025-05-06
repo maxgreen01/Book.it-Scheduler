@@ -1,6 +1,6 @@
 import express from "express";
 import { getMeetingComments } from "../data/comments.js";
-import { renderError } from "../utils/routeUtils.js";
+import * as routeUtils from "../utils/routeUtils.js";
 
 const router = express.Router();
 
@@ -31,9 +31,11 @@ router.route("/").get(async (req, res) => {
     return res.render("viewAllMeetings", {
         title: "My Meetings",
         meetingList: [
+            // FIXME populate with actual data
             { id: "1234abcd1234abcd1234abcd", name: "Test Meeting" },
             { id: "deadbeefdeadbeefdeadbeef", name: "Empty Meeting" },
         ],
+        ...routeUtils.prepareRenderOptions(req),
     });
 });
 
@@ -46,15 +48,16 @@ router
         try {
             //plug meeting comments into page from db
             const comments = await getMeetingComments(meetingId);
-            res.render("viewMeeting", {
+            return res.render("viewMeeting", {
                 title: "Test Meeting",
                 comments: comments,
                 days: testDays,
                 meeting: testMatrix,
                 timeColumn: timeColumn,
+                ...routeUtils.prepareRenderOptions(req),
             });
-        } catch (e) {
-            return renderError(res, 404, e);
+        } catch (err) {
+            return routeUtils.renderError(req, res, 404, err.message);
         }
     })
 
@@ -70,6 +73,7 @@ router
             title: "Test Meeting EDIT",
             meetingId: "abc123",
             meetingDescription: "The big meetup",
+            ...routeUtils.prepareRenderOptions(req),
         });
     })
     .post(async (req, res) => {
