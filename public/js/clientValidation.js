@@ -167,10 +167,11 @@ export function validateWeeklyAvailabilityObj(obj) {
     return obj;
 }
 
-// Validate that a string is a valid Note body.
+// Validate that a string is a valid Note or Comment body.
 // Return the validated body if it is valid.
-export function validateNoteBody(str) {
-    return validateAndTrimString(str, "Note Body", 1, 5000);
+// TODO BL: Sanitize comment body for security vulnerabilities - maybe should happen in the routes?
+export function validateCommentNoteBody(str, label = "Body") {
+    return validateAndTrimString(str, label, 1, 5000);
 }
 
 // Validate that an object is a valid Responses Object.

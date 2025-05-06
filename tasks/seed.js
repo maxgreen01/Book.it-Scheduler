@@ -4,10 +4,10 @@ import { faker } from "@faker-js/faker";
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
-import * as userFunctions from "../data/users.js";
-import * as commentFunctions from "../data/comments.js";
+import { createUser } from "../data/users.js";
+import { createComment } from "../data/comments.js";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
-import { createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
+import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -16,6 +16,7 @@ async function seed() {
     const N_MTG = 5; // create n meetings
 
     // random user generation
+    console.log(`\nGenerating ${N_USR} users...`);
     const userIds = [];
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
@@ -51,23 +52,24 @@ async function seed() {
             return weeklySlots;
         };
 
-        console.log(`Adding user ${i}: ${fname} ${lname}`);
-        const user = await userFunctions.createUser({
+        console.log(`Adding user #${i}: ${fname} ${lname}`);
+        const user = await createUser({
             uid: username,
             password: await bcrypt.hash(faker.internet.password(), 10),
             firstName: fname,
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
-            profilePicture: `${username}.jpg`,
+            profilePicture: "_default.jpg",
             availability: new WeeklyAvailability(generateWeeklyAvailability()),
         });
         userIds.push(user._id);
     }
 
     // random meeting generation
+    console.log(`\nGenerating ${N_MTG} meetings...`);
     const meetingIds = [];
     for (let i = 0; i < N_MTG; i++) {
-        // randomly select users for this meeting
+        // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
         const changeDateToStart = (date) => {
@@ -97,28 +99,26 @@ async function seed() {
             timeEnd: meetingEnd,
         };
 
+        console.log(`Adding meeting #${i}: ${newMeeting.name}`);
         const addedMeeting = await createMeeting(newMeeting);
-
-        for (let user of meetingUsers) {
-            const note = faker.lorem.sentences(faker.number.int({ min: 3, max: 10 }));
-            await updateMeetingNote(addedMeeting._id, user, note);
-        }
-        // Uncomment the below when we have createMeeting()
-
-        console.log(`Adding meeting #${i}: ${addedMeeting.name}`);
         meetingIds.push(addedMeeting._id);
 
-        // const meeting = await meetingFuncs.createMeeting(
-        //     // (...)
-        // );
+        // add random user responses and notes
+        for (const user of meetingUsers) {
+            // todo - add random user responses to the meeting
+            // const response = ...
+            // await addResponseToMeeting(addedMeeting._id);
 
-        // meetingIds.push(meeting._id);
-        // todo - add random user responses to the meetings
-        //        this should simultaneously fill the users' profile with the corresponding meeting IDs,
-        //        which can be done using `modifyUserMeeting()` in `/data/users.js`
+            // for about half of the involved users, add a private comment
+            if (Math.random() > 0.5) {
+                const note = faker.lorem.sentences(faker.number.int({ min: 3, max: 10 }));
+                await updateMeetingNote(addedMeeting._id, user, note);
+            }
+        }
     }
 
     // random comment generation
+    console.log(`\nGenerating ${N_COM} comments...`);
     const commentIds = [];
     for (let i = 0; i < N_COM; i++) {
         // randomly select a user and meeting for this comment
@@ -127,7 +127,7 @@ async function seed() {
         // fixme uncomment when response submission (and therefore updating the `users` property) is implemented
         /* const userId = faker.helpers.arrayElement(meeting.users);
 
-        const comment = await commentFunctions.createComment({
+        const comment = await createComment({
             uid: userId,
             meetingId: meetingId,
             body: faker.lorem.sentences({ min: 2, max: 4 }),

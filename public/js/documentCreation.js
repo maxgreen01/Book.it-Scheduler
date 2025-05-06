@@ -40,13 +40,10 @@ export function createCommentDocument({ uid, meetingId, body }) {
 
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    // TODO BL: Sanitize comment body for security vulnerabilities
-    // (currently only validated as string)
-    body = validation.validateAndTrimString(body, "Comment Body", 1, 5000);
+    body = validation.validateCommentNoteBody(body, "Comment Body");
 
     // ============= construct the document =============
 
-    // todo MG extract initialize-only info
     const comment = {
         uid: uid,
         meetingId: meetingId,

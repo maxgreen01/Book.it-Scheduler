@@ -1,21 +1,19 @@
 // Data functions for Comment objects.
 
 import { commentsCollection } from "../config/mongoCollections.js";
-import { convertStrToObjectId, uidToCaseInsensitive, validateAndTrimString, validateMeetingExists, validateUserExists } from "../utils/validation.js";
+import { convertStrToObjectId, uidToCaseInsensitive, validateCommentNoteBody, validateMeetingExists, validateUserExists } from "../utils/validation.js";
 import { createCommentDocument } from "../public/js/documentCreation.js";
-import { getMeetingById } from "./meetings.js";
 export { createCommentDocument } from "../public/js/documentCreation.js";
 
 // insert to DB using insertOne. Return inserted comment.
 export async function createComment({ uid, meetingId, body }) {
-    const foundMeeting = await getMeetingById(meetingId);
-    if (!foundMeeting.users.includes(uid)) throw new Error(`User ${uid} isn't a part of the meeting ${meetingId} so a comment can't be added by them!`);
+    // TODO uncomment if we implement private meetings
+    // if (!isUserInMeeting(meetingId, uid)) throw new Error(`User ${uid} isn't a part of the meeting ${meetingId} so a comment can't be added by them!`);
 
     // set up the document that will be saved to the DB
     const comment = createCommentDocument({ uid, meetingId, body });
-    const timestamp = new Date();
-    comment.dateCreated = timestamp;
-    comment.dateUpdated = timestamp;
+    comment.dateCreated = new Date();
+    comment.dateUpdated = null;
     comment.reactions = {
         likes: [],
         dislikes: [],
@@ -101,7 +99,7 @@ export async function deleteComment(id) {
 //edit and save new text to an existing comment, returning the updated comment
 export async function updateComment(id, newBody) {
     id = convertStrToObjectId(id, "Comment ID");
-    newBody = validateAndTrimString(newBody, "Comment Body", 1, 5000);
+    newBody = validateCommentNoteBody(newBody, "Comment Body");
     const timestamp = new Date();
 
     const collection = await commentsCollection();
@@ -128,7 +126,7 @@ export async function reactToComment(id, uid, reaction) {
     const hasDisliked = comment.reactions.dislikes.includes(uid);
 
     // toggle off existing reaction
-    const updated = await collection.updateOne(
+    let updated = await collection.updateOne(
         { _id: commentId },
         {
             $pull: {
@@ -146,8 +144,12 @@ export async function reactToComment(id, uid, reaction) {
 
     // add reaction to respective set
     if (reaction === "like") {
-        await collection.updateOne({ _id: commentId }, { $addToSet: { "reactions.likes": uid } });
+        updated = await collection.updateOne({ _id: commentId }, { $addToSet: { "reactions.likes": uid } });
     } else if (reaction === "dislike") {
-        await collection.updateOne({ _id: commentId }, { $addToSet: { "reactions.dislikes": uid } });
+        updated = await collection.updateOne({ _id: commentId }, { $addToSet: { "reactions.dislikes": uid } });
     }
+    if (!updated) throw new Error(`Failed to react to comment with ID "${comment._id}"`);
+
+    updated._id = updated._id.toString();
+    return updated;
 }

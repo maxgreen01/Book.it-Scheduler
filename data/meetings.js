@@ -5,6 +5,7 @@ import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
 import { Response } from "../public/js/classes/responses.js";
+import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
 export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd }) {
@@ -47,6 +48,14 @@ export async function getMeetingById(mid) {
     return meeting;
 }
 
+// TODO uncomment if we implement private meetings (i.e. for checking whether a user is allowed to respond)
+/* // return a boolean indicating whether a user is involved in a meeting, i.e. is the owner of the meeting or has responded to it
+export async function isUserInMeeting(mid, uid) {
+    const meeting = await getMeetingById(mid);
+    uid = validation.validateUserId(uid);
+    return meeting.users.includes(uid) || meeting.owner === uid;
+} */
+
 // delete the meeting with the passed in mid parameter
 export async function deleteMeeting(mid) {
     // make sure meeting actually exists
@@ -56,7 +65,7 @@ export async function deleteMeeting(mid) {
     const removed = await collection.findOneAndDelete({ _id: validation.convertStrToObjectId(mid) });
     if (!removed) throw new Error(`Could not delete the meeting with ID "${mid}"`);
     removed._id = removed._id.toString();
-    return removed;
+    return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
 }
 
 // Update certain fields (only the non-`undefined` ones) of the meeting with the specified ID.
@@ -74,21 +83,26 @@ export async function updateMeeting(mid, { name, description, duration }) {
     return updated;
 }
 
-//Adds the array of responseObjs to the specified meeting with the id
-export async function addResponseToMeeting(mid, responseObjArr) {
+// Add a Response Object to a meeting, and add this meeting to the user's account
+export async function addResponseToMeeting(mid, response) {
     // make sure meeting actually exists
     mid = await validation.validateMeetingExists(mid);
 
     const collection = await meetingsCollection();
-    const foundMeeting = await getMeetingById(mid);
-    let responses = foundMeeting.responses;
-    for (let newResponse of responseObjArr) {
-        validation.validateResponseObj(newResponse);
-        responses.push(newResponse);
-    }
-    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
+    response = validation.validateResponseObj(response);
+
+    // remove the user's previous Response to this meeting, if one exists
+    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $pull: { "responses.uid": response.uid } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
+
+    // add the Response to the meeting
+    updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $push: { responses: response } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
+
+    // add this meeting ID to the user document
+    await modifyUserMeeting(response.uid, mid, true);
+
     return updated;
 }
 
@@ -98,12 +112,12 @@ export async function updateMeetingNote(mid, uid, body) {
     mid = await validation.validateMeetingExists(mid);
     uid = await validation.validateUserExists(uid);
 
-    body = validation.validateNoteBody(body);
+    body = validation.validateCommentNoteBody(body);
 
     const collection = await meetingsCollection();
     // todo make sure case-insensitivity works as intended here
     const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { [`notes.${uid}`]: body } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
+    if (!updated) throw new Error(`Could not update a note on the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }

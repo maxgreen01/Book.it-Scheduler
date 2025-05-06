@@ -59,7 +59,7 @@ export async function deleteUser(uid) {
     const collection = await usersCollection();
     const removed = await collection.findOneAndDelete({ _id: validation.uidToCaseInsensitive(uid) });
     if (!removed) throw new Error(`Could not delete the user with ID "${uid}"`);
-    return true; // todo MG - maybe return something more useful
+    return true; // FIXME MG - maybe return something more useful
 }
 
 // Update certain fields (only the non-`undefined` ones) of the user with the specified ID.
@@ -75,11 +75,12 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
 }
 
 // Add or remove a meeting to the list of responded meetings for a particular user, and return the updated user object.
+// Attempting to add a meeting ID that's already present in the DB will not change anything.
 // `isAdd` should be `true` to add the meetingId to the user, or `false` to remove the meetingId.
 export async function modifyUserMeeting(uid, meetingId, isAdd) {
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    const action = isAdd ? "$push" : "$pull";
+    const action = isAdd ? "$addToSet" : "$pull";
 
     const collection = await usersCollection();
     const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { [action]: { meetings: meetingId } }, { returnDocument: "after" });
