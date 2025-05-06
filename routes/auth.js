@@ -13,7 +13,7 @@ router
     .route("/login")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("login", { title: "Login" });
+        return res.render("login", { title: "Login", loggedIn: req.session?.user });
     })
     // log in
     .post(async (req, res) => {

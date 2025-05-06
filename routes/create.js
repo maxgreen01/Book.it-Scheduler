@@ -6,7 +6,7 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("createMeeting", { title: "Create New Meeting" });
+        return res.render("createMeeting", { title: "Create New Meeting", loggedIn: req.session?.user });
     })
     // create the meeting
     .post(async (req, res) => {

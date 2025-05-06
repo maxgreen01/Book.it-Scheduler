@@ -34,6 +34,7 @@ router.route("/").get(async (req, res) => {
             { id: "1234abcd1234abcd1234abcd", name: "Test Meeting" },
             { id: "deadbeefdeadbeefdeadbeef", name: "Empty Meeting" },
         ],
+        loggedIn: req.session?.user,
     });
 });
 
@@ -52,9 +53,10 @@ router
                 days: testDays,
                 meeting: testMatrix,
                 timeColumn: timeColumn,
+                loggedIn: req.session?.user,
             });
         } catch (e) {
-            return renderError(res, 404, e);
+            return renderError(res, 404, e, req.session?.user);
         }
     })
 
@@ -70,6 +72,7 @@ router
             title: "Test Meeting EDIT",
             meetingId: "abc123",
             meetingDescription: "The big meetup",
+            loggedIn: req.session?.user,
         });
     })
     .post(async (req, res) => {

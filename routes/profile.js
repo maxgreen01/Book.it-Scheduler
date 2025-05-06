@@ -16,6 +16,7 @@ router
             canEdit: true,
             fullName: "Alex Prikockis",
             pfpUrl: "https://files.alexcheese.com/u/AWmGOQ.png",
+            loggedIn: req.session?.user,
         });
 
         // todo - get current UID from session, then pass user object to HTML template
@@ -36,14 +37,14 @@ router
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(res, 400, "Request body is empty");
+            return routeUtils.renderError(res, 400, "Request body is empty", req.session?.user);
         }
 
         // validate User ID
         try {
             data.uid = validateUserId(data.uid);
         } catch (err) {
-            return routeUtils.renderError(res, 400, err.message);
+            return routeUtils.renderError(res, 400, err.message, req.session?.user);
         }
 
         // update profile picture, if one is supplied
@@ -54,15 +55,15 @@ router
                 if (!Array.isArray(pfpFile)) {
                     data.profilePicture = await profileUtils.updateProfilePicture(data.uid, pfpFile);
                 } else {
-                    return routeUtils.renderError(res, 400, "Only one image can be submitted");
+                    return routeUtils.renderError(res, 400, "Only one image can be submitted", req.session?.user);
                 }
             }
             // profile picture not provided, so don't change anything existing profile picture
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(res, 400, err.message, req.session?.user);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(res, 500, err.message, req.session?.user);
             }
         }
 
@@ -73,9 +74,9 @@ router
             return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(res, 400, err.message, req.session?.user);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(res, 500, err.message, req.session?.user);
             }
         }
     });
@@ -90,9 +91,9 @@ router.route("/:uid").get(async (req, res) => {
         // return res.render("profilePage", { user: user }); // todo implement HTML template
     } catch (err) {
         if (err instanceof ValidationError) {
-            return routeUtils.renderError(res, 400, err.message);
+            return routeUtils.renderError(res, 400, err.message, req.session?.user);
         } else {
-            return routeUtils.renderError(res, 404, err.message);
+            return routeUtils.renderError(res, 404, err.message, req.session?.user);
         }
     }
 });
