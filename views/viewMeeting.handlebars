@@ -25,7 +25,7 @@
                         <div class="calendar-column-header">{{index_of ../days @index}}</div>
                         <div class="calendar-cells">
                             {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
-                            <div class="timeslot" style="background-color: rgba(128, 0, 128, {{multiplyOpacity this}});"></div>
+                            <div class="timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
                             {{/each}} {{!-- generate the same number of client slots in the background --}} {{#each this}}
                             <div class="timeslot response-slot" hidden></div>
                             {{/each}}
