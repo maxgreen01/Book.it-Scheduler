@@ -7,7 +7,7 @@ export function createUserDocument({ uid, password, firstName, lastName, descrip
     // ============= validate inputs =============
 
     if (!allowUndefined || typeof uid !== "undefined") uid = validation.validateUserId(uid);
-    if (!allowUndefined || typeof password !== "undefined") password = validation.validateAndTrimString(password, "Password"); // should be hashed already // todo MG this needs to be revised and be given a min/max length
+    if (!allowUndefined || typeof password !== "undefined") password = validation.validatePassword(password);
     if (!allowUndefined || typeof firstName !== "undefined") firstName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(firstName, "First Name", 1, 30));
     if (!allowUndefined || typeof lastName !== "undefined") lastName = validation.sanitizeSpaces(validation.validateAlphabeticalExtended(lastName, "Last Name", 1, 30));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Description", 0, 300);
@@ -40,10 +40,10 @@ export function createCommentDocument({ uid, meetingId, body }) {
 
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    body = validation.validateCommentNoteBody(body, "Comment Body");
+    body = validation.validateAndTrimString(body, "Comment Body", 1, 5000);
+    const timestamp = new Date();
 
-    // ============= construct the document =============
-
+    // create and return document
     const comment = {
         uid: uid,
         meetingId: meetingId,

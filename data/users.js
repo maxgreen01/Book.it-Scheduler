@@ -1,5 +1,6 @@
 // Data functions for user profile objects
 
+import bcrypt from "bcrypt";
 import * as validation from "../utils/validation.js";
 import { usersCollection } from "../config/mongoCollections.js";
 import { createUserDocument } from "../public/js/documentCreation.js";
@@ -20,6 +21,9 @@ export async function createUser({ uid, password, firstName, lastName, descripti
         // if an error is thrown, then the username should be available (which is a good thing)
         // todo - maybe add some way to identify and NOT ignore MongoDB errors here
     }
+
+    // hash password
+    user.password = await bcrypt.hash(user.password, 10);
 
     // run the DB operation
     const collection = await usersCollection();

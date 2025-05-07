@@ -93,6 +93,17 @@ export function validateUserId(uid) {
     return validateAlphanumeric(uid, "User ID", 3, 30);
 }
 
+// Throw an error if a password does not match password requirements
+// Note that this does NOT trim the string
+export function validatePassword(password) {
+    if (typeof password !== "string") throw new ValidationError("Password must be a string");
+    if (password.length < 8) throw new ValidationError("Password should be at least 8 characters");
+    if (!/[A-Z]/.test(password)) throw new ValidationError("Password must contain an uppercase letter");
+    if (!/[0-9]/.test(password)) throw new ValidationError("Password must contain a number");
+    if (/^[A-z0-9]*$/.test(password)) throw new ValidationError("Password must contain a special character");
+    return password;
+}
+
 // Throw an error if a string is not valid or does not represent not a valid ObjectId.
 // Return the trimmed string if it represents a valid ObjectId.
 export function validateStrAsObjectId(id, label) {

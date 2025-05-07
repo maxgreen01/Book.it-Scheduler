@@ -17,6 +17,7 @@
         "express": "^5.1.0",
         "express-fileupload": "^1.5.1",
         "express-handlebars": "^8.0.2",
+        "express-session": "^1.18.1",
         "handlebars": "^4.7.8",
         "mongodb": "^6.15.0"
     },
