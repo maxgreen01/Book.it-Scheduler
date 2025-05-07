@@ -6,8 +6,9 @@ import bcrypt from "bcrypt";
 
 import { createUser } from "../data/users.js";
 import { createComment } from "../data/comments.js";
-import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
+import { Response } from "../public/js/classes/responses.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -103,11 +104,24 @@ async function seed() {
         const addedMeeting = await createMeeting(newMeeting);
         meetingIds.push(addedMeeting._id);
 
-        // add random user responses and notes
+        const randomSlotGenerator = () => {
+            const slots = Array(48).fill(0);
+            for (let i = meetingStart; i <= meetingEnd; i++) {
+                //80% of being available
+                slots[i] = Math.random() < 0.8 ? 1 : 0;
+            }
+
+            return slots;
+        };
+
         for (const user of meetingUsers) {
-            // todo - add random user responses to the meeting
-            // const response = ...
-            // await addResponseToMeeting(addedMeeting._id);
+            let arrOfAvailability = [];
+            for (const date of meetingDates) {
+                const newAvailability = new Availability(randomSlotGenerator(), date);
+                arrOfAvailability.push(newAvailability);
+            }
+            const response = new Response(user, arrOfAvailability);
+            await addResponseToMeeting(addedMeeting._id, response);
 
             // for about half of the involved users, add a private comment
             if (Math.random() > 0.5) {

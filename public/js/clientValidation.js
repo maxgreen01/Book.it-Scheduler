@@ -178,7 +178,7 @@ export function validateCommentNoteBody(str, label = "Body") {
 // If `allowedDates` is defined, verify that the `date` property of each Availability object in the Response corresponds to one of the allowed dates.
 // Return the validated object if it is valid.
 export function validateResponseObj(obj, allowedDates = undefined) {
-    const allowedKeys = ["uid", "availability"];
+    const allowedKeys = ["uid", "availabilities"];
     obj = validateObjectKeys(obj, allowedKeys, "Response Object");
 
     if (!(obj instanceof Response)) throw new ValidationError(`${obj} is not a valid Response Object`);

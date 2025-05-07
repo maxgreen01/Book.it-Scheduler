@@ -91,12 +91,15 @@ export async function addResponseToMeeting(mid, response) {
     const collection = await meetingsCollection();
     response = validation.validateResponseObj(response);
 
-    // remove the user's previous Response to this meeting, if one exists
-    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $pull: { "responses.uid": response.uid } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
-
+    //initial check that there is at least one response to the meeting so mongo won't error on traversing through a field that doesn't exist
+    const foundMeeting = await getMeetingById(mid);
+    const currResponses = foundMeeting.responses;
+    currResponses.filter((currResponse) => {
+        currResponse.uid !== response.uid;
+    });
+    currResponses.push(response);
     // add the Response to the meeting
-    updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $push: { responses: response } }, { returnDocument: "after" });
+    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
 
@@ -122,7 +125,28 @@ export async function updateMeetingNote(mid, uid, body) {
     return updated;
 }
 
-// todo add data func for editing booking status (including bookingTime and cancellation)
+//Set the Meeting Status and Booked Time of the Meeting
+//Booking Status = Integer from 1 to -1
+//Booked Time = Availability Object
+export async function setBooking(mid, bookingStatus, bookedTime) {
+    mid = await validation.validateMeetingExists(mid);
+    bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
+    bookedTime = validation.validateAvailabilityObj(bookedTime);
+    const collection = await meetingsCollection();
+    const updated = await collection.findOneAndUpdate(
+        { _id: mid },
+        {
+            $set: {
+                bookingStatus,
+                bookedTime,
+            },
+        },
+        { returnDocument: "after" }
+    );
+    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
+    updated._id = updated._id.toString();
+    return updated;
+}
 
 export async function findCommonAvailabilityOfMeeting(mid) {
     // make sure meeting actually exists
