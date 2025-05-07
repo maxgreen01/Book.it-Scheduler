@@ -19,18 +19,23 @@
                         <div class="time-column-timestamp">{{this}}</div>
                         {{/each}}
                     </div>
+
                     {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
                     <div class="calendar-column">
                         <div class="calendar-column-header">{{index_of ../days @index}}</div>
                         <div class="calendar-cells">
                             {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
                             <div class="timeslot" style="background-color: rgba(128, 0, 128, {{multiplyOpacity this}});"></div>
+                            {{/each}} {{!-- generate the same number of client slots in the background --}} {{#each this}}
+                            <div class="timeslot response-slot" hidden></div>
                             {{/each}}
                         </div>
                     </div>
                     {{/each}}
                 </div>
             </div>
+            <button id="edit-response-button">Respond to Meeting</button>
+            <button id="submit-response-button" hidden>Submit</button>
         </div>
 
         {{!-- Container for filling in respondee info --}}
