@@ -191,8 +191,10 @@ nav a:hover {
 /* the actual cells of the columns */
 .timeslot {
     height: 12px;
-    /* border: 1px solid #d1d8e0; */
     overflow: hidden;
+}
+.timeslot:nth-child(even) {
+    border-bottom: 1px solid #ccc;
 }
 
 /* Comment objects */
@@ -209,7 +211,10 @@ nav a:hover {
 /* might be nice for clickables like buttons and cells on the calendar */
 /* left out for now */
 
-/* .comments:hover, .notes:hover {
-    background-color: #f7fafc; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* .timeslot:hover {
+     background-color: #f7fafc; 
 } */
+
+.selected {
+    background-color: rgba(205, 90, 90, 0.5);
+}
