@@ -1,5 +1,5 @@
 import { validateArrayElements, validateAvailabilityObj, validateUserId } from "../clientValidation.js";
-import { Availability } from "./availabilities.js";
+import { Availability, enforceAllSameDate } from "./availabilities.js";
 
 export class Response {
     // the ID of the user who submitted this Response
@@ -13,14 +13,18 @@ export class Response {
         this.availabilities = validateArrayElements(availabilityArr, "Availability Array", (elem) => validateAvailabilityObj(elem));
     }
 
-    static mergeResponsesToAvailability(responseArr, startTime = 0, endTime = 48) {
-        responseArr = validateArrayElements(responseArr, "Array Availability Objects", (availability) => validateAvailabilityObj(availability));
+    // static mergeResponsesToAvailability(responseArr, startTime = 0, endTime = 48) {
+    //     responseArr = validateArrayElements(responseArr, "Array Availability Objects", (availability) => validateAvailabilityObj(availability));
 
-        // FIXME - only merge availabilities that correspond to the same date -- maybe using `isSameDate` in validation file
-        let availabilityObjs;
-        for (let responseObj of responseArr) {
-            availabilityObjs.append(responseObj.availabilities);
-        }
-        return Availability.mergeAvailability(availabilityObjs, startTime, endTime);
-    }
+    //     //add all Availability Objects in the responses to an array
+    //     let availabilityObjs = [];
+    //     for (let responseObj of responseArr) {
+    //         availabilityObjs.push(responseObj.availabilities);
+    //     }
+
+    //     //Check if all availability objects have the same date before merging
+    //     enforceAllSameDate(availabilityObjs, availabilityObjs[0].date);
+
+    //     return Availability.mergeAvailability(availabilityObjs, startTime, endTime);
+    // }
 }

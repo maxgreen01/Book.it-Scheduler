@@ -1,7 +1,7 @@
 import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
 // Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
-const enforceAllSameDate = (availabilityArray, commonDate) => {
+export const enforceAllSameDate = (availabilityArray, commonDate) => {
     for (const availability of availabilityArray) {
         if (!isSameDay(availability.date, commonDate)) {
             throw new ValidationError(`Expected all array elements to have the same Date, but the dates ${commonDate} and ${availability.date} have different ones`);
@@ -47,7 +47,7 @@ export class Availability {
         // actually merge the timeslots of each Availability Object
         const mergedSlots = new Array(48).fill(0);
         for (const availability of availArray) {
-            for (let i = startTime; i < endTime; i++) {
+            for (let i = startTime; i <= endTime; i++) {
                 mergedSlots[i] += availability.slots[i];
             }
         }
