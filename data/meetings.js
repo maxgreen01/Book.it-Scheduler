@@ -65,6 +65,10 @@ export async function deleteMeeting(mid) {
     const removed = await collection.findOneAndDelete({ _id: validation.convertStrToObjectId(mid) });
     if (!removed) throw new Error(`Could not delete the meeting with ID "${mid}"`);
     removed._id = removed._id.toString();
+    for (let user of removed.users) {
+        await modifyUserMeeting(user, removed._id, false);
+    }
+    await modifyUserMeeting(removed.owner, removed._id, false);
     return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
 }
 
@@ -146,12 +150,4 @@ export async function setBooking(mid, bookingStatus, bookedTime) {
     if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
     updated._id = updated._id.toString();
     return updated;
-}
-
-export async function findCommonAvailabilityOfMeeting(mid) {
-    // make sure meeting actually exists
-    mid = await validation.validateMeetingExists(mid);
-
-    const foundMeeting = await getMeetingById(mid);
-    return Response.mergeResponsesToAvailability(foundMeeting.responses, foundMeeting.timeStart, foundMeeting.timeEnd);
 }
