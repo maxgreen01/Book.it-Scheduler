@@ -1,4 +1,4 @@
-import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
+import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, validateWeeklyAvailabilityObj, ValidationError } from "../clientValidation.js";
 
 // Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
 export const enforceAllSameDate = (availabilityArray, commonDate) => {
@@ -20,16 +20,7 @@ export class Availability {
     date = null;
 
     constructor(intArray, date = null, skipDateCheck = false) {
-        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
-
-        // validate the time slots
-        intArray = validateArrayElements(intArray, "Slots Array", (elem) => validateIntRange(elem, "Availability Slot Integer", 0), 48);
-
-        // OPTIONAL: Check if date is a valid date object
-        if (!skipDateCheck) date = validateDateObj(date);
-
-        //move to validation.js
-
+        validateAvailabilityObj({ slots: intArray, date }, skipDateCheck);
         this.slots = intArray;
         this.date = date;
     }
@@ -64,8 +55,6 @@ export class WeeklyAvailability {
     days = [];
 
     constructor(inputArray) {
-        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
-
         inputArray = validateArrayElements(
             inputArray,
             "Input Array for Weekly Availability",
@@ -75,10 +64,10 @@ export class WeeklyAvailability {
             7
         );
 
-        // actually populate the object with Availability Objects
-        // FIXME - if the data is validated above, we can probably return the converted object directly from the validation function
+        let currDateIndex = 0;
         for (const data of inputArray) {
-            this.days.push(new Availability(data, undefined, true));
+            this.days.push(new Availability(data, currDateIndex, true));
+            currDateIndex++;
         }
     }
 }
