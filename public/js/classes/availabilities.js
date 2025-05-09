@@ -1,7 +1,7 @@
-import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
+import { isSameDay, validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
 // Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
-const enforceAllSameDate = (availabilityArray, commonDate) => {
+export const enforceAllSameDate = (availabilityArray, commonDate) => {
     for (const availability of availabilityArray) {
         if (!isSameDay(availability.date, commonDate)) {
             throw new ValidationError(`Expected all array elements to have the same Date, but the dates ${commonDate} and ${availability.date} have different ones`);
@@ -20,18 +20,9 @@ export class Availability {
     date = null;
 
     constructor(intArray, date = null, skipDateCheck = false) {
-        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
-
-        // validate the time slots
-        intArray = validateArrayElements(intArray, "Slots Array", (elem) => validateIntRange(elem, "Availability Slot Integer", 0), 48);
-
-        // OPTIONAL: Check if date is a valid date object
-        if (!skipDateCheck) date = validateDateObj(date);
-
-        //move to validation.js
-
-        this.slots = intArray;
-        this.date = date;
+        const validated = validateAvailabilityObj({ slots: intArray, date }, skipDateCheck);
+        this.slots = validated.slots;
+        this.date = validated.date;
     }
 
     // Return a new availability obj of when everyone is available
@@ -47,7 +38,7 @@ export class Availability {
         // actually merge the timeslots of each Availability Object
         const mergedSlots = new Array(48).fill(0);
         for (const availability of availArray) {
-            for (let i = startTime; i < endTime; i++) {
+            for (let i = startTime; i <= endTime; i++) {
                 mergedSlots[i] += availability.slots[i];
             }
         }
@@ -64,8 +55,6 @@ export class WeeklyAvailability {
     days = [];
 
     constructor(inputArray) {
-        // FIXME - if using Duck Typing in validation funcs like `validateAvailability`, replace the below logic with that function call
-
         inputArray = validateArrayElements(
             inputArray,
             "Input Array for Weekly Availability",
@@ -75,10 +64,10 @@ export class WeeklyAvailability {
             7
         );
 
-        // actually populate the object with Availability Objects
-        // FIXME - if the data is validated above, we can probably return the converted object directly from the validation function
+        let currDateIndex = 0;
         for (const data of inputArray) {
-            this.days.push(new Availability(data, undefined, true));
+            this.days.push(new Availability(data, currDateIndex, true));
+            currDateIndex++;
         }
     }
 }
