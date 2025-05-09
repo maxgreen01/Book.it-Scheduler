@@ -5,7 +5,7 @@ import * as routeUtils from "../utils/routeUtils.js";
 const router = express.Router();
 
 // Dummy code to test viewMeeting without the underlying data structures
-const testMatrix = [
+let testMatrix = [
     //random generated garbage meeting 7x48
     [1, 0, 2, 0, 1, 1, 0, 3, 1, 2, 0, 0, 2, 1, 0, 0, 1, 1, 2, 0, 0, 0, 1, 1, 3, 1, 1, 2, 0, 0, 1, 1, 4, 2, 0, 0, 1, 1, 2, 0, 3, 1, 0, 0, 1, 2, 1, 0],
     [1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 2, 1, 4, 1, 1, 1, 2, 1, 1, 1, 1],
@@ -15,8 +15,8 @@ const testMatrix = [
     [1, 0, 2, 1, 0, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 3, 1, 0, 0, 2, 1, 1, 0, 0, 1, 2, 0, 4, 1, 0, 2, 1, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 2, 1, 1, 0],
     [0, 1, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 3, 0, 1, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 3, 1, 0, 1, 1, 2, 0, 0, 1, 0, 4, 1, 1, 0, 2, 1, 0, 3, 1, 1, 0, 0, 1],
 ];
-const testDays = ["S", "M", "Tu", "W", "Th", "F", "S"]; //pass in the date fields from the time slot objects
-const timeColumn = []; //times are going to be dynamically generated from startTime by the route.js to avoid complex handlebars
+let testDays = ["S", "M", "Tu", "W", "Th", "F", "S"]; //pass in the date fields from the time slot objects
+let timeColumn = []; //times are going to be dynamically generated from startTime by the route.js to avoid complex handlebars
 let hours = 0; //HACK: replace with startTime when its implemented. Need helpers to convert this into HR:MIN timestamp
 for (let i = 0; i < testMatrix[0].length; i++) {
     if (i % 2 == 0) {
@@ -54,6 +54,7 @@ router
                 days: testDays,
                 meeting: testMatrix,
                 timeColumn: timeColumn,
+                numUsers: 4, //TODO: replace this with the actual number of meeting attendees
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
