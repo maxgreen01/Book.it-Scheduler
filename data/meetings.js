@@ -57,6 +57,12 @@ export async function isUserInMeeting(mid, uid) {
     return meeting.users.includes(uid) || meeting.owner === uid;
 } */
 
+export async function isUserMeetingOwner(mid, uid) {
+    const meeting = await getMeetingById(mid);
+    uid = validation.validateUserId(uid);
+    return meeting.owner === uid;
+}
+
 // delete the meeting with the passed in mid parameter
 export async function deleteMeeting(mid) {
     // make sure meeting actually exists
@@ -102,6 +108,13 @@ export async function addResponseToMeeting(mid, response) {
     currResponses.filter((currResponse) => {
         currResponse.uid !== response.uid;
     });
+
+    for (let i = 0; i < foundMeeting.dates.length; i++) {
+        if (!validation.isSameDay(foundMeeting.dates[i], response.availabilities[i].date)) {
+            throw new Error(`Expect response to have date ${foundMeeting.dates[i]} but instead it had response.availabilities[i].date`);
+        }
+    }
+
     currResponses.push(response);
     // add the Response to the meeting
     let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses } }, { returnDocument: "after" });
