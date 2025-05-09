@@ -54,7 +54,7 @@ router
                 days: testDays,
                 meeting: testMatrix,
                 timeColumn: timeColumn,
-                numUsers: 2, //TODO: replace this with the actual number of meeting attendees
+                numUsers: 4, //TODO: replace this with the actual number of meeting attendees
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {

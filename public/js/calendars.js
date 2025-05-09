@@ -20,7 +20,7 @@ function availabilityFromCalendar() {
         const responseSlots = ts.querySelectorAll(".response-slot");
         const colValues = [];
         for (let slot of responseSlots) {
-            colValues.push(slot.classList.contains("selected") ? 1 : 0);
+            colValues.push(slot.classList.contains("selected") ? 0 : 1);
         }
         responseMatrix.push(colValues);
     }
