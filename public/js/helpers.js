@@ -110,7 +110,7 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
 
     // check if any of the chunks are too short for the meeting duration
     for (const time of possibleTimes) {
-        time.tooShort = time.timeEnd - time.timeStart + 1 < meetingDuration;
+        time.tooShort = meetingDuration > time.timeEnd - time.timeStart;
     }
 
     return possibleTimes;
