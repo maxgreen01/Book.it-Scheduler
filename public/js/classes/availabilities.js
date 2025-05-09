@@ -1,4 +1,4 @@
-import { isSameDay, validateArrayElements, validateAvailabilityObj, validateDateObj, validateIntRange, validateWeeklyAvailabilityObj, ValidationError } from "../clientValidation.js";
+import { isSameDay, validateArrayElements, validateAvailabilityObj, validateIntRange, ValidationError } from "../clientValidation.js";
 
 // Make sure all the Availability objects in an array (assumed to already be validated) have the same `date` property
 export const enforceAllSameDate = (availabilityArray, commonDate) => {

@@ -2,7 +2,7 @@
 
 import { getMeetingById } from "../../data/meetings.js";
 import { Availability } from "./classes/availabilities.js";
-import { validateArrayElements, validateAvailabilityObj, validateIntRange, validateResponseArrHasSameDates, validateResponseObj, ValidationError } from "./clientValidation.js";
+import { validateArrayElements, validateIntRange, validateResponseArrHasSameDates, validateResponseObj, ValidationError } from "./clientValidation.js";
 
 //Takes in an array of Response Objects and returns a new array containing Availability Objects representing the group's availability on each day
 export function mergeResponses(responseArr, meetingStart, meetingEnd) {
@@ -86,7 +86,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
             possibleTimes.push({
                 date: currDate,
                 timeStart: start,
-                timeEnd: meetingEnd - 1,
+                timeEnd: meetingEnd,
                 users: numUsers,
             });
         }
@@ -96,7 +96,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
 }
 
 //returns an array of objects that have the best time for all users, with a boolean indicating whether each chunk is too short
-export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingDuration) {
+export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingDuration, keepShortTime = true) {
     const mergedAvailabilities = mergeResponses(responseArr, meetingStart, meetingEnd);
 
     // calculate all possible times
@@ -109,8 +109,15 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
     }
 
     // check if any of the chunks are too short for the meeting duration
-    for (const time of possibleTimes) {
-        time.tooShort = meetingDuration > time.timeEnd - time.timeStart;
+
+    if (!keepShortTime) {
+        possibleTimes.filter((time) => {
+            meetingDuration > time.timeEnd - time.timeStart;
+        });
+    } else {
+        for (const time of possibleTimes) {
+            time.tooShort = meetingDuration > time.timeEnd - time.timeStart;
+        }
     }
 
     return possibleTimes;

@@ -1,6 +1,3 @@
-import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-import { Response } from "./classes/responses.js";
-
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
     constructor(message) {
