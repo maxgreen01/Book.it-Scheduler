@@ -137,6 +137,7 @@ export function validateObjectKeys(obj, allowedFields, label = "Object") {
 
 // Check whether two Date objects represent the same calendar day
 export function isSameDay(firstDate, secondDate) {
+    if (typeof firstDate == "undefined" || typeof secondDate == "undefined") return false;
     return firstDate.getFullYear() === secondDate.getFullYear() && firstDate.getMonth() === secondDate.getMonth() && firstDate.getDate() === secondDate.getDate();
 }
 
@@ -155,10 +156,8 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
     obj = validateObjectKeys(obj, allowedKeys, "Availability Object");
 
     if (!skipDateCheck) obj.date = validateDateObj(obj.date);
-
     obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
 
-    // FIXME - if using Duck Typing, maybe we can directly construct the Availability Object here
     return obj;
 }
 
@@ -211,22 +210,24 @@ export function validateResponseObj(obj, allowedDates = undefined) {
     return obj;
 }
 
-//checks if each element in the ResponseArr has the same date in the same order as all others
-export function validateResponseArrHasSameDate(responseArr) {
+// Check if each element in the ResponseArr has the same date in the same order as all others (and in the same order).
+// Return the array of dates contained by all Response Objects if the checks succeed
+export function validateResponseArrHasSameDates(responseArr) {
     validateArrayElements(responseArr, "Response Array", (response) => {
         validateResponseObj(response);
     });
 
-    const ResponseDates = [];
-    for (let availability of responseArr[0].availabilities) {
-        ResponseDates.push(availability.date);
-    }
-    validateArrayElements(responseArr, "Response Array has same dates", (response) => {
-        for (let i = 0; i < ResponseDates.length; i++) {
-            isSameDay(ResponseDates[i], response.availabilities[i].date);
+    const responseDates = responseArr[0].availabilities.map((avail) => avail.date);
+
+    validateArrayElements(responseArr, "Response Array", (response) => {
+        const availabilities = response.availabilities;
+        for (let i = 0; i < availabilities.length; i++) {
+            if (!isSameDay(responseDates[i], availabilities[i].date)) {
+                throw new Error("Response Objects must have all the same dates!");
+            }
         }
     });
-    return responseArr;
+    return responseDates;
 }
 
 //

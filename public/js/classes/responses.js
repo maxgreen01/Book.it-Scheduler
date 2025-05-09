@@ -1,4 +1,4 @@
-import { validateArrayElements, validateAvailabilityObj, validateResponseObj, validateUserId } from "../clientValidation.js";
+import { validateResponseObj } from "../clientValidation.js";
 
 export class Response {
     // the ID of the user who submitted this Response
@@ -8,8 +8,8 @@ export class Response {
     availabilities = null;
 
     constructor(uid, availabilityArr) {
-        validateResponseObj({ uid, availabilities: availabilityArr });
-        this.uid = uid;
-        this.availabilities = availabilityArr;
+        const validated = validateResponseObj({ uid, availabilities: availabilityArr });
+        this.uid = validated.uid;
+        this.availabilities = validated.availabilities;
     }
 }

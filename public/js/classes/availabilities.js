@@ -20,9 +20,9 @@ export class Availability {
     date = null;
 
     constructor(intArray, date = null, skipDateCheck = false) {
-        validateAvailabilityObj({ slots: intArray, date }, skipDateCheck);
-        this.slots = intArray;
-        this.date = date;
+        const validated = validateAvailabilityObj({ slots: intArray, date }, skipDateCheck);
+        this.slots = validated.slots;
+        this.date = validated.date;
     }
 
     // Return a new availability obj of when everyone is available
