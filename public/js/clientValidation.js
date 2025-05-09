@@ -154,9 +154,6 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
     const allowedKeys = ["slots", "date"];
     obj = validateObjectKeys(obj, allowedKeys, "Availability Object");
 
-    // FIXME - maybe make this (and the similar funcs) Duck-Typed, i.e. remove the instanceof checks
-    //       this would allow reusing these functions in the class constructors
-    //if (!(obj instanceof Availability)) throw new ValidationError(`${obj} is not a valid Availability Object`);
     if (!skipDateCheck) obj.date = validateDateObj(obj.date);
 
     obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
@@ -170,8 +167,6 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
 export function validateWeeklyAvailabilityObj(obj) {
     const allowedFields = ["days"];
     obj = validateObjectKeys(obj, allowedFields, "WeeklyAvailability Object");
-
-    //if (!(obj instanceof WeeklyAvailability)) throw new ValidationError(`${obj} is not a valid WeeklyAvailability Object`);
 
     obj.days = validateArrayElements(obj.days, "WeeklyAvailability Days", (availabilityObj) => validateAvailabilityObj(availabilityObj, true), 7);
 
@@ -191,8 +186,6 @@ export function validateCommentNoteBody(str, label = "Body") {
 export function validateResponseObj(obj, allowedDates = undefined) {
     const allowedKeys = ["uid", "availabilities"];
     obj = validateObjectKeys(obj, allowedKeys, "Response Object");
-
-    //if (!(obj instanceof Response)) throw new ValidationError(`${obj} is not a valid Response Object`);
 
     obj.uid = validateUserId(obj.uid);
     obj.availabilities = validateArrayElements(obj.availabilities, "Response Object's Availability Array", (elem) => validateAvailabilityObj(elem));

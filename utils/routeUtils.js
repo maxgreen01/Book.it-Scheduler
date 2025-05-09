@@ -1,9 +1,11 @@
 // Utility functions for use in routes
 
-import path from "node:path";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // absolute filepath to the root directory of this project
-export const __rootdir = path.join(import.meta.dirname, "..");
+const __filename = fileURLToPath(import.meta.url);
+export const __rootdir = path.join(path.dirname(__filename), "..");
 
 // Create an object of options passed to `res.render()`
 export function prepareRenderOptions(req) {
