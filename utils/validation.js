@@ -51,7 +51,7 @@ export async function validateMeetingExists(id) {
 
 //function that when you pass in a meeting id, and user id checks if the owner of a meeting is the same as the uid
 export async function isUidMeetingOwner(uid, mid) {
-    meeting = await getMeetingById(mid);
+    const meeting = await getMeetingById(mid);
     if (meeting.owner !== uid) {
         throw new Error(`The owner of meeting ${mid} is not ${uid}`);
     } else {
@@ -61,7 +61,7 @@ export async function isUidMeetingOwner(uid, mid) {
 
 //checks if a user is part of the specified meeting with the mid
 export async function isUidPartofMeeting(uid, mid) {
-    meeting = await getMeetingById(mid);
+    const meeting = await getMeetingById(mid);
     const userInUserList = meeting.users.includes(uid);
     if (meeting.owner !== uid && !userInUserList) {
         throw new Error(`The user (${uid}) is not part of the meeting ${mid}`);

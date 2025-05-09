@@ -104,6 +104,8 @@ nav a:hover {
 .notes-section {
     overflow: auto;
     grid-area: notes-section;
+    display: flex;
+    flex-direction: column;
 }
 .comments-section {
     overflow: auto;
@@ -217,4 +219,65 @@ nav a:hover {
 
 .selected {
     background-color: rgba(205, 90, 90, 0.5);
+}
+
+.notes-form {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: stretch;
+    gap: 4px;
+}
+
+/* Make it so that notes input takes up the entire div
+It looks super weird without doing that... -PV
+*/
+#noteInput {
+    flex: 1;
+    height: 100%;
+}
+
+/*Hide label to make it still available for screen readers
+But regular users will not see it
+*/
+.hidden-label {
+    font-size: 0%;
+}
+
+/*
+Paper Plane Send Icon
+*/
+.send-icon {
+    width: 40px;
+    height: 105%;
+    background-color: #6a5acd;
+    /*Send Icon Image from: flaticon.com full credit to them!*/
+    background-image: url("https://dl.dropboxusercontent.com/scl/fi/zcy6oy39ae1628q68m46s/paper-airplane-svgrepo-com.svg?rlkey=y4gh2fd4jx9gf8n6zbbizupku&st=yb5dxmir&raw=1");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    border: none;
+    border-radius: 8px;
+}
+
+/*Styling for AJAX-divs after response/success*/
+
+#server-success {
+    background-color: #d4edda;
+    border-left: 8px solid #28a745;
+    padding: 10px;
+    margin: 10px 0;
+    font-family: sans-serif;
+    color: #155724;
+}
+
+#server-fail {
+    background-color: #f8d7da;
+    border-left: 8px solid #dc3545;
+    padding: 10px;
+    margin: 10px 0;
+    font-family: sans-serif;
+    color: #721c24;
 }

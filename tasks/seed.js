@@ -56,7 +56,7 @@ async function seed() {
         console.log(`Adding user #${i}: ${fname} ${lname}`);
         const user = await createUser({
             uid: username,
-            password: await bcrypt.hash(faker.internet.password(), 10),
+            password: "TestPass2!",
             firstName: fname,
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),

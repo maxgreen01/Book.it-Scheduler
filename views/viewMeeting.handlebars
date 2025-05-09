@@ -54,7 +54,9 @@
                 <p>Author: {{this.uid}}</p>
                 <p>Text: {{this.body}}</p>
                 <p>Created at: {{this.dateCreated}}</p>
+                {{#if this.dateUpdated}}
                 <p>Last changes made: {{this.dateUpdated}}</p>
+                {{/if}}
             </div>
             {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
             <p>0 comments</p>
@@ -65,8 +67,17 @@
         {{!-- Container for note --}}
         <div class="notes-section">
             <h2>Notes</h2>
-            <p>Add a private note.</p>
+            <form method="POST" name="notesForm" id="notesForm" class="notes-form" action="./note">
+                <label for="noteInput" class="hidden-label">Enter a Note:</label>
+                {{#if note}}
+                <textarea type="text" id="noteInput" name="noteInput" class="prev-Note" class="note-input" placeholder="jquery is not working!"></textarea>
+                {{else}}
+                <textarea type="text" id="noteInput" name="noteInput" class="note-input" placeholder="Add a private note."></textarea>
+                {{/if}}
+                <button type="submit" id="noteSend" class="send-icon" label="Send Note"></button>
+            </form>
         </div>
     </div>
 </main>
 <script src="../../public/js/calendars.js"></script>
+<script type="module" src="../../public/js/pages/note.js"></script>

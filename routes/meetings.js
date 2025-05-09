@@ -1,6 +1,8 @@
 import express from "express";
 import { getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
+import { getMeetingById, updateMeetingNote } from "../data/meetings.js";
+import { ValidationError, validateCommentNoteBody, validateUserId } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -44,16 +46,19 @@ router
     .get(async (req, res) => {
         //NOTE: not validating until we have real id's
         const meetingId = req.params.meetingId;
-
         try {
             //plug meeting comments into page from db
             const comments = await getMeetingComments(meetingId);
+            const userId = validateUserId(req.session.user._id);
+            const meeting = await getMeetingById(meetingId);
+            const note = meeting.notes[userId];
             return res.render("viewMeeting", {
                 title: "Test Meeting",
                 comments: comments,
                 days: testDays,
                 meeting: testMatrix,
                 timeColumn: timeColumn,
+                note,
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
@@ -91,12 +96,28 @@ router
 
 router
     .route("/:meetingId/note")
-    .get(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
-    })
     .post(async (req, res) => {
-        // TODO
+        try {
+            const meetingId = req.params.meetingId;
+            const userId = validateUserId(req.session.user._id);
+            const note = validateCommentNoteBody(req.body.noteInput, "Note Body");
+            await updateMeetingNote(meetingId, userId, note);
+            return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
+        } catch (e) {
+            if (e instanceof ValidationError) {
+                return res.status(400).json({ error: e.message });
+            } else {
+                return res.status(500).json({ error: e.message });
+            }
+        }
+    })
+    .get(async (req, res) => {
+        try {
+            const meetingId = req.params.meetingId;
+            const meeting = await getMeetingById(meetingId);
+            const userId = validateUserId(req.session.user._id);
+            return res.status(200).json({ note: meeting.notes[userId] });
+        } catch (e) {}
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
