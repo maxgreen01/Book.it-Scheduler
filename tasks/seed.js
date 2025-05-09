@@ -5,7 +5,7 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import { createUser } from "../data/users.js";
-import { createComment, getCommentById } from "../data/comments.js";
+import { createComment } from "../data/comments.js";
 import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 import { Response } from "../public/js/classes/responses.js";

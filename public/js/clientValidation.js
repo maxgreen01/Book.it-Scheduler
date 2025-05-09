@@ -1,6 +1,3 @@
-import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-import { Response } from "./classes/responses.js";
-
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
     constructor(message) {
@@ -137,6 +134,7 @@ export function validateObjectKeys(obj, allowedFields, label = "Object") {
 
 // Check whether two Date objects represent the same calendar day
 export function isSameDay(firstDate, secondDate) {
+    if (typeof firstDate == "undefined" || typeof secondDate == "undefined") return false;
     return firstDate.getFullYear() === secondDate.getFullYear() && firstDate.getMonth() === secondDate.getMonth() && firstDate.getDate() === secondDate.getDate();
 }
 
@@ -154,14 +152,9 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
     const allowedKeys = ["slots", "date"];
     obj = validateObjectKeys(obj, allowedKeys, "Availability Object");
 
-    // FIXME - maybe make this (and the similar funcs) Duck-Typed, i.e. remove the instanceof checks
-    //       this would allow reusing these functions in the class constructors
-    if (!(obj instanceof Availability)) throw new ValidationError(`${obj} is not a valid Availability Object`);
     if (!skipDateCheck) obj.date = validateDateObj(obj.date, "Availability Object's Date");
-
     obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
 
-    // FIXME - if using Duck Typing, maybe we can directly construct the Availability Object here
     return obj;
 }
 
@@ -170,8 +163,6 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
 export function validateWeeklyAvailabilityObj(obj) {
     const allowedFields = ["days"];
     obj = validateObjectKeys(obj, allowedFields, "WeeklyAvailability Object");
-
-    if (!(obj instanceof WeeklyAvailability)) throw new ValidationError(`${obj} is not a valid WeeklyAvailability Object`);
 
     obj.days = validateArrayElements(obj.days, "WeeklyAvailability Days", (availabilityObj) => validateAvailabilityObj(availabilityObj, true), 7);
 
@@ -191,8 +182,6 @@ export function validateCommentNoteBody(str, label = "Body") {
 export function validateResponseObj(obj, allowedDates = undefined) {
     const allowedKeys = ["uid", "availabilities"];
     obj = validateObjectKeys(obj, allowedKeys, "Response Object");
-
-    if (!(obj instanceof Response)) throw new ValidationError(`${obj} is not a valid Response Object`);
 
     obj.uid = validateUserId(obj.uid);
     obj.availabilities = validateArrayElements(obj.availabilities, "Response Object's Availability Array", (elem) => validateAvailabilityObj(elem));
@@ -216,6 +205,26 @@ export function validateResponseObj(obj, allowedDates = undefined) {
     }
 
     return obj;
+}
+
+// Check if each element in the ResponseArr has the same date in the same order as all others (and in the same order).
+// Return the array of dates contained by all Response Objects if the checks succeed
+export function validateResponseArrHasSameDates(responseArr) {
+    validateArrayElements(responseArr, "Response Array", (response) => {
+        validateResponseObj(response);
+    });
+
+    const responseDates = responseArr[0].availabilities.map((avail) => avail.date);
+
+    validateArrayElements(responseArr, "Response Array", (response) => {
+        const availabilities = response.availabilities;
+        for (let i = 0; i < availabilities.length; i++) {
+            if (!isSameDay(responseDates[i], availabilities[i].date)) {
+                throw new Error("Response Objects must have all the same dates!");
+            }
+        }
+    });
+    return responseDates;
 }
 
 //
