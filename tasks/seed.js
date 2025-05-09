@@ -5,7 +5,7 @@ import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
 import { createUser } from "../data/users.js";
-import { createComment, getCommentById } from "../data/comments.js";
+import { createComment } from "../data/comments.js";
 import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 import { Response } from "../public/js/classes/responses.js";
@@ -93,7 +93,7 @@ async function seed() {
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
-            duration: faker.number.int({ min: 1, max: 20 }),
+            duration: faker.number.int({ min: 1, max: meetingEnd - meetingStart }),
             owner: faker.helpers.arrayElement(meetingUsers),
             dates: meetingDates,
             timeStart: meetingStart,
@@ -153,48 +153,6 @@ async function seed() {
         console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
         commentIds.push(comment._id);
     }
-
-    // // TEST MEETING BRANCH
-
-    // // create comments for meeting test
-    // for (let i = 0; i < 8; i++) {
-    //     // randomly select a user and meeting for this comment
-    //     const uid = faker.helpers.arrayElement(userIds);
-    //     const meeting = "1234abcd1234abcd1234abcd"; //for the test meeting
-
-    //     const comment = await createComment({
-    //         uid: userId,
-    //         meetingId: meetingId,
-    //         body: faker.lorem.sentences({ min: 2, max: 4 }),
-    //     });
-
-    //     // lambda to show only a short bit of the comment
-    //     const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
-
-    //     console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
-    //     commentIds.push(comment._id);
-    // }
-
-    // // TEST MEETING BRANCH
-
-    // // create comments for meeting test
-    // for (let i = 0; i < 8; i++) {
-    //     // randomly select a user and meeting for this comment
-    //     const uid = faker.helpers.arrayElement(userIds);
-    //     const meeting = "1234abcd1234abcd1234abcd"; //for the test meeting
-
-    //     const comment = await commentFunctions.createComment({
-    //         uid: uid,
-    //         meetingId: meeting,
-    //         body: faker.lorem.sentences({ min: 2, max: 4 }),
-    //     });
-
-    //     // lambda to show only a short bit of the comment
-    //     const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
-
-    //     console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
-    //     commentIds.push(comment._id);
-    // }
 
     console.log("Finished seeding the database!");
 }

@@ -57,13 +57,14 @@ app.use("/", async (req, res, next) => {
 
 // constant defining the darkest a shaded box on the calendar can be
 // MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
-// TODO BL: There is maybe a way to dynamically update this based on # meeting attendees
-const MAX_USERS = 4;
 
 // Little handlebars helper to multiply inline the alpha value of the cell background
-// Ex: rgba(128, 0, 128, (opacity value)) replace value with {{multiplyOpacity 4}} where 0 is blank
-Handlebars.registerHelper("multiplyOpacity", function (value) {
-    const opacity = Math.min(1, value / MAX_USERS);
+// Ex: rgba(128, 0, 128, {{multiplyOpacity 4}}) where 0 is blank
+Handlebars.registerHelper("multiplyOpacity", function (value, options) {
+    // this a parameter passed to the route in the handlebars context
+    // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
+    const numUsers = options.data.root.numUsers;
+    const opacity = Math.min(1, value / numUsers);
     return opacity.toFixed(2);
 });
 
@@ -90,7 +91,6 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 };
 app.use(rewriteUnsupportedBrowserMethods);
 
-// TODO: move routes of the form /:meetingId to /meetings/:meetingId, else they won't get hit by this
 // prevent unauthenticated access to meeting and profile routes
 app.use(["/meetings", "/profile", "/create", "/signout"], async (req, res, next) => {
     if (typeof req.session?.user !== "undefined") next();

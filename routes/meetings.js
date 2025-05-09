@@ -59,6 +59,7 @@ router
                 meeting: testMatrix,
                 timeColumn: timeColumn,
                 note,
+                numUsers: 4, //TODO: replace this with the actual number of meeting attendees
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {

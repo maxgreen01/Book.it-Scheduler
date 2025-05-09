@@ -4,7 +4,6 @@ import * as validation from "../utils/validation.js";
 import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
-import { Response } from "../public/js/classes/responses.js";
 import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
@@ -25,6 +24,7 @@ export async function createMeeting({ name, description, duration, owner, dates,
     const insertResponse = await collection.insertOne(meeting);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`Could not add meeting "${meeting.name}" to the database`);
     meeting._id = meeting._id.toString();
+    await modifyUserMeeting(owner, meeting._id, true);
     return meeting;
 }
 
@@ -56,6 +56,12 @@ export async function isUserInMeeting(mid, uid) {
     return meeting.users.includes(uid) || meeting.owner === uid;
 } */
 
+export async function isUserMeetingOwner(mid, uid) {
+    const meeting = await getMeetingById(mid);
+    uid = validation.validateUserId(uid);
+    return meeting.owner === uid;
+}
+
 // delete the meeting with the passed in mid parameter
 export async function deleteMeeting(mid) {
     // make sure meeting actually exists
@@ -65,6 +71,10 @@ export async function deleteMeeting(mid) {
     const removed = await collection.findOneAndDelete({ _id: validation.convertStrToObjectId(mid) });
     if (!removed) throw new Error(`Could not delete the meeting with ID "${mid}"`);
     removed._id = removed._id.toString();
+    for (let user of removed.users) {
+        await modifyUserMeeting(user, removed._id, false);
+    }
+    await modifyUserMeeting(removed.owner, removed._id, false);
     return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
 }
 
@@ -97,6 +107,13 @@ export async function addResponseToMeeting(mid, response) {
     currResponses.filter((currResponse) => {
         currResponse.uid !== response.uid;
     });
+
+    for (let i = 0; i < foundMeeting.dates.length; i++) {
+        if (!validation.isSameDay(foundMeeting.dates[i], response.availabilities[i].date)) {
+            throw new Error(`Expect response to have date ${foundMeeting.dates[i]} but instead it had response.availabilities[i].date`);
+        }
+    }
+
     currResponses.push(response);
     // add the Response to the meeting
     let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses } }, { returnDocument: "after" });
@@ -146,12 +163,4 @@ export async function setBooking(mid, bookingStatus, bookedTime) {
     if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
     updated._id = updated._id.toString();
     return updated;
-}
-
-export async function findCommonAvailabilityOfMeeting(mid) {
-    // make sure meeting actually exists
-    mid = await validation.validateMeetingExists(mid);
-
-    const foundMeeting = await getMeetingById(mid);
-    return Response.mergeResponsesToAvailability(foundMeeting.responses, foundMeeting.timeStart, foundMeeting.timeEnd);
 }
