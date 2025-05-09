@@ -73,29 +73,21 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const changeDateToStart = (date) => {
-            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
-        };
+        const startDate = faker.date.soon({ days: 60 });
+        const endDate = faker.date.soon({ days: 10, refDate: startDate });
 
-        const randomDate = changeDateToStart(faker.date.future());
-        const meetingDates = [];
-
-        const meetingLengthDays = faker.number.int({ min: 1, max: 7 });
-        for (let i = 0; i < meetingLengthDays; i++) {
-            let dateToAdd = new Date(randomDate);
-            dateToAdd.setDate(dateToAdd.getDate() + i);
-            meetingDates.push(dateToAdd);
-        }
+        const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
         const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart, max: 42 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: 42 });
 
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
-            duration: faker.number.int({ min: 1, max: 20 }),
+            duration: (duration / 2).toString(), // convert to a string input in hours
             owner: faker.helpers.arrayElement(meetingUsers),
-            dates: meetingDates,
+            dateStart: startDate,
+            dateEnd: endDate,
             timeStart: meetingStart,
             timeEnd: meetingEnd,
         };
@@ -116,7 +108,7 @@ async function seed() {
 
         for (const user of meetingUsers) {
             let arrOfAvailability = [];
-            for (const date of meetingDates) {
+            for (const date of addedMeeting.dates) {
                 const newAvailability = new Availability(randomSlotGenerator(), date);
                 arrOfAvailability.push(newAvailability);
             }

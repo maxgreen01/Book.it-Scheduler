@@ -62,22 +62,22 @@ export function validateNumber(num, label = "Number", min, max) {
 
 // Convert a string to an int, and throw an error if it is NaN or outside the given bounds.
 // Return the converted number if it is valid.
-export function convertStrToInt(str, label = "Number", min, max) {
+export function convertStrToInt(str, label = "Integer", min, max) {
     const num = Number.parseInt(str);
     return validateNumber(num, label, min, max);
 }
 
 // Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
 // Return the converted number if it is valid.
-export function convertStrToFloat(str, label = "Number", min, max) {
+export function convertStrToFloat(str, label = "Float", min, max) {
     const num = Number.parseFloat(str);
     return validateNumber(num, label, min, max);
 }
 
-export function validateIntRange(int, label = "Number", min, max = Number.MAX_SAFE_INTEGER) {
+export function validateIntRange(int, label = "Integer", min, max = Number.MAX_SAFE_INTEGER) {
     const num = validateNumber(int, label, min, max);
     if (!Number.isInteger(int)) {
-        throw new ValidationError(`${num} is does not have a type of Integer`);
+        throw new ValidationError(`${label} is not an integer`);
     }
     return num;
 }
@@ -106,7 +106,7 @@ export function validatePassword(password) {
 
 // Throw an error if a string is not valid or does not represent not a valid ObjectId.
 // Return the trimmed string if it represents a valid ObjectId.
-export function validateStrAsObjectId(id, label) {
+export function validateStrAsObjectId(id, label = "ObjectId String") {
     id = validateAndTrimString(id, label);
     const validObjectIdRegex = /^[0-9a-fA-F]{24}$/; // replaces ObjectId.isValid() so this can be used on client side
     if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} "${id}" does not represent a valid ObjectId string`);
@@ -142,8 +142,8 @@ export function isSameDay(firstDate, secondDate) {
 
 // Validate that an object is a valid JS Date Object.
 // Return the original object if it is valid.
-export function validateDateObj(obj) {
-    if (!(obj instanceof Date)) throw new ValidationError(`${obj} is not a valid Date Object`);
+export function validateDateObj(obj, label = "Date") {
+    if (!(obj instanceof Date) || Number.isNaN(obj.valueOf())) throw new ValidationError(`${label} is not a valid Date Object`);
     return obj;
 }
 
@@ -157,7 +157,7 @@ export function validateAvailabilityObj(obj, skipDateCheck = false) {
     // FIXME - maybe make this (and the similar funcs) Duck-Typed, i.e. remove the instanceof checks
     //       this would allow reusing these functions in the class constructors
     if (!(obj instanceof Availability)) throw new ValidationError(`${obj} is not a valid Availability Object`);
-    if (!skipDateCheck) obj.date = validateDateObj(obj.date);
+    if (!skipDateCheck) obj.date = validateDateObj(obj.date, "Availability Object's Date");
 
     obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
 
@@ -246,7 +246,7 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
 
 // Throw an error if the type (extension) of a file does not match one of the allowed image types.
 // Return the file extension if it is one of the allowed image types.
-export function validateImageFileType(fileName, label) {
+export function validateImageFileType(fileName, label = "Image File") {
     fileName = validateAndTrimString(fileName, label);
     const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);

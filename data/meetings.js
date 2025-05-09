@@ -8,9 +8,9 @@ import { Response } from "../public/js/classes/responses.js";
 import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
-export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd }) {
+export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }) {
     // set up the document that will be saved to the DB
-    const meeting = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd });
+    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd });
     meeting.bookingStatus = 0; // todo make an enum for status code meanings
     meeting.bookedTime = null;
     meeting.users = [];
@@ -25,7 +25,10 @@ export async function createMeeting({ name, description, duration, owner, dates,
     const insertResponse = await collection.insertOne(meeting);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`Could not add meeting "${meeting.name}" to the database`);
     meeting._id = meeting._id.toString();
+
+    // add the newly created meeting to the owner's profile
     await modifyUserMeeting(owner, meeting._id, true);
+
     return meeting;
 }
 

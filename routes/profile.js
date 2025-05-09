@@ -21,8 +21,7 @@ router
 
         // todo - get current UID from session, then pass user object to HTML template
         // try {
-        //     const uid = "";
-        //     const user = await userFunctions.getUserById(uid);
+        //     const user = req.session.;
         //     return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) });
         // } catch (err) {
         //    if (err instanceof ValidationError) {
