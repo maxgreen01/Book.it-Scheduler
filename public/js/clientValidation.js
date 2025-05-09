@@ -1,3 +1,6 @@
+import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
+import { Response } from "./classes/responses.js";
+
 // custom error class to identify validation errors (i.e. HTTP 400 errors) as opposed to server errors
 export class ValidationError extends Error {
     constructor(message) {
@@ -5,10 +8,6 @@ export class ValidationError extends Error {
         this.name = this.constructor.name;
     }
 }
-
-import { Availability, WeeklyAvailability } from "./classes/availabilities.js";
-import { Note } from "./classes/notes.js";
-import { Response } from "./classes/responses.js";
 
 //
 // ============ String Validation ============
@@ -65,23 +64,22 @@ export function validateNumber(num, label = "Number", min, max) {
 // Return the converted number if it is valid.
 export function convertStrToInt(str, label = "Number", min, max) {
     const num = Number.parseInt(str);
-    validateNumber(num, label, min, max);
-    return num;
+    return validateNumber(num, label, min, max);
 }
 
 // Convert a string to a float, and throw an error if it is NaN or outside the given bounds.
 // Return the converted number if it is valid.
 export function convertStrToFloat(str, label = "Number", min, max) {
     const num = Number.parseFloat(str);
-    validateNumber(num, label, min, max);
-    return num;
+    return validateNumber(num, label, min, max);
 }
 
-export function validateIntRange(num, label = "Number", min, max) {
-    if (!Number.isInteger(num)) {
-        throw new ValidationError(`The number ${num} was not recognized as a valid Integer!`);
+export function validateIntRange(int, label = "Number", min, max = Number.MAX_SAFE_INTEGER) {
+    const num = validateNumber(int, label, min, max);
+    if (!Number.isInteger(int)) {
+        throw new ValidationError(`${num} is does not have a type of Integer`);
     }
-    return validateNumber(num, label, min, max);
+    return num;
 }
 
 //
@@ -115,71 +113,108 @@ export function validateStrAsObjectId(id, label) {
     return id;
 }
 
-//validate that an Object is a valid Availability Object
-export function validateAvailabilityObj(obj, skipDateCheck) {
+//
+// ============ Object & Class Validation ============
+//
+
+// Throw an error if an object contains any fields other than the allowed ones, which are passed as an array of strings.
+// The object is not *required* to have all of these fields, because the value of each field should be checked individually and separately.
+// Return the original object if it only contains valid fields.
+export function validateObjectKeys(obj, allowedFields, label = "Object") {
+    if (typeof obj !== "object") throw new ValidationError(`${label} must be an object`);
+    validateArrayElements(allowedFields, `${label}'s required fields`, (field) => {
+        if (typeof field !== "string") throw new ValidationError(`${label}'s required fields must be strings`);
+    });
+
+    // find and report disallowed fields
+    const objKeys = Object.keys(obj);
+    const invalidFields = objKeys.filter((key) => !allowedFields.includes(key));
+    if (invalidFields.length > 0) {
+        throw new ValidationError(`${label} contains invalid fields: ${JSON.stringify(invalidFields)}`);
+    }
+    return obj;
+}
+
+// Check whether two Date objects represent the same calendar day
+export function isSameDay(firstDate, secondDate) {
+    return firstDate.getFullYear() === secondDate.getFullYear() && firstDate.getMonth() === secondDate.getMonth() && firstDate.getDate() === secondDate.getDate();
+}
+
+// Validate that an object is a valid JS Date Object.
+// Return the original object if it is valid.
+export function validateDateObj(obj) {
+    if (!(obj instanceof Date)) throw new ValidationError(`${obj} is not a valid Date Object`);
+    return obj;
+}
+
+// Validate that an object is a valid Availability Object.
+// If `skipDateCheck == true`, don't validate that `obj.date` is a valid JS Date Object.
+// Return the validated object if it is valid.
+export function validateAvailabilityObj(obj, skipDateCheck = false) {
     const allowedKeys = ["slots", "date"];
-    if (!(obj instanceof Availability)) {
-        throw new ValidationError(`${obj} is not a valid Availability Object!`);
-    }
     obj = validateObjectKeys(obj, allowedKeys, "Availability Object");
-    if (!(obj.date instanceof Date) && !skipDateCheck) {
-        throw new ValidationError(`${date} is not a valid Date Object!`);
-    }
-    if (obj.slots.length !== 48) {
-        throw new ValidationError(`${obj.slots} is not a valid slots array of 48 elements!`);
-    }
-    for (let elem of obj.slots) {
-        if (!Number.isInteger(elem)) {
-            validateIntRange(elem, "Availability Int Slot", 0, Number.MAX_SAFE_INTEGER);
-            throw new ValidationError(`${elem} is not a valid Integer in the slots array {$obj.slots}!`);
-        }
-    }
+
+    // FIXME - maybe make this (and the similar funcs) Duck-Typed, i.e. remove the instanceof checks
+    //       this would allow reusing these functions in the class constructors
+    if (!(obj instanceof Availability)) throw new ValidationError(`${obj} is not a valid Availability Object`);
+    if (!skipDateCheck) obj.date = validateDateObj(obj.date);
+
+    obj.slots = validateArrayElements(obj.slots, "Availability Object's Slots", (slot) => validateIntRange(slot, "Availability Object's Slot", 0), 48);
+
+    // FIXME - if using Duck Typing, maybe we can directly construct the Availability Object here
     return obj;
 }
 
-//validate that an Object is a valid weeklyAvailability Object
+// Validate that an object is a valid WeeklyAvailability Object.
+// Return the validated object if it is valid.
 export function validateWeeklyAvailabilityObj(obj) {
-    if (!(obj instanceof WeeklyAvailability)) {
-        throw new ValidationError(`${obj} is not a valid weeklyAvailability Object!`);
-    }
-    const allowedFields = ["arrSlots"];
-    obj = validateObjectKeys(obj, allowedFields, "Weekly Availability Objects");
-    if (obj.arrSlots.length !== 7) {
-        throw new ValidationError(`${obj.arrSlots} is not a valid arrSlots array of 7 elements!`);
-    }
-    for (let i = 0; i < 7; i++) {
-        const AvailabilityElem = obj.arrSlots[i];
-        if (!(AvailabilityElem instanceof Availability)) {
-            throw new ValidationError(`${obj.arrSlots[i]} is not a valid Availability Object!`);
-        }
-        if (AvailabilityElem.date !== i) {
-            throw new ValidationError(`Date ${obj.arrSlots[i].Date} does not match the expect date of ${i}!`);
-        }
-        validateAvailabilityObj(obj.arrSlots[i], true);
-    }
+    const allowedFields = ["days"];
+    obj = validateObjectKeys(obj, allowedFields, "WeeklyAvailability Object");
+
+    if (!(obj instanceof WeeklyAvailability)) throw new ValidationError(`${obj} is not a valid WeeklyAvailability Object`);
+
+    obj.days = validateArrayElements(obj.days, "WeeklyAvailability Days", (availabilityObj) => validateAvailabilityObj(availabilityObj, true), 7);
+
     return obj;
 }
 
-//validate that an Object is a valid Notes object
-export function validateNotesObj(obj) {
-    const allowedKeys = ["uid", "noteString"];
-    if (!(obj instanceof Note)) {
-        throw new ValidationError(`${obj} is not a valid Notes Object!`);
-    }
-    obj = validateObjectKeys(obj, allowedKeys, "Note Object");
-    obj.uid = validateUserId(obj.uid);
-    obj.noteString = validateAndTrimString(obj.noteString, "Note String", 1, 5000);
+// Validate that a string is a valid Note or Comment body.
+// Return the validated body if it is valid.
+// TODO BL: Sanitize comment body for security vulnerabilities - maybe should happen in the routes?
+export function validateCommentNoteBody(str, label = "Body") {
+    return validateAndTrimString(str, label, 1, 5000);
 }
 
-//validate that an Object is a valid Responses object
-export function validateResponseObj(obj) {
-    const allowedKeys = ["uid", "noteString"];
-    if (!(obj instanceof Response)) {
-        throw new ValidationError(`${obj} is not a valid Response Object!`);
-    }
+// Validate that an object is a valid Responses Object.
+// If `allowedDates` is defined, verify that the `date` property of each Availability object in the Response corresponds to one of the allowed dates.
+// Return the validated object if it is valid.
+export function validateResponseObj(obj, allowedDates = undefined) {
+    const allowedKeys = ["uid", "availabilities"];
     obj = validateObjectKeys(obj, allowedKeys, "Response Object");
+
+    if (!(obj instanceof Response)) throw new ValidationError(`${obj} is not a valid Response Object`);
+
     obj.uid = validateUserId(obj.uid);
-    obj.availability = validateAvailabilityObj(obj.availability);
+    obj.availabilities = validateArrayElements(obj.availabilities, "Response Object's Availability Array", (elem) => validateAvailabilityObj(elem));
+
+    if (allowedDates !== undefined) {
+        // Make sure the `date` of each Availability object is a valid date, with no duplicate dates
+
+        allowedDates = validateArrayElements(allowedDates, "Allowed Response Dates", (date) => validateDateObj(date));
+
+        // make sure each of the Availability objects has a `date` corresponding to one of the specified dates.
+        // FIXME make sure there aren't multiple Availability objects with the same Date -- could remove from `allowedDates`?
+        for (const availability of obj.availabilities) {
+            const isDateValid = allowedDates.some((date) => {
+                isSameDay(date, availability.date);
+            });
+
+            if (!isDateValid) {
+                throw new ValidationError(`Response Object contains an Availability object with a date that is not allowed`);
+            }
+        }
+    }
+
     return obj;
 }
 
@@ -202,7 +237,11 @@ export function validateArrayElements(arr, label = "Array", func, numElements) {
     if (!Array.isArray(arr)) throw new ValidationError(`${label} must be an array`);
     if (typeof numElements === "undefined" && arr.length === 0) throw new ValidationError(`${label} cannot be empty`);
     if (typeof numElements !== "undefined" && arr.length !== numElements) throw new ValidationError(`${label} does not have ${numElements} elements`);
-    return arr.map(func);
+    try {
+        return arr.map(func);
+    } catch (err) {
+        throw new ValidationError(`Error iterating elements of ${label}:   ${err.message}`);
+    }
 }
 
 // Throw an error if the type (extension) of a file does not match one of the allowed image types.
@@ -212,13 +251,4 @@ export function validateImageFileType(fileName, label) {
     const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
     return match[1].toLowerCase(); // return the matched file extension
-}
-
-export function validateObjectKeys(obj, validKeys, label = "Object") {
-    const currKeys = Object.keys(obj);
-    const disAllowedFields = currKeys.filter((key) => !validKeys.includes(key));
-    if (disAllowedFields > 0) {
-        throw new ValidationError(`Disallowed fields ${disAllowedFields} in ${label}`);
-    }
-    return obj;
 }

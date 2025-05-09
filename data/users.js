@@ -12,8 +12,15 @@ export async function createUser({ uid, password, firstName, lastName, descripti
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
     user.meetings = [];
 
-    // make sure username is unique
-    if (await validation.isUserIdTaken(user._id)) throw new Error(`User ID "${user._id}" is already taken`);
+    // make sure username (which is already validated) is unique in the DB
+    try {
+        await getUserById(user._id);
+        // if no error occurs, then the user already exists
+        throw new Error(`User ID "${user._id}" is already taken`);
+    } catch {
+        // if an error is thrown, then the username should be available (which is a good thing)
+        // todo - maybe add some way to identify and NOT ignore MongoDB errors here
+    }
 
     // hash password
     user.password = await bcrypt.hash(user.password, 10);
@@ -50,26 +57,17 @@ export async function getUserById(uid) {
     return user;
 }
 
-// check whether a user exists with the specified ID
-export async function doesUserExist(uid) {
-    try {
-        await getUserById(uid);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
 // remove the user with the specified ID from the DB, and return true to indicate success
 export async function deleteUser(uid) {
     uid = validation.validateUserId(uid);
     const collection = await usersCollection();
     const removed = await collection.findOneAndDelete({ _id: validation.uidToCaseInsensitive(uid) });
     if (!removed) throw new Error(`Could not delete the user with ID "${uid}"`);
-    return true; // todo MG - maybe return something more useful
+    return true; // FIXME MG - maybe return something more useful
 }
 
-// update certain fields (only the non-`undefined` ones) for the user with the specified ID, and return the updated user object
+// Update certain fields (only the non-`undefined` ones) of the user with the specified ID.
+// Return the updated user object if operation is successful.
 export async function updateUser(uid, { password, firstName, lastName, description, profilePicture, availability }) {
     uid = validation.validateUserId(uid);
     const collection = await usersCollection();
@@ -81,11 +79,12 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
 }
 
 // Add or remove a meeting to the list of responded meetings for a particular user, and return the updated user object.
+// Attempting to add a meeting ID that's already present in the DB will not change anything.
 // `isAdd` should be `true` to add the meetingId to the user, or `false` to remove the meetingId.
 export async function modifyUserMeeting(uid, meetingId, isAdd) {
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    const action = isAdd ? "$push" : "$pull";
+    const action = isAdd ? "$addToSet" : "$pull";
 
     const collection = await usersCollection();
     const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { [action]: { meetings: meetingId } }, { returnDocument: "after" });

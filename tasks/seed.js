@@ -4,10 +4,11 @@ import { faker } from "@faker-js/faker";
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import bcrypt from "bcrypt";
 
-import * as userFunctions from "../data/users.js";
-import * as commentFunctions from "../data/comments.js";
-import { ObjectId } from "mongodb";
-import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { createUser } from "../data/users.js";
+import { createComment, getCommentById } from "../data/comments.js";
+import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
+import { Response } from "../public/js/classes/responses.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -16,6 +17,7 @@ async function seed() {
     const N_MTG = 5; // create n meetings
 
     // random user generation
+    console.log(`\nGenerating ${N_USR} users...`);
     const userIds = [];
     for (let i = 0; i < N_USR; i++) {
         const fname = faker.person.firstName();
@@ -51,77 +53,100 @@ async function seed() {
             return weeklySlots;
         };
 
-        //FIXME: dont actually add user to db since its currently broken
-
-        console.log(`Adding user ${i}: ${fname} ${lname}`);
-        const user = await userFunctions.createUser({
+        console.log(`Adding user #${i}: ${fname} ${lname}`);
+        const user = await createUser({
             uid: username,
             password: await bcrypt.hash(faker.internet.password(), 10),
             firstName: fname,
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),
-            profilePicture: `${username}.jpg`,
+            profilePicture: "_default.jpg",
             availability: new WeeklyAvailability(generateWeeklyAvailability()),
         });
         userIds.push(user._id);
     }
 
     // random meeting generation
+    console.log(`\nGenerating ${N_MTG} meetings...`);
     const meetingIds = [];
     for (let i = 0; i < N_MTG; i++) {
-        // randomly select users for this meeting
+        // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        // Uncomment the below when we have createMeeting()
-        // console.log(`Adding comment ${i}`);
-        // const meeting = await meetingFuncs.createMeeting(
-        //     // (...)
-        // );
+        const changeDateToStart = (date) => {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+        };
 
-        // meetingIds.push(meeting._id);
-        // todo - add random user responses to the meetings
-        //        this should simultaneously fill the users' profile with the corresponding meeting IDs,
-        //        which can be done using `modifyUserMeeting()` in `/data/users.js`
+        const randomDate = changeDateToStart(faker.date.future());
+        const meetingDates = [];
+
+        const meetingLengthDays = faker.number.int({ min: 1, max: 7 });
+        for (let i = 0; i < meetingLengthDays; i++) {
+            let dateToAdd = new Date(randomDate);
+            dateToAdd.setDate(dateToAdd.getDate() + i);
+            meetingDates.push(dateToAdd);
+        }
+
+        const meetingStart = faker.number.int({ min: 1, max: 40 });
+        const meetingEnd = faker.number.int({ min: meetingStart, max: 42 });
+
+        const newMeeting = {
+            name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
+            description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
+            duration: faker.number.int({ min: 1, max: 20 }),
+            owner: faker.helpers.arrayElement(meetingUsers),
+            dates: meetingDates,
+            timeStart: meetingStart,
+            timeEnd: meetingEnd,
+        };
+
+        console.log(`Adding meeting #${i}: ${newMeeting.name}`);
+        const addedMeeting = await createMeeting(newMeeting);
+        meetingIds.push(addedMeeting._id);
+
+        const randomSlotGenerator = () => {
+            const slots = Array(48).fill(0);
+            for (let i = meetingStart; i <= meetingEnd; i++) {
+                //80% of being available
+                slots[i] = Math.random() < 0.8 ? 1 : 0;
+            }
+
+            return slots;
+        };
+
+        for (const user of meetingUsers) {
+            let arrOfAvailability = [];
+            for (const date of meetingDates) {
+                const newAvailability = new Availability(randomSlotGenerator(), date);
+                arrOfAvailability.push(newAvailability);
+            }
+            const response = new Response(user, arrOfAvailability);
+            await addResponseToMeeting(addedMeeting._id, response);
+
+            // for about half of the involved users, add a private comment
+            if (Math.random() > 0.5) {
+                const note = faker.lorem.sentences(faker.number.int({ min: 3, max: 10 }));
+                await updateMeetingNote(addedMeeting._id, user, note);
+            }
+        }
     }
 
     // random comment generation
+    console.log(`\nGenerating ${N_COM} comments...`);
     const commentIds = [];
     for (let i = 0; i < N_COM; i++) {
         // randomly select a user and meeting for this comment
-        const uid = faker.helpers.arrayElement(userIds);
-        // const meeting = faker.helpers.arrayElement(meetingIds);
+        const meetingId = faker.helpers.arrayElement(meetingIds);
+        const meeting = await getMeetingById(meetingId);
+        const allMeetingMembers = meeting.users;
+        allMeetingMembers.push(meeting.owner);
+        const userId = faker.helpers.arrayElement(allMeetingMembers);
 
-        // FIXME: replace below with above when we have meeting IDs working!
-        // -- BL
-        const meeting = new ObjectId().toString();
-
-        const comment = await commentFunctions.createComment({
-            uid: uid,
-            meetingId: meeting,
+        const comment = await createComment({
+            uid: userId,
+            meetingId: meetingId,
             body: faker.lorem.sentences({ min: 2, max: 4 }),
         });
-
-        // lambda to show only a short bit of the comment
-        const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
-
-        console.log(`Adding Comment ${i}: ${preview(comment.body)}`);
-        commentIds.push(comment._id);
-    }
-
-    // TEST MEETING BRANCH
-
-    // create comments for meeting test
-    for (let i = 0; i < 8; i++) {
-        // randomly select a user and meeting for this comment
-        const uid = faker.helpers.arrayElement(userIds);
-        const meeting = "1234abcd1234abcd1234abcd"; //for the test meeting
-
-        const comment = await commentFunctions.createComment({
-            uid: uid,
-            meetingId: meeting,
-            body: faker.lorem.sentences({ min: 2, max: 4 }),
-        });
-
         // lambda to show only a short bit of the comment
         const preview = (str) => (str.length > 40 ? str.slice(0, 30) + "..." : str);
 
