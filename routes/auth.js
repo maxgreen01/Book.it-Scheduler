@@ -21,13 +21,13 @@ router
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
             if (!(await bcrypt.compare(req.body.password, user.password))) {
-                return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+                return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
             }
             delete user.password;
             req.session.user = user;
             res.redirect("/profile");
         } catch {
-            return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+            return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
         }
     });
 

@@ -6,6 +6,7 @@ let isMouseDown = false;
 let isDeselecting = false;
 let selectedSlots = new Set();
 
+const calendarTitle = document.getElementById("calendar-title-header");
 const editButton = document.getElementById("edit-response-button");
 const submitButton = document.getElementById("submit-response-button");
 
@@ -41,6 +42,9 @@ editButton.addEventListener("click", () => {
         ts.hidden = false;
     }
 
+    // update calendar title
+    calendarTitle.innerHTML = "Your Availability";
+
     //replace self with submit button
     editButton.hidden = true;
     submitButton.hidden = false;
@@ -60,6 +64,9 @@ submitButton.addEventListener("click", () => {
     for (let ts of responseSlots) {
         ts.hidden = true;
     }
+
+    // update calendar title
+    calendarTitle.innerHTML = "Group's Availability";
 
     //replace self with edit response button
     //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj

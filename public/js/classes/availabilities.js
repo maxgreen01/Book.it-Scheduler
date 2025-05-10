@@ -27,7 +27,7 @@ export class Availability {
 
     // Return a new availability obj of when everyone is available
     // availArray: Array of Availability Objects
-    static mergeAvailability(availArray, startTime = 0, endTime = 48) {
+    static mergeAvailability(availArray, startTime = 0, endTime = 47) {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects

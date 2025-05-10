@@ -121,21 +121,24 @@ nav a:hover {
     grid-template-rows: auto;
     background-color: #ffffff;
     width: max-content;
+    padding-right: 10px;
 }
 
 /* contains calendar element as one entity */
 .calendar-wrapper {
     width: 100%;
-    /* padding-bottom: 0.5rem; */
+    padding-bottom: 0.5rem;
 }
 
 /* header spans whole element */
-.calendar-title-header {
+#calendar-title-header {
     grid-column: 2 / -1; /* skip first row */
     grid-row: 1;
     background-color: #ffffff;
     text-align: center;
     font-weight: bold;
+    font-size: large;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid #d1d8e0;
 }
 
@@ -148,9 +151,18 @@ nav a:hover {
 }
 .time-column-timestamp {
     text-align: right;
-    vertical-align: top;
+    vertical-align: bottom;
     font-size: 12px;
-    height: 12px;
+    height: 19px; /* height of timeslot cell plus 1 for border */
+    margin-right: 10px;
+}
+.time-column-timestamp:first-child {
+    /* specifically modify the first column timestamp to offset everything */
+    padding-top: 36px;
+}
+.time-column-timestamp-small {
+    /* make half-hour markers smaller */
+    font-size: 9px;
 }
 
 /* Each Day gets a column on the grid */
@@ -162,7 +174,7 @@ nav a:hover {
     border-left: 1px solid #d1d8e0;
     border-bottom: 1px solid #d1d8e0;
 }
-/* put a border on the last column */
+/* put a right-side border on the last column */
 .calendar-column:nth-last-of-type(1) {
     border-right: 1px solid #d1d8e0;
 }
@@ -170,15 +182,15 @@ nav a:hover {
 /*  Section of day column containing the day header */
 .calendar-column-header {
     background-color: #f5f5f5;
-    text-align: center;
-    height: 18px;
-    font-weight: bold;
     padding: 0.25rem;
     border-bottom: 1px solid #d1d8e0;
+    height: 33px;
 }
-#time-column-header {
-    background-color: #ffffff;
-    border: none;
+.calendar-column-header-text {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 2%;
 }
 
 /* Section of day column containing the slots */
@@ -190,10 +202,8 @@ nav a:hover {
 
 /* the actual cells of the columns */
 .timeslot {
-    height: 12px;
+    height: 18px;
     overflow: hidden;
-}
-.timeslot:nth-child(even) {
     border-bottom: 1px solid #ccc;
 }
 
