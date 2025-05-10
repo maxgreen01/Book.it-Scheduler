@@ -2,6 +2,7 @@
 
 import path from "path";
 import { fileURLToPath } from "url";
+import { ValidationError } from "./validation.js";
 
 // absolute filepath to the root directory of this project
 const __filename = fileURLToPath(import.meta.url);
@@ -23,4 +24,13 @@ export function renderError(req, res, code, msg) {
 // Shorthand for redirecting to the page that made the request, or the root as a backup
 export function redirectBack(req, res) {
     return res.redirect(req.get("Referrer") || "/");
+}
+
+//helper function that handles error cases
+export function handleReqError(res, error) {
+    if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+    } else {
+        return res.status(500).json({ error: error.message });
+    }
 }

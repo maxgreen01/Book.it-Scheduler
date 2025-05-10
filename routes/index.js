@@ -10,7 +10,6 @@ const constructorMethod = (app) => {
     app.use("/meetings", meetingsRoutes);
     app.use("/", authRoutes);
     app.use("/", rootRoutes);
-
     app.use(/(.*)/, (req, res) => {
         return res.status(404).json({ error: "Not found" });
     });
