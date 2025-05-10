@@ -57,9 +57,9 @@ router
 
                 if (i % 2 == 0) {
                     columnLabels.push({ label: `${adjustedHours}:00 ${pm ? "PM" : "AM"}`, small: false });
-                    hours++; // move to the next hour
                 } else {
                     columnLabels.push({ label: `${adjustedHours}:30 ${pm ? "PM" : "AM"}`, small: true });
+                    hours++; // move to the next hour on the next iteration
                 }
             }
 
