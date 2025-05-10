@@ -1,6 +1,7 @@
 import express from "express";
 import { getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
+import { getOwnedMeetings, getUserMeetings } from "../data/users.js";
 
 const router = express.Router();
 
@@ -28,13 +29,25 @@ for (let i = 0; i < testMatrix[0].length; i++) {
 }
 
 router.route("/").get(async (req, res) => {
+    const uid = req.session.user._id;
+    const myMeetings = await getOwnedMeetings(uid);
+    const allMeetings = await getUserMeetings(uid);
+    myMeetings.forEach((element) => {
+        element.matrix = testMatrix;
+    });
+
+    //NOTE: This is a hack to avoid changing the schema,
+    //but in the future this should be separated into two lists in the document: Owned Meetings & Responded Meeting
+
+    //filter out meetings user does not own
+    const otherMeetings = allMeetings.filter((meeting) => !myMeetings.some((myMeeting) => myMeeting._id.toString() === meeting._id.toString()));
+
     return res.render("viewAllMeetings", {
         title: "My Meetings",
-        meetingList: [
-            // FIXME populate with actual data
-            { id: "1234abcd1234abcd1234abcd", name: "Test Meeting" },
-            { id: "deadbeefdeadbeefdeadbeef", name: "Empty Meeting" },
-        ],
+        myMeetings,
+        otherMeetings,
+        numUsers: 8, //todo make this number reflect the largest # attendees globally on the page
+        //If we wanted to make this card-specific would need to rework the opacity helper
         ...routeUtils.prepareRenderOptions(req),
     });
 });

@@ -1,11 +1,61 @@
 <main>
-    <h1>{{title}}</h1>
-    <ol>
-        {{#each meetingList}}
-        <li>
-            <a href="/meetings/{{this.id}}">{{this.name}}</a>
-        </li>
-        {{/each}}
-    </ol>
-    <a href="/create">Create Meeting</a>
+    <div class="meetings-dashboard">
+        <div class="title-bar">
+            <h1 class="page-title">{{title}}</h1>
+            <div class="title-bar-actions">
+                <button id="create-meeting">+ Create Meeting</button>
+            </div>
+        </div>
+
+        <aside class="bookings-sidebar">
+            <h3>My Bookings</h3>
+            <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Show Past Meetings </label>
+            <ul id="booked-meetings-list">
+                {{#each bookedMeetings}}
+                <li>{{this.title}} — {{this.time}}</li>
+                {{/each}}
+            </ul>
+        </aside>
+
+        <section class="meetings-main-content">
+            <h2>My Meetings</h2>
+            <div class="meetings-grid" id="my-meetings">
+                {{#each myMeetings}} {{!-- Mark each card with meeting id for clickability--}}
+                <div class="meeting-card" data-id="{{this._id}}">
+                    <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
+                    <div class="meeting-info">
+                        <p><strong>Duration:</strong> {{this.duration}} hours</p>
+                        <p class="status-{{bookingStatus}}">
+                            <strong>Status: {{bookingStatus}}</strong>
+                            {{!-- {{#if isBooked}}Booked for {{bookedTime}}{{else}}Pending{{/if}} --}}
+                        </p>
+                        <p><strong>Respondents:</strong> {{this.responses.length}}</p>
+                    </div>
+                    <div class="mini-calendar-wrapper">
+                        <div class="mini-calendar" style="--day-count: {{meeting.length}}">
+                            {{#each this.matrix}}
+                            <div class="mini-calendar-column">
+                                {{!-- Only cells, no headers --}}
+                                <div class="mini-calendar-cells">
+                                    {{#each this}}
+                                    <div class="mini-timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
+            <h2>My Responses</h2>
+            <div class="meetings-grid" id="responded-meetings">
+                {{#each otherMeetings}}
+                <div class="meeting-card">{{this.name}}</div>
+                {{/each}}
+            </div>
+        </section>
+    </div>
 </main>
+<script src="../../public/js/dashboard.js"></script>

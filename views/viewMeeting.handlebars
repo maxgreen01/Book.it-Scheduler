@@ -1,13 +1,20 @@
 <main>
-    <div class="grid-container">
+    <div class="view-meetings-grid">
         {{!-- header for meeting details --}}
         <div class="title-bar">
-            <h1>Meeting View Page</h1>
+            <h1>{{title}}</h1>
+            <div class="title-bar-actions">{{!-- todo: put meeting owner actions in here if owner --}}</div>
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div class="calendar-section">
-            <h2>Calendar Here</h2>
+            <div class="title-bar">
+                <h2>Calendar Here</h2>
+                <div class="title-bar-actions">
+                    <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
+                    <button id="submit-response-button" hidden>Submit</button>
+                </div>
+            </div>
 
             {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}} {{!-- This is the only fix I could find for css grid acting weird --}}
             <div class="calendar-wrapper">
@@ -34,8 +41,6 @@
                     {{/each}}
                 </div>
             </div>
-            <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
-            <button id="submit-response-button" hidden>Submit</button>
         </div>
 
         {{!-- Container for filling in respondee info --}}
@@ -54,7 +59,7 @@
                 <p>Author: {{this.uid}}</p>
                 <p>Text: {{this.body}}</p>
                 <p>Created at: {{this.dateCreated}}</p>
-                <p>Last changes made: {{this.dateUpdated}}</p>
+                <p>{{#if dateUpdated}}Edited on {{this.dateUpdated}}{{/if}}</p>
             </div>
             {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
             <p>0 comments</p>
