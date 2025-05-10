@@ -87,7 +87,7 @@ export function validateIntRange(int, label = "Integer", min, max = Number.MAX_S
 // A `uid` is considered valid if it is alphanumeric and contains between 3 and 30 characters.
 // Return the trimmed `uid` if it is valid.
 export function validateUserId(uid) {
-    return validateAlphanumeric(uid, "User ID", 3, 30);
+    return validateAlphanumeric(uid, "Username", 3, 30);
 }
 
 // Throw an error if a password does not match password requirements

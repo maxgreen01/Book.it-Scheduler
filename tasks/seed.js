@@ -79,7 +79,7 @@ async function seed() {
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
         const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: 42 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(47, meetingStart + duration + 10) });
 
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
@@ -88,8 +88,8 @@ async function seed() {
             owner: faker.helpers.arrayElement(meetingUsers),
             dateStart: startDate,
             dateEnd: endDate,
-            timeStart: meetingStart,
-            timeEnd: meetingEnd,
+            timeStart: meetingStart.toString(),
+            timeEnd: meetingEnd.toString(),
         };
 
         console.log(`Adding meeting #${i}: ${newMeeting.name}`);

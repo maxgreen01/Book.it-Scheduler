@@ -113,13 +113,14 @@ export async function addResponseToMeeting(mid, response) {
 
     for (let i = 0; i < foundMeeting.dates.length; i++) {
         if (!validation.isSameDay(foundMeeting.dates[i], response.availabilities[i].date)) {
-            throw new Error(`Expect response to have date ${foundMeeting.dates[i]} but instead it had response.availabilities[i].date`);
+            throw new Error(`Expect Response to have date ${foundMeeting.dates[i]} but instead found ${response.availabilities[i].date}`);
         }
     }
 
     currResponses.push(response);
-    // add the Response to the meeting
-    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses } }, { returnDocument: "after" });
+
+    // add the Response (and corresponding user ID) to the meeting
+    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses }, $addToSet: { users: response.uid } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
 

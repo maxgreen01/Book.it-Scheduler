@@ -66,7 +66,7 @@ export function createMeetingDocument({ name, description, duration, owner, date
         try {
             duration = validation.convertStrToFloat(duration, "Meeting Duration") * 2; // convert string to float, then multiply by 2 to get number of 30-min increments
             duration = validation.validateIntRange(duration, "Meeting Duration", 1, 48);
-        } catch (err) {
+        } catch {
             throw new validation.ValidationError("Meeting Duration must be a number in hours, only supporting half-hour increments");
         }
     }
@@ -93,7 +93,7 @@ export function createMeetingDocument({ name, description, duration, owner, date
         if (!allowUndefined || typeof timeStart !== "undefined") timeStart = validation.validateIntRange(validation.convertStrToInt(timeStart), "Meeting Start Time", 1, 47);
         if (!allowUndefined || typeof timeEnd !== "undefined") timeEnd = validation.validateIntRange(validation.convertStrToInt(timeEnd), "Meeting End Time", 1, 47);
     } catch {
-        throw new validation.ValidationError("You must select a valid Start Time and End Time");
+        throw new validation.ValidationError(`You must select a valid Start Time and End Time ${timeStart} ${timeEnd}`);
     }
     if (timeStart >= timeEnd) throw new validation.ValidationError("End Time must be later than Start Time");
     if (duration > timeEnd - timeStart) throw new validation.ValidationError("Duration is too long for the given Start and End Times");

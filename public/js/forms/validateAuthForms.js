@@ -42,7 +42,7 @@ function validateLogin(event) {
             validateUserId(uid);
             validatePassword(password);
         } catch (err) {
-            throw new Error("Either userID or password is invalid");
+            throw new Error("Either username or password is invalid");
         }
     } catch (e) {
         event.preventDefault();

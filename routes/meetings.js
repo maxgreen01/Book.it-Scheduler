@@ -1,31 +1,13 @@
 import express from "express";
 import { getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
+import { getMeetingById } from "../data/meetings.js";
+import { mergeResponses } from "../public/js/helpers.js";
 
 const router = express.Router();
 
-// Dummy code to test viewMeeting without the underlying data structures
-let testMatrix = [
-    //random generated garbage meeting 7x48
-    [1, 0, 2, 0, 1, 1, 0, 3, 1, 2, 0, 0, 2, 1, 0, 0, 1, 1, 2, 0, 0, 0, 1, 1, 3, 1, 1, 2, 0, 0, 1, 1, 4, 2, 0, 0, 1, 1, 2, 0, 3, 1, 0, 0, 1, 2, 1, 0],
-    [1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 2, 1, 4, 1, 1, 1, 2, 1, 1, 1, 1],
-    [1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 2, 2, 2, 1, 4, 2, 1, 2, 1, 2, 1, 3, 2, 2, 1, 1, 2, 2, 2, 1],
-    [1, 0, 0, 1, 2, 1, 3, 0, 0, 1, 1, 0, 2, 1, 0, 0, 2, 1, 1, 0, 3, 0, 1, 1, 2, 0, 1, 1, 0, 1, 3, 0, 2, 0, 0, 1, 1, 0, 2, 4, 0, 1, 1, 2, 0, 0, 1, 1],
-    [0, 1, 1, 0, 2, 1, 1, 0, 0, 1, 2, 0, 1, 0, 3, 1, 1, 2, 0, 0, 1, 1, 0, 3, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 3, 1, 1, 0, 0, 4, 1, 2, 0, 1, 1, 0, 2, 1],
-    [1, 0, 2, 1, 0, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 3, 1, 0, 0, 2, 1, 1, 0, 0, 1, 2, 0, 4, 1, 0, 2, 1, 1, 0, 3, 1, 2, 0, 0, 1, 1, 1, 0, 2, 1, 1, 0],
-    [0, 1, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 3, 0, 1, 1, 2, 0, 1, 0, 0, 2, 1, 1, 0, 3, 1, 0, 1, 1, 2, 0, 0, 1, 0, 4, 1, 1, 0, 2, 1, 0, 3, 1, 1, 0, 0, 1],
-];
-let testDays = ["S", "M", "Tu", "W", "Th", "F", "S"]; //pass in the date fields from the time slot objects
-let timeColumn = []; //times are going to be dynamically generated from startTime by the route.js to avoid complex handlebars
-let hours = 0; //HACK: replace with startTime when its implemented. Need helpers to convert this into HR:MIN timestamp
-for (let i = 0; i < testMatrix[0].length; i++) {
-    if (i % 2 == 0) {
-        timeColumn.push(`${hours}:00`); //HACK: again, replace with proper timestamp logic. These are placeholders
-        hours++;
-    } else {
-        timeColumn.push("");
-    }
-}
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 router.route("/").get(async (req, res) => {
     return res.render("viewAllMeetings", {
@@ -39,31 +21,70 @@ router.route("/").get(async (req, res) => {
     });
 });
 
+// view information about a particular meeting
 router
     .route("/:meetingId")
+    // serve HTML
     .get(async (req, res) => {
-        //NOTE: not validating until we have real id's
-        const meetingId = req.params.meetingId;
-
+        // get the meeting
+        let meeting;
         try {
-            //plug meeting comments into page from db
-            const comments = await getMeetingComments(meetingId);
+            meeting = await getMeetingById(req.params.meetingId);
+        } catch (err) {
+            return routeUtils.renderError(req, res, 404, err.message);
+        }
+
+        // convert and construct meeting fields to display the data, then render the page
+        try {
+            // convert data to prepare for rendering
+
+            // transform each date into an object with properties `date` and `dow`, representing the formatted date and corresponding day of the week
+            const formattedDates = meeting.dates.map((date) => {
+                const month = monthNames[date.getMonth()];
+                const dayOfMonth = date.getDate();
+                const dayOfWeek = daysOfWeek[date.getDay()];
+                return { date: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
+            });
+
+            // construct column labels between the meeting's start and end times (in 1-hour increments)
+            const columnLabels = [];
+            let hours = Math.ceil(meeting.timeStart / 2); // round up to only show times that are in the range
+            for (let i = meeting.timeStart; i <= meeting.timeEnd; i++) {
+                // calculate the AM/PM hour
+                const pm = hours >= 12;
+                let adjustedHours = hours % 12;
+                if (adjustedHours == 0) adjustedHours = 12; // midnight
+
+                if (i % 2 == 0) {
+                    columnLabels.push({ label: `${adjustedHours}:00 ${pm ? "PM" : "AM"}`, small: false });
+                    hours++; // move to the next hour
+                } else {
+                    columnLabels.push({ label: `${adjustedHours}:30 ${pm ? "PM" : "AM"}`, small: true });
+                }
+            }
+
+            // compute merged availability based on responses
+            const merged = mergeResponses(meeting.responses, meeting.timeStart, meeting.timeEnd);
+            // extract the raw data and only display the slots within this meeting's time range
+            const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd + 1));
+
             return res.render("viewMeeting", {
-                title: "Test Meeting",
-                comments: comments,
-                days: testDays,
-                meeting: testMatrix,
-                timeColumn: timeColumn,
-                numUsers: 4, //TODO: replace this with the actual number of meeting attendees
+                title: meeting.name,
+                days: formattedDates,
+                responses: processedMerged,
+                timeColumn: columnLabels,
+                numUsers: meeting.users.length,
+                comments: await getMeetingComments(req.params.meetingId),
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
             return routeUtils.renderError(req, res, 404, err.message);
         }
     })
-
+    // submit availability
     .post(async (req, res) => {
         // TODO
+        //   note: need to make sure to offset the response data by `timeStart` when constructing Availability Objects
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 

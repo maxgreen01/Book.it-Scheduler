@@ -55,28 +55,24 @@ app.use("/", async (req, res, next) => {
     next();
 });
 
-// constant defining the darkest a shaded box on the calendar can be
-// MAX_USERS = 4 means the the darkest a box can get is if (all) 4 users pick it
-
 // Little handlebars helper to multiply inline the alpha value of the cell background
 // Ex: rgba(128, 0, 128, {{multiplyOpacity 4}}) where 0 is blank
 Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     // this a parameter passed to the route in the handlebars context
     // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
     const numUsers = options.data.root.numUsers;
-    const opacity = Math.min(1, value / numUsers);
+    const opacity = numUsers > 0 ? Math.min(1, value / numUsers) : 0;
     return opacity.toFixed(2);
 });
 
 // Handlebar helper to grab elements from potentially out-of-block arrays by index
 // example, grab day array elements while iterating under scope of meeting arrays
-// checkout: https://stackoverflow.com/a/18763906
+// check out: https://stackoverflow.com/a/18763906
 /*
-
 days: [...] <- access this by index (days[i]) out of scope
 meetings: [ [@index property refers to this while iterating], [...], [...], ...]
  */
-Handlebars.registerHelper("index_of", function (context, index) {
+Handlebars.registerHelper("at_index", function (context, index) {
     return context && context[index];
 });
 

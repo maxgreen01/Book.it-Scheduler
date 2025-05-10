@@ -122,10 +122,3 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
 
     return possibleTimes;
 }
-
-// FIXME: TEST FUNCTIONS REMOVE LATER!!!!!!
-const testMeeting = await getMeetingById("681e1bc3c436a9c51449dee2");
-const meetingResponse = testMeeting.responses;
-
-console.log(meetingResponse.map((r) => r.availabilities.map((a) => a.slots)));
-console.log(computeBestTimes(meetingResponse, testMeeting.timeStart, testMeeting.timeEnd, 2));
