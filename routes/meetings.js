@@ -1,8 +1,8 @@
 import express from "express";
-import { getMeetingComments } from "../data/comments.js";
+import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getMeetingById, updateMeetingNote } from "../data/meetings.js";
-import { ValidationError, validateCommentNoteBody, validateUserId } from "../utils/validation.js";
+import { validateCommentNoteBody, validateUserId } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -48,8 +48,18 @@ router
         const meetingId = req.params.meetingId;
         try {
             //plug meeting comments into page from db
-            const comments = await getMeetingComments(meetingId);
+            let comments = await getMeetingComments(meetingId);
             const userId = validateUserId(req.session.user._id);
+            comments = comments.reverse();
+            for (let comment of comments) {
+                comment.dateCreated = comment.dateCreated.toLocaleString();
+                if (comment.dateUpdated !== null) {
+                    comment.dateUpdated = comment.dateUpdated.toLocaleString();
+                }
+                if (userId === comment.uid) {
+                    comment.isViewerComment = true;
+                }
+            }
             const meeting = await getMeetingById(meetingId);
             const note = meeting.notes[userId];
             return res.render("viewMeeting", {
@@ -105,11 +115,7 @@ router
             await updateMeetingNote(meetingId, userId, note);
             return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
         } catch (e) {
-            if (e instanceof ValidationError) {
-                return res.status(400).json({ error: e.message });
-            } else {
-                return res.status(500).json({ error: e.message });
-            }
+            routeUtils.handleReqError(res, e);
         }
     })
     .get(async (req, res) => {
@@ -118,26 +124,57 @@ router
             const meeting = await getMeetingById(meetingId);
             const userId = validateUserId(req.session.user._id);
             return res.status(200).json({ note: meeting.notes[userId] });
-        } catch (e) {}
-        return res.status(404).json({ error: "Route not implemented yet" });
+        } catch (e) {
+            routeUtils.handleReqError(res, e);
+        }
     });
 
 router
     .route("/:meetingId/comment")
     .get(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
+        try {
+            const meetingId = req.params.meetingId;
+            const comments = await getMeetingComments(meetingId);
+            const userId = validateUserId(req.session.user._id);
+            return res.status(200).json({ comments: comments, uid: userId });
+        } catch (e) {
+            routeUtils.handleReqError(res, e);
+        }
     })
     .post(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
+        try {
+            const meetingId = req.params.meetingId;
+            const userId = validateUserId(req.session.user._id);
+            const commentBody = validateCommentNoteBody(req.body.commentInput);
+            const newComment = await createComment({ uid: userId, meetingId: meetingId, body: commentBody });
+            return res.status(200).json(newComment);
+        } catch (e) {
+            routeUtils.handleReqError(res, e);
+        }
     });
 
 router
     .route("/:meetingId/comment/:commentId")
     .get(async (req, res) => {
-        // TODO get all comments
-        return res.status(404).json({ error: "Route not implemented yet" });
+        try {
+            const comment = await getCommentById(req.params.commentId);
+            return res.status(200).json(comment);
+        } catch (e) {
+            routeUtils.handleReqError(res, e);
+        }
+    })
+    .delete(async (req, res) => {
+        try {
+            const comment = await getCommentById(req.params.commentId);
+            const UserID = validateUserId(req.session.user._id);
+            if (UserID !== comment.uid) {
+                return res.status(401).json({ error: `User ${UserID} cannot delete the comment created by ${comment.uid}` });
+            }
+            const deleted = await deleteComment(comment._id);
+            return res.status(200).json({ deleted: "success", comment: deleted });
+        } catch (e) {
+            routeUtils.handleReqError(res, e);
+        }
     })
     .post(async (req, res) => {
         // TODO post a reaction

@@ -17,6 +17,7 @@ export default [
                 ...globals.node,
                 ...globals.browser,
                 jquery: "readonly",
+                $: "readonly",
             },
         },
     },

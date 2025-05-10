@@ -199,16 +199,6 @@ nav a:hover {
     border-bottom: 1px solid #ccc;
 }
 
-/* Comment objects */
-.comment {
-    border-bottom: 1px solid #d1d8e0;
-    padding: 10px 0;
-    margin-bottom: 10px;
-}
-.comment:last-child {
-    border-bottom: none;
-}
-
 /* this can get reused for if we want a mouse-over effect on elements */
 /* might be nice for clickables like buttons and cells on the calendar */
 /* left out for now */
@@ -229,6 +219,17 @@ nav a:hover {
     padding: 0;
     display: flex;
     width: 100%;
+    height: 95%;
+    align-items: stretch;
+    gap: 4px;
+    /*The scrollbar keep appearing no matter what I did so this is a quick fix -PV*/
+}
+
+.comments-form {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
     height: 100%;
     align-items: stretch;
     gap: 4px;
@@ -240,6 +241,13 @@ It looks super weird without doing that... -PV
 #noteInput {
     flex: 1;
     height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.text-input {
+    flex: 1;
+    height: 90%;
+    font-family: Arial, sans-serif;
 }
 
 /*Hide label to make it still available for screen readers
@@ -256,8 +264,21 @@ Paper Plane Send Icon
     width: 40px;
     height: 105%;
     background-color: #6a5acd;
-    /*Send Icon Image from: flaticon.com full credit to them!*/
-    background-image: url("https://dl.dropboxusercontent.com/scl/fi/zcy6oy39ae1628q68m46s/paper-airplane-svgrepo-com.svg?rlkey=y4gh2fd4jx9gf8n6zbbizupku&st=yb5dxmir&raw=1");
+    /*Send Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/paper-airplane-svgrepo-com.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    border-radius: 8px;
+    border: none;
+}
+
+.send-icon-comment {
+    width: 40px;
+    height: 100%;
+    background-color: #6a5acd;
+    /*Send Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/paper-airplane-svgrepo-com.svg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: 60%;
@@ -271,16 +292,98 @@ Paper Plane Send Icon
     background-color: #d4edda;
     border-left: 8px solid #28a745;
     padding: 10px;
-    margin: 10px 0;
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
     color: #155724;
+}
+
+#noteSection #server-success,
+#noteSection #server-fail {
+    margin-top: 20px;
 }
 
 #server-fail {
     background-color: #f8d7da;
     border-left: 8px solid #dc3545;
     padding: 10px;
-    margin: 10px 0;
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
     color: #721c24;
+}
+
+/* Comment objects */
+.comment {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    position: relative;
+    border: 1px solid #86909c;
+}
+
+.comment-wrapper {
+    border-bottom: 1px solid #d1d8e0;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+.comment-wrapper:last-child {
+    border-bottom: none;
+}
+
+.trashIcon {
+    height: 35px;
+    width: 35px;
+    margin-top: 10px;
+    background-color: #dc354689;
+    /*Send Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/trash-blank-svgrepo-com.svg");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    top: 10px;
+    right: 10px;
+    border: none;
+    border-radius: 8px;
+}
+
+/* 
+Comments Form CSS
+*/
+.comments-form {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+    height: 100px;
+    align-items: stretch;
+    gap: 4px;
+    overflow: hidden;
+}
+
+/* Styling for the prompt that asks if the user actually wants to delete a comment */
+
+.deletePrompt {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    position: relative;
+    border: 1px solid #86909c;
+}
+.yes-delete {
+    margin-left: 10px;
+    background-color: #28a745;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    color: white;
+    border-radius: 6px;
+    border: 1px solid #86909c;
+}
+.no-delete {
+    margin-left: 10px;
+    background-color: #dc3545;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    color: white;
+    border-radius: 6px;
+    border: 1px solid #86909c;
 }
