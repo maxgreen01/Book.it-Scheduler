@@ -130,6 +130,7 @@ $("#commentsForm").submit((submission) => {
                 const succDiv = serverSucc("Successfully added your comment!");
                 clearMessageTimeout();
                 $("#commentsForm").append(succDiv);
+                $("#commentStart").remove();
             })
             .fail((error) => {
                 if (error.status === 400) {

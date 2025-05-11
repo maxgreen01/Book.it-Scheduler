@@ -16,6 +16,7 @@ export default [
             globals: {
                 ...globals.node,
                 ...globals.browser,
+                //add support for jquery to eslint
                 jquery: "readonly",
                 $: "readonly",
             },
