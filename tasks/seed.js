@@ -2,8 +2,6 @@
 
 import { faker } from "@faker-js/faker";
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import bcrypt from "bcrypt";
-
 import { createUser } from "../data/users.js";
 import { createComment } from "../data/comments.js";
 import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
@@ -56,7 +54,8 @@ async function seed() {
         console.log(`Adding user #${i}: ${fname} ${lname}`);
         const user = await createUser({
             uid: username,
-            password: await bcrypt.hash(faker.internet.password(), 10),
+            //FIXME: Test Password so I can login and check comments
+            password: "TestPass2!",
             firstName: fname,
             lastName: lname,
             description: faker.lorem.sentences({ min: 0, max: 2 }),

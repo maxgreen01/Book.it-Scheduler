@@ -14,8 +14,8 @@ router
         return res.render("profile", {
             title: "My Profile",
             canEdit: true,
-            fullName: "Alex Prikockis",
-            pfpUrl: "https://files.alexcheese.com/u/AWmGOQ.png",
+            fullName: `${req.session.user.firstName} ${req.session.user.lastName}`,
+            pfpUrl: profileUtils.profilePictureToPath(req.session.user.profilePicture),
             ...routeUtils.prepareRenderOptions(req),
         });
 
@@ -73,9 +73,13 @@ router.route("/:uid").get(async (req, res) => {
     // validate ID and retrieve other's profile
     try {
         const user = await getUserById(req.params.uid);
-        return res.json(user);
-
-        // return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) }); // todo implement HTML template
+        return res.render("profile", {
+            title: `${user.firstName}'s Profile`,
+            canEdit: false,
+            fullName: `${user.firstName} ${user.lastName}`,
+            pfpUrl: `/public/images/${user.profilePicture}`,
+            ...routeUtils.prepareRenderOptions(req),
+        });
     } catch (err) {
         return routeUtils.handleValidationError(req, res, err, 400, 404);
     }

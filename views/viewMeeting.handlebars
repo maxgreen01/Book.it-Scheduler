@@ -61,29 +61,48 @@
         {{!-- scrollable container for comments --}}
         <div class="comments-section">
             <h2>Comments</h2>
+            <form method="POST" name="commentsForm" id="commentsForm" class="comments-form" action="./note">
+                <label for="commentInput" class="hidden-label">Enter a Comment:</label>
+                <textarea type="text" id="commentInput" name="commentInput" class="text-input" placeholder="Add a comment."></textarea>
+                <button type="submit" id="commentSend" class="send-icon-comment" label="Send Note"></button>
+            </form>
             {{#if comments.length}} {{!-- If comments exist, make a div for each one --}}
-            <p>{{comments.length}} comments</p>
-
+            <p id="comment-count" data="{{comments.length}}">{{comments.length}} comments</p>
             {{#each comments}}
-            <div class="comment">
-                <p>Author: {{this.uid}}</p>
-                <p>Text: {{this.body}}</p>
-                <p>Created at: {{this.dateCreated}}</p>
-                {{#if this.dateUpdated}}
-                <p>Last edited: {{this.dateUpdated}}</p>
-                {{/if}}
+            <div class="comment-wrapper" id="commentWrapper{{this._id}}">
+                <div class="comment" id="comment{{this._id}}">
+                    <p>Author: {{this.uid}}</p>
+                    <p>Text: {{this.body}}</p>
+                    <p>Created at: {{{this.dateCreated}}}</p>
+                    {{#if this.dateUpdated}}
+                    <p>Last edited: {{this.dateUpdated}}</p>
+                    {{/if}} {{#if this.isViewerComment}}
+                    <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
+                    {{/if}}
+                </div>
             </div>
-            {{/each}} {{else}} {{!-- If they don't exist,: do something else --}}
-            <p>No comments to display!</p>
+            {{/each}} {{!-- If they don't exist, do something else --}} {{else}}
+            <p id="comment-count" data="0">0 comments</p>
+            <p id="commentStart">Start the conversation by adding your own comment!</p>
             {{/if}}
         </div>
 
         {{!-- Container for note --}}
-        <div class="notes-section">
+        <div class="notes-section" id="noteSection">
             <h2>Notes</h2>
-            <p>Add a private note.</p>
+            <form method="POST" name="notesForm" id="notesForm" class="notes-form" action="./note">
+                <label for="noteInput" class="hidden-label">Enter a Note:</label>
+                {{#if note}}
+                <textarea type="text" id="noteInput" name="noteInput" class="prev-Note" class="text-input" placeholder="Add a private note."></textarea>
+                {{else}}
+                <textarea type="text" id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
+                {{/if}}
+                <button type="submit" id="noteSend" class="send-icon" label="Send Note"></button>
+            </form>
         </div>
     </div>
 </main>
 
 <script src="../../public/js/forms/calendarActions.js"></script>
+<script type="module" src="../../public/js/pages/note.js"></script>
+<script type="module" src="../../public/js/pages/comments.js"></script>

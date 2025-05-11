@@ -1,9 +1,10 @@
 import express from "express";
-import { getMeetingComments } from "../data/comments.js";
+import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import { getMeetingById, isUserMeetingOwner, updateMeeting } from "../data/meetings.js";
+import { getMeetingById, isUserMeetingOwner, updateMeeting, updateMeetingNote } from "../data/meetings.js";
 import { mergeResponses } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
+import { validateCommentNoteBody, validateUserId } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -28,11 +29,13 @@ router
     // serve HTML
     .get(async (req, res) => {
         const meetingId = req.params.meetingId;
+        let userId;
 
-        // get the meeting
+        // get the meeting and verify the user
         let meeting;
         try {
             meeting = await getMeetingById(meetingId);
+            userId = validateUserId(req.session?.user?._id);
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
@@ -80,6 +83,22 @@ router
             // extract the raw data and only display the slots within this meeting's time range
             const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd));
 
+            // retrieve and format comments for this meeting
+            let comments = await getMeetingComments(meetingId);
+            comments = comments.reverse();
+            for (const comment of comments) {
+                comment.dateCreated = comment.dateCreated.toLocaleString();
+                if (comment.dateUpdated) {
+                    comment.dateUpdated = comment.dateUpdated.toLocaleString();
+                }
+                if (userId === comment.uid) {
+                    comment.isViewerComment = true;
+                }
+            }
+
+            // retrieve the user's private note for this meeting
+            const note = meeting.notes[userId];
+
             return res.render("viewMeeting", {
                 meetingId: meetingId,
                 title: meeting.name,
@@ -89,8 +108,9 @@ router
                 responses: processedMerged,
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
-                comments: await getMeetingComments(meetingId),
-                isOwner: await isUserMeetingOwner(meetingId, req.session?.user?._id),
+                comments: comments,
+                note: note,
+                isOwner: await isUserMeetingOwner(meetingId, userId),
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
@@ -184,66 +204,102 @@ router
 
 router
     .route("/:meetingId/note")
+    // AJAX route for getting a user's private note
     .get(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
-    })
-    .post(async (req, res) => {
-        // TODO
-
-        // ensure non-empty request body
-        const data = req.body;
-        if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        try {
+            const meetingId = req.params.meetingId;
+            const meeting = await getMeetingById(meetingId);
+            const userId = validateUserId(req.session.user._id);
+            return res.status(200).json({ note: meeting.notes[userId] });
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
-
-        return res.status(404).json({ error: "Route not implemented yet" });
+    })
+    // AJAX route for updating a user's private note
+    .post(async (req, res) => {
+        try {
+            const meetingId = req.params.meetingId;
+            const userId = validateUserId(req.session.user._id);
+            const note = validateCommentNoteBody(req.body.noteInput, "Note Body");
+            await updateMeetingNote(meetingId, userId, note);
+            return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
     });
 
 router
     .route("/:meetingId/comment")
+    // AJAX route for getting all comments on a meeting
     .get(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
-    })
-    .post(async (req, res) => {
-        // TODO
+        try {
+            const meetingId = req.params.meetingId;
+            const comments = await getMeetingComments(meetingId);
+            const userId = validateUserId(req.session.user._id);
+            for (const comment of comments) {
+                comment.dateCreated = comment.dateCreated.toLocaleString();
+                if (comment.dateUpdated) {
+                    comment.dateUpdated = comment.dateUpdated.toLocaleString();
+                }
+                if (userId === comment.uid) {
+                    comment.isViewerComment = true;
+                }
+            }
 
-        // ensure non-empty request body
-        const data = req.body;
-        if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
+            return res.status(200).json({ comments: comments, uid: userId });
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
+    })
+    // AJAX route for creating a new comment on a meeting
+    .post(async (req, res) => {
+        try {
+            const meetingId = req.params.meetingId;
+            const userId = validateUserId(req.session.user._id);
+            const commentBody = validateCommentNoteBody(req.body.commentInput);
+            const newComment = await createComment({ uid: userId, meetingId: meetingId, body: commentBody });
+            newComment.dateCreated = newComment.dateCreated.toLocaleString();
 
-        return res.status(404).json({ error: "Route not implemented yet" });
+            return res.status(200).json(newComment);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
     });
 
 router
     .route("/:meetingId/comment/:commentId")
+    // AJAX route for getting a particular comment
     .get(async (req, res) => {
-        // TODO get all comments
-        return res.status(404).json({ error: "Route not implemented yet" });
+        try {
+            const comment = await getCommentById(req.params.commentId);
+            comment.dateCreated = comment.dateCreated.toLocaleString();
+            return res.status(200).json(comment);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
+        }
     })
+    // AJAX route for deleting a particular comment
+    .delete(async (req, res) => {
+        try {
+            const comment = await getCommentById(req.params.commentId);
+            const userId = validateUserId(req.session.user._id);
+            if (userId !== comment.uid) {
+                return res.status(401).json({ error: `User ${userId} cannot delete the comment created by ${comment.uid}` });
+            }
+            const deleted = await deleteComment(comment._id);
+            return res.status(200).json({ deleted: "success", comment: deleted });
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
+    })
+    // AJAX route for posting a reaction to a particular reaction
     .post(async (req, res) => {
-        // TODO post a reaction
-
-        // ensure non-empty request body
-        const data = req.body;
-        if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
-        }
-
+        // TODO
         return res.status(404).json({ error: "Route not implemented yet" });
     })
+    // AJAX route for editing a particular comment's body
     .patch(async (req, res) => {
-        // TODO edit a comment's body
-
-        // ensure non-empty request body
-        const data = req.body;
-        if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
-        }
-
+        // TODO
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
