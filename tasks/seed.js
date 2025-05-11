@@ -97,7 +97,7 @@ async function seed() {
         meetingIds.push(addedMeeting._id);
 
         const randomSlotGenerator = () => {
-            const slots = Array(48).fill(0);
+            const slots = new Array(48).fill(0);
             for (let i = meetingStart; i <= meetingEnd; i++) {
                 //80% of being available
                 slots[i] = Math.random() < 0.8 ? 1 : 0;

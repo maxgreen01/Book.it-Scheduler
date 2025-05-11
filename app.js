@@ -9,6 +9,8 @@ import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
 import session from "express-session";
 import Handlebars from "handlebars";
+import { renderError } from "./utils/routeUtils.js";
+import { isUserMeetingOwner } from "./data/meetings.js";
 
 const app = express();
 
@@ -99,11 +101,17 @@ app.use(["/login", "/signup"], async (req, res, next) => {
     else next();
 });
 
+// prevent users from editing a meeting that they don't own
+app.use("/meetings/:meetingId/edit", async (req, res, next) => {
+    if (await isUserMeetingOwner(req.params.meetingId, req.session?.user?._id)) next();
+    else res.redirect(`/meetings/${req.params.meetingId}`);
+});
+
 // Fallback error handler
 app.use((err, req, res, next) => {
-    console.error("Route error:");
+    console.error("Unhandled route error:");
     console.error(err);
-    res.sendStatus(500);
+    return renderError(req, res, 500, "Internal Server Error");
 });
 
 //

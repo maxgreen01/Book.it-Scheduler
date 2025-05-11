@@ -3,6 +3,9 @@
         {{!-- header for meeting details --}}
         <div class="title-bar">
             <h1>{{title}}</h1>
+            <br />
+            <p>Description: {{description}}</p>
+            <p>Duration: {{duration}}</p>
         </div>
 
         {{!-- Container for calendar element + details --}}
@@ -43,6 +46,10 @@
 
             <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
             <button id="submit-response-button" hidden>Submit</button>
+            {{#if isOwner}}
+            <br />
+            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
+            {{/if}}
         </div>
 
         {{!-- Container for filling in responder info --}}
@@ -67,8 +74,7 @@
                 {{/if}}
             </div>
             {{/each}} {{else}} {{!-- If they don't exist,: do something else --}}
-            <p>0 comments</p>
-            <p>Hint: try me with test meeting Id 1234abcd1234abcd1234abcd</p>
+            <p>No comments to display!</p>
             {{/if}}
         </div>
 
@@ -80,4 +86,4 @@
     </div>
 </main>
 
-<script src="../../public/js/forms/calendarForms.js"></script>
+<script src="../../public/js/forms/calendarActions.js"></script>

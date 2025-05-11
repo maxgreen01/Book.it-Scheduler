@@ -46,6 +46,10 @@ export class Availability {
         // construct the resulting object
         return new Availability(mergedSlots, commonDate);
     }
+
+    static emptyAvailability(date) {
+        return new Availability(new Array(48).fill(0), date, false);
+    }
 }
 
 // Weekly (Default) Availability Object

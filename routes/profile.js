@@ -1,5 +1,5 @@
 import express from "express";
-import { ValidationError, validateUserId } from "../utils/validation.js";
+import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { getUserById, updateUser } from "../data/users.js";
@@ -24,11 +24,7 @@ router
         //     const user = req.session.;
         //     return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) });
         // } catch (err) {
-        //    if (err instanceof ValidationError) {
-        //        return routeUtils.renderError(req, res, 400, err.message);
-        //    } else {
-        //        return routeUtils.renderError(req, res, 500, err.message);
-        //    }
+        //    return routeUtils.handleValidationError(req, res, err, 404);
         // }
     })
     // update current user's profile
@@ -59,11 +55,7 @@ router
             }
             // profile picture not provided, so don't change anything existing profile picture
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         // validate all inputs and add the user to the DB
@@ -72,11 +64,7 @@ router
 
             return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
     });
 
@@ -89,11 +77,7 @@ router.route("/:uid").get(async (req, res) => {
 
         // return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) }); // todo implement HTML template
     } catch (err) {
-        if (err instanceof ValidationError) {
-            return routeUtils.renderError(req, res, 400, err.message);
-        } else {
-            return routeUtils.renderError(req, res, 404, err.message);
-        }
+        return routeUtils.handleValidationError(req, res, err, 400, 404);
     }
 });
 

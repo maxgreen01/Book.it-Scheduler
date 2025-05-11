@@ -1,8 +1,9 @@
 import express from "express";
 import { getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import { getMeetingById } from "../data/meetings.js";
+import { getMeetingById, isUserMeetingOwner, updateMeeting } from "../data/meetings.js";
 import { mergeResponses } from "../public/js/helpers.js";
+import { Availability } from "../public/js/classes/availabilities.js";
 
 const router = express.Router();
 
@@ -26,12 +27,14 @@ router
     .route("/:meetingId")
     // serve HTML
     .get(async (req, res) => {
+        const meetingId = req.params.meetingId;
+
         // get the meeting
         let meeting;
         try {
-            meeting = await getMeetingById(req.params.meetingId);
+            meeting = await getMeetingById(meetingId);
         } catch (err) {
-            return routeUtils.renderError(req, res, 404, err.message);
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
 
         // convert and construct meeting fields to display the data, then render the page
@@ -63,49 +66,115 @@ router
                 }
             }
 
-            // compute merged availability based on responses
-            const merged = mergeResponses(meeting.responses, meeting.timeStart, meeting.timeEnd);
+            // process responses on the fly
+            let merged = [];
+            if (meeting.responses.length == 0) {
+                // no responses, so create empty Availability data
+                for (const date of meeting.dates) {
+                    merged.push(Availability.emptyAvailability(date));
+                }
+            } else {
+                // compute merged availability based on responses
+                merged = mergeResponses(meeting.responses, meeting.timeStart, meeting.timeEnd);
+            }
             // extract the raw data and only display the slots within this meeting's time range
             const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd + 1));
 
             return res.render("viewMeeting", {
+                meetingId: meetingId,
                 title: meeting.name,
+                description: meeting.description,
+                duration: `${meeting.duration / 2} hour(s)`,
                 days: formattedDates,
                 responses: processedMerged,
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
-                comments: await getMeetingComments(req.params.meetingId),
+                comments: await getMeetingComments(meetingId),
+                isOwner: await isUserMeetingOwner(meetingId, req.session?.user?._id),
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
-            return routeUtils.renderError(req, res, 404, err.message);
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
     })
     // submit availability
     .post(async (req, res) => {
         // TODO
         //   note: need to make sure to offset the response data by `timeStart` when constructing Availability Objects
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
 router
     .route("/:meetingId/edit")
+    // serve HTML
     .get(async (req, res) => {
+        const meetingId = req.params.meetingId;
+
+        // get the meeting
+        let meeting;
+        try {
+            meeting = await getMeetingById(meetingId);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
+        }
+
         return res.render("editMeeting", {
-            title: "Test Meeting EDIT",
-            meetingId: "abc123",
-            meetingDescription: "The big meetup",
+            meetingId: meetingId,
+            title: meeting.name,
+            description: meeting.description,
+            duration: meeting.duration / 2, // convert from index back into hours
             ...routeUtils.prepareRenderOptions(req),
         });
     })
+    // edit meeting details
+    .patch(async (req, res) => {
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
+        const meetingId = req.params.meetingId;
+
+        // get the existing meeting
+        let meeting;
+        try {
+            meeting = await getMeetingById(meetingId);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
+        }
+
+        // pass the existing time limits to validate the edited `duration`
+        data.timeStart = meeting.timeStart;
+        data.timeEnd = meeting.timeEnd;
+
+        // validate all inputs and add the meeting to the DB
+        try {
+            const meeting = await updateMeeting(meetingId, data);
+            return res.redirect(`/meetings/${meeting._id}`);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
+    })
+    // book the meeting time
     .post(async (req, res) => {
         // TODO
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         return res.status(404).json({ error: "Route not implemented yet" });
     })
-    .patch(async (req, res) => {
-        // TODO
-        return res.status(404).json({ error: "Route not implemented yet" });
-    })
+    // delete a meeting entirely
     .delete(async (req, res) => {
         // TODO
         return res.status(404).json({ error: "Route not implemented yet" });
@@ -119,6 +188,13 @@ router
     })
     .post(async (req, res) => {
         // TODO
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
@@ -130,6 +206,13 @@ router
     })
     .post(async (req, res) => {
         // TODO
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
@@ -141,10 +224,24 @@ router
     })
     .post(async (req, res) => {
         // TODO post a reaction
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         return res.status(404).json({ error: "Route not implemented yet" });
     })
     .patch(async (req, res) => {
         // TODO edit a comment's body
+
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 

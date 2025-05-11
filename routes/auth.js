@@ -1,6 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { ValidationError, validateUserId } from "../utils/validation.js";
+import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, getUserById, updateUser } from "../data/users.js";
@@ -17,6 +17,12 @@ router
     })
     // log in
     .post(async (req, res) => {
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         try {
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
@@ -52,13 +58,6 @@ router
             return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
-        // validate User ID
-        try {
-            data.uid = validateUserId(data.uid);
-        } catch (err) {
-            return routeUtils.renderError(req, res, 400, err.message);
-        }
-
         // assign default profile picture (which may be updated later in this route)
         data.profilePicture = profileUtils.defaultProfilePicture;
 
@@ -69,11 +68,7 @@ router
             data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
             user = await createUser(data);
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         // upload & assign profile picture, if one is supplied
@@ -92,11 +87,7 @@ router
                 }
             }
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         // todo create auth session here?

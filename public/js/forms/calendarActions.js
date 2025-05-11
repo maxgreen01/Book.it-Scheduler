@@ -78,6 +78,7 @@ submitButton.addEventListener("click", () => {
 });
 
 //on page load register the listeners
+// TODO maybe add a way to query which users are available at the selected time
 document.addEventListener("DOMContentLoaded", () => {
     const timeslotElements = document.querySelectorAll(".response-slot");
 

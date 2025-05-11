@@ -1,9 +1,8 @@
-import { convertStrToInt } from "../clientValidation.js";
 import { createMeetingDocument } from "../documentCreation.js";
 
 // Set error text in html element with id "error"
-function setError(err) {
-    const errNode = document.getElementById("error");
+function setError(err, elemId) {
+    const errNode = document.getElementById(elemId);
     errNode.innerHTML = `${err.message}`;
 }
 
@@ -30,26 +29,35 @@ function validateCreateMeeting(event) {
         });
     } catch (err) {
         event.preventDefault();
-        setError(err);
+        setError(err, "error");
     }
 }
 
-// If login form fields are not valid, prevent submission and display an error
-// function validateLogin(event) {
-//     const uid = document.getElementById("usernameInput").value;
-//     const password = document.getElementById("passwordInput").value;
-//     try {
-//         validateUserId(uid);
-//         validatePassword(password);
-//     } catch (e) {
-//         event.preventDefault();
-//         setError(e);
-//     }
-// }
+// If meeting editing form fields are not valid, prevent submission and display an error
+function validateEditMeeting(event) {
+    const titleInput = document.getElementById("titleInput");
+    const descriptionInput = document.getElementById("descriptionInput");
+    const durationInput = document.getElementById("durationInput");
+
+    try {
+        const meeting = createMeetingDocument(
+            {
+                name: titleInput.value,
+                description: descriptionInput.value,
+                duration: durationInput.value,
+            },
+            true
+        );
+        console.log(meeting);
+    } catch (err) {
+        event.preventDefault();
+        setError(err, "edit-error");
+    }
+}
 
 // Attach event handlers
 const createMeetingForm = document.getElementById("createMeeting");
 const editMeetingForm = document.getElementById("editMeeting");
 
 if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);
-// if (editMeetingForm) editMeetingForm.addEventListener("submit", validateLogin);
+if (editMeetingForm) editMeetingForm.addEventListener("submit", validateEditMeeting);

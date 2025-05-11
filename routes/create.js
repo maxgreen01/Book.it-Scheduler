@@ -1,6 +1,6 @@
 import express from "express";
 import * as routeUtils from "../utils/routeUtils.js";
-import { convertStrToInt, ValidationError } from "../utils/validation.js";
+import { convertStrToInt } from "../utils/validation.js";
 import { createMeeting } from "../data/meetings.js";
 
 const router = express.Router();
@@ -35,11 +35,7 @@ router
             const meeting = await createMeeting(data);
             return res.redirect(`/meetings/${meeting._id}`);
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
     });
 

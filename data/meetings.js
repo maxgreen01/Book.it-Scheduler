@@ -81,14 +81,19 @@ export async function deleteMeeting(mid) {
     return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
 }
 
-// Update certain fields (only the non-`undefined` ones) of the meeting with the specified ID.
+// Update the "easy" fields of the meeting with the specified ID.
+// `timeStart` and `timeEnd` are never actually updated, and are only provided for validating `duration`.
 // Return the updated meeting object if operation is successful.
-export async function updateMeeting(mid, { name, description, duration }) {
+export async function updateMeeting(mid, { name, description, duration, timeStart, timeEnd }) {
     // make sure meeting actually exists
     mid = await validation.validateMeetingExists(mid);
 
     const collection = await meetingsCollection();
-    const newFields = createMeetingDocument({ name, description, duration }, true);
+    const newFields = createMeetingDocument({ name, description, duration, timeStart, timeEnd }, true);
+
+    // don't actually update these fields
+    delete newFields.timeStart;
+    delete newFields.timeEnd;
 
     const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: newFields }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);

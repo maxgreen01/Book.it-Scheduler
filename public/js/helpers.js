@@ -1,6 +1,5 @@
 //file that contains various helpers that can be anywhere client side
 
-import { getMeetingById } from "../../data/meetings.js";
 import { Availability } from "./classes/availabilities.js";
 import { validateArrayElements, validateIntRange, validateResponseArrHasSameDates, validateResponseObj, ValidationError } from "./clientValidation.js";
 

@@ -1,6 +1,14 @@
 <main>
     <h1>{{title}}</h1>
-    <p>TODO INSTRUCTIONS</p>
+
+    <p>To create a meeting, simply input all the required fields below and click the submit button (or Enter key)!</p>
+    <p>Usage Notes:</p>
+    <ul>
+        <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
+        <li>The possible date range for this meeting includes all dates between the Start and End Date (inclusive), with a limit of 20 date options per meeting.</li>
+        <li>Within each selected date for this meeting, users can select their availability for every 30-minute increment between the Start and End Times (inclusive). This range must be at least as long as the meeting's Duration!</li>
+        <li>A meeting's date and time ranges CANNOT be edited after the event is created, so be sure to get them right the first time!</li>
+    </ul>
 
     <p id="error"></p>
     <form method="POST" name="createMeeting" id="createMeeting">

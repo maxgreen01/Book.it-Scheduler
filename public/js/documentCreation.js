@@ -78,16 +78,20 @@ export function createMeetingDocument({ name, description, duration, owner, date
         throw new validation.ValidationError("You must select a valid Start Date and End Date");
     }
     if (dateStart > dateEnd) throw new validation.ValidationError(`End Date cannot be earlier than Start Date`);
+    if (dateStart < new Date()) throw new validation.ValidationError(`Cannot create a meeting for dates that have already passed`);
 
-    // create Date range between start and end dates
-    const dates = [];
-    const currDate = dateStart;
-    while (currDate <= dateEnd) {
-        dates.push(new Date(currDate)); // copy to avoid reference sharing
-        currDate.setDate(currDate.getDate() + 1); // increment the day by 1
+    let dates;
+    if (!allowUndefined && typeof dateStart !== "undefined" && typeof dateEnd !== "undefined") {
+        // create Date range between start and end dates
+        dates = [];
+        const currDate = dateStart;
+        while (currDate <= dateEnd) {
+            dates.push(new Date(currDate)); // copy to avoid reference sharing
+            currDate.setDate(currDate.getDate() + 1); // increment the day by 1
+        }
+        // limit number of dates to 20 per meeting
+        if (dates.length > 20) throw new validation.ValidationError("Meeting cannot involve more than 20 days");
     }
-    // limit number of dates to 20 per meeting
-    if (dates.length > 20) throw new validation.ValidationError("Meeting cannot involve more than 20 days");
 
     try {
         if (!allowUndefined || typeof timeStart !== "undefined") timeStart = validation.validateIntRange(validation.convertStrToInt(timeStart), "Meeting Start Time", 1, 47);
