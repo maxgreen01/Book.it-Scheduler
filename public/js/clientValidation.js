@@ -252,3 +252,14 @@ export function validateImageFileType(fileName, label) {
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
     return match[1].toLowerCase(); // return the matched file extension
 }
+
+// Throw an error if bookedTime object for setBooking() is not of the form:
+// {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
+export function validateBookedTimeObj(bookedTime) {
+    if (!bookedTime || typeof bookedTime != "object" || Object.keys(bookedTime).length != 3 || !bookedTime.startTime || !bookedTime.endTime || !bookedTime.date) throw new ValidationError("bookedTime object or at least one of its keys are missing");
+    bookedTime.startTime = validateIntRange(bookedTime.startTime, "Booking startTime", 0, 47);
+    bookedTime.endTime = validateIntRange(bookedTime.endTime, "Booking endTime", 0, 47);
+    if (bookedTime.startTime >= bookedTime.endTime) throw new ValidationError("Booking startTime must be before endTime");
+    bookedTime.date = validateDateObj(bookedTime.date);
+    return bookedTime;
+}

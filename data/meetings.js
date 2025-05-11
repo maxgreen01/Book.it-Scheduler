@@ -149,10 +149,12 @@ export async function updateMeetingNote(mid, uid, body) {
 export async function setBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-    bookedTime = validation.validateAvailabilityObj(bookedTime);
+
+    bookedTime = validation.validateBookedTimeObj(bookedTime); //BL -- added to helpers for when we need to add booked times
+
     const collection = await meetingsCollection();
     const updated = await collection.findOneAndUpdate(
-        { _id: mid },
+        { _id: validation.convertStrToObjectId(mid) },
         {
             $set: {
                 bookingStatus,
