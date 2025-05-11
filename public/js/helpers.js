@@ -52,7 +52,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
 
         let start = -1;
         // loop over each timeslot in this day, saving chunks where `numUsers` are available
-        for (let i = meetingStart; i <= meetingEnd; i++) {
+        for (let i = meetingStart; i < meetingEnd; i++) {
             if (slots[i] == numUsers) {
                 // everyone is available
 
@@ -69,7 +69,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
                     const meetingTime = {
                         date: currDate,
                         timeStart: start,
-                        timeEnd: i - 1,
+                        timeEnd: i, // timeEnd is the time AFTER everyone is available
                         users: numUsers,
                     };
                     possibleTimes.push(meetingTime);
@@ -85,7 +85,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
             possibleTimes.push({
                 date: currDate,
                 timeStart: start,
-                timeEnd: meetingEnd,
+                timeEnd: meetingEnd, // timeEnd is the time AFTER everyone is available
                 users: numUsers,
             });
         }
@@ -108,7 +108,6 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
     }
 
     // check if any of the chunks are too short for the meeting duration
-
     if (!keepShortTime) {
         possibleTimes.filter((time) => {
             meetingDuration > time.timeEnd - time.timeStart;

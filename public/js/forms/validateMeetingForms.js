@@ -6,6 +6,10 @@ function setError(err, elemId) {
     errNode.innerHTML = `${err.message}`;
 }
 
+// find form elements
+const createMeetingForm = document.getElementById("createMeeting");
+const editMeetingForm = document.getElementById("editMeeting");
+
 // If meeting creation form fields are not valid, prevent submission and display an error
 function validateCreateMeeting(event) {
     const titleInput = document.getElementById("titleInput");
@@ -16,14 +20,16 @@ function validateCreateMeeting(event) {
     const timeStartInput = document.getElementById("timeStartInput");
     const timeEndInput = document.getElementById("timeEndInput");
 
+    // convert dates from UTC time into local timezone (to match other funcs)
+
     try {
         const meeting = createMeetingDocument({
             name: titleInput.value,
             description: descriptionInput.value,
             duration: durationInput.value,
             owner: "xxx", // actually populated on the server, but needed to pass validation
-            dateStart: new Date(dateStartInput.value),
-            dateEnd: new Date(dateEndInput.value),
+            dateStart: dateStartInput.value,
+            dateEnd: dateEndInput.value,
             timeStart: timeStartInput.value,
             timeEnd: timeEndInput.value,
         });
@@ -45,6 +51,8 @@ function validateEditMeeting(event) {
                 name: titleInput.value,
                 description: descriptionInput.value,
                 duration: durationInput.value,
+                timeStart: editMeetingForm.dataset.timeStart,
+                timeEnd: editMeetingForm.dataset.timeEnd,
             },
             true
         );
@@ -56,8 +64,5 @@ function validateEditMeeting(event) {
 }
 
 // Attach event handlers
-const createMeetingForm = document.getElementById("createMeeting");
-const editMeetingForm = document.getElementById("editMeeting");
-
 if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);
 if (editMeetingForm) editMeetingForm.addEventListener("submit", validateEditMeeting);

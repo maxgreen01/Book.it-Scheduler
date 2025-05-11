@@ -14,7 +14,7 @@
         </ul>
 
         <p id="edit-error"></p>
-        <form method="POST" name="editMeeting" id="editMeeting">
+        <form method="POST" name="editMeeting" id="editMeeting" data-time-start="{{timeStart}}" data-time-end="{{timeEnd}}">
             <input type="hidden" name="_method" value="PATCH" /> {{!-- interpret this a PATCH request --}}
 
             <label for="titleInput">Title:</label>
@@ -24,14 +24,14 @@
             <input name="description" id="descriptionInput" type="text" value="{{description}}" />
             <br />
             <label for="durationInput">Duration:</label>
-            <input name="duration" id="durationInput" type="text" value="{{duration}}" />
+            <input name="duration" id="durationInput" type="number" step="0.5" min="0.5" max="24" value="{{duration}}" />
             <br />
             <input type="submit" value="Save" />
         </form>
     </div>
 
     <div id="book-meeting">
-        <h2>Edit Meeting Details</h2>
+        <h2>Book/Cancel Meeting</h2>
 
         <p>As the owner of this meeting, you can edit some of its fields!</p>
         <p>Usage Notes:</p>
@@ -42,6 +42,8 @@
 
         {{!-- TODO --}}
     </div>
+
+    {{!-- note: meeting deletion would go here if we implement it --}}
 
     <a href="/meetings">My Meetings</a>
     <a href="/create">Create a New Meeting</a>

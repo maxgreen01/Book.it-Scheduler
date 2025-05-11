@@ -73,13 +73,15 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const startDate = faker.date.soon({ days: 60 });
-        const endDate = faker.date.soon({ days: 10, refDate: startDate });
+        const toDateStr = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+        const startDate = toDateStr(faker.date.soon({ days: 60 }));
+        const endDate = toDateStr(faker.date.soon({ days: 10, refDate: startDate }));
 
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
         const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(47, meetingStart + duration + 10) });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
 
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),

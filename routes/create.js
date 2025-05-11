@@ -9,7 +9,9 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("createMeeting", { title: "Create New Meeting", ...routeUtils.prepareRenderOptions(req) });
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        return res.render("createMeeting", { title: "Create New Meeting", todayStr: todayStr, ...routeUtils.prepareRenderOptions(req) });
     })
     // create a meeting
     .post(async (req, res) => {
@@ -20,10 +22,9 @@ router
         }
 
         // process/convert special fields
+        // note that dates are parsed as strings by `createMeeting`
         try {
             data.owner = req.session?.user?._id;
-            data.dateStart = new Date(data.dateStart);
-            data.dateEnd = new Date(data.dateEnd);
             data.timeStart = convertStrToInt(data.timeStart);
             data.timeEnd = convertStrToInt(data.timeEnd);
         } catch (err) {

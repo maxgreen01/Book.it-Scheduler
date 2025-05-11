@@ -51,8 +51,8 @@ router
 
             // construct column labels between the meeting's start and end times (in 1-hour increments)
             const columnLabels = [];
-            let hours = Math.ceil(meeting.timeStart / 2); // round up to only show times that are in the range
-            for (let i = meeting.timeStart; i <= meeting.timeEnd; i++) {
+            let hours = Math.floor(meeting.timeStart / 2); // round down since "2:30" is still in hour "2"
+            for (let i = meeting.timeStart; i < meeting.timeEnd; i++) {
                 // calculate the AM/PM hour
                 const pm = hours >= 12;
                 let adjustedHours = hours % 12;
@@ -78,7 +78,7 @@ router
                 merged = mergeResponses(meeting.responses, meeting.timeStart, meeting.timeEnd);
             }
             // extract the raw data and only display the slots within this meeting's time range
-            const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd + 1));
+            const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd));
 
             return res.render("viewMeeting", {
                 meetingId: meetingId,
@@ -129,6 +129,8 @@ router
             title: meeting.name,
             description: meeting.description,
             duration: meeting.duration / 2, // convert from index back into hours
+            timeStart: meeting.timeStart,
+            timeEnd: meeting.timeEnd,
             ...routeUtils.prepareRenderOptions(req),
         });
     })
@@ -176,7 +178,7 @@ router
     })
     // delete a meeting entirely
     .delete(async (req, res) => {
-        // TODO
+        // TODO - ONLY IF THERE'S TIME
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 

@@ -51,7 +51,7 @@ app.use(
 
 // Logging middleware
 app.use("/", async (req, res, next) => {
-    const timestamp = new Date().toUTCString();
+    const timestamp = new Date().toString();
     const auth = req.session?.user?._id ?? "?";
     console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
     next();

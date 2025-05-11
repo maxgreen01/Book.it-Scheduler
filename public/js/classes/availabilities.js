@@ -27,7 +27,7 @@ export class Availability {
 
     // Return a new availability obj of when everyone is available
     // availArray: Array of Availability Objects
-    static mergeAvailability(availArray, startTime = 0, endTime = 47) {
+    static mergeAvailability(availArray, startTime = 0, endTime = 48) {
         //TODO: if a user has other events booked, take those in a parameter and remove user availability
 
         //validate the array of Availability Objects
@@ -38,7 +38,7 @@ export class Availability {
         // actually merge the timeslots of each Availability Object
         const mergedSlots = new Array(48).fill(0);
         for (const availability of availArray) {
-            for (let i = startTime; i <= endTime; i++) {
+            for (let i = startTime; i < endTime; i++) {
                 mergedSlots[i] += availability.slots[i];
             }
         }
