@@ -52,12 +52,13 @@ router
             return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
+        // assign default profile picture (which may be updated later in this route)
+        data.profilePicture = profileUtils.defaultProfilePicture;
+        // TODO: remove this temp fix when availability can be entered on the page
+        data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
+
         // validate User
         try {
-            // assign default profile picture (which may be updated later in this route)
-            data.profilePicture = profileUtils.defaultProfilePicture;
-            // TODO: remove this temp fix when availability can be entered on the page
-            data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
             createUserDocument(data);
         } catch (err) {
             return routeUtils.renderError(req, res, 400, err.message);

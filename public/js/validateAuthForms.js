@@ -23,11 +23,11 @@ function validateSignup(event) {
                 description,
                 uid,
                 password,
-                profilePicture: undefined, // TODO pfp
+                profilePicture: undefined, // pfp validation performed below
                 availability: undefined, // TODO availability
             },
             true
-        ); // TODO remove true when above is implemented
+        );
         if (files && files[0]) {
             let pfp = files[0];
             validateImageFileType(pfp.name, "Profile Picture Name");
