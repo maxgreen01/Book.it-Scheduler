@@ -1,10 +1,72 @@
 <main>
-    <h1>{{title}}</h1>
-    <p>{{meetingDescription}}</p>
-    <p>TODO: other meeting info + availability display</p>
-    {{#if canEdit}}
-    <a href="/{{meetingId}}/edit"><button>Edit Meeting</button></a>
-    {{/if}}
-    <a href="/meetings">My Meetings</a>
-    <a href="/create">Create Meeting</a>
+    <div class="grid-container">
+        {{!-- header for meeting details --}}
+        <div class="title-bar">
+            <h1>Meeting View Page</h1>
+        </div>
+
+        {{!-- Container for calendar element + details --}}
+        <div class="calendar-section">
+            <h2>Calendar Here</h2>
+
+            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}} {{!-- This is the only fix I could find for css grid acting weird --}}
+            <div class="calendar-wrapper">
+                <div class="calendar" style="--day-count: {{meeting.length}}">
+                    <div class="calendar-title-header">Header details here</div>
+                    <div class="time-column">
+                        <div id="time-column-header" class="calendar-column-header">{{index_of ../days @index}}</div>
+                        {{#each timeColumn}}
+                        <div class="time-column-timestamp">{{this}}</div>
+                        {{/each}}
+                    </div>
+
+                    {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
+                    <div class="calendar-column">
+                        <div class="calendar-column-header">{{index_of ../days @index}}</div>
+                        <div class="calendar-cells">
+                            {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
+                            <div class="timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
+                            {{/each}} {{!-- generate the same number of client slots in the background --}} {{#each this}}
+                            <div class="timeslot response-slot" hidden></div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
+            <button id="submit-response-button" hidden>Submit</button>
+        </div>
+
+        {{!-- Container for filling in respondee info --}}
+        <div class="response-section">
+            <h2>Responses & Other</h2>
+            <p>fill remaining space</p>
+        </div>
+
+        {{!-- scrollable container for comments --}}
+        <div class="comments-section">
+            <h2>Comments</h2>
+            {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
+            <p>{{comments.length}} comments</p>
+            {{#each comments}}
+            <div class="comment">
+                <p>Author: {{this.uid}}</p>
+                <p>Text: {{this.body}}</p>
+                <p>Created at: {{this.dateCreated}}</p>
+                <p>Last changes made: {{this.dateUpdated}}</p>
+            </div>
+            {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
+            <p>0 comments</p>
+            <p>Hint: try me with test meeting Id 1234abcd1234abcd1234abcd</p>
+            {{/if}}
+        </div>
+
+        {{!-- Container for note --}}
+        <div class="notes-section">
+            <h2>Notes</h2>
+            <p>Add a private note.</p>
+        </div>
+    </div>
 </main>
+<script src="../../public/js/calendars.js"></script>

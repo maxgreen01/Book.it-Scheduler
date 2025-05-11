@@ -16,18 +16,19 @@ router
             canEdit: true,
             fullName: `${req.session.user.firstName} ${req.session.user.lastName}`,
             pfpUrl: `/public/images/${req.session.user.profilePicture}`,
+            ...routeUtils.prepareRenderOptions(req),
         });
 
         // todo - get current UID from session, then pass user object to HTML template
         // try {
         //     const uid = "";
         //     const user = await userFunctions.getUserById(uid);
-        //     return res.render("profilePage", { user: user });
+        //     return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) });
         // } catch (err) {
         //    if (err instanceof ValidationError) {
-        //        return routeUtils.renderError(res, 400, err.message);
+        //        return routeUtils.renderError(req, res, 400, err.message);
         //    } else {
-        //        return routeUtils.renderError(res, 500, err.message);
+        //        return routeUtils.renderError(req, res, 500, err.message);
         //    }
         // }
     })
@@ -36,14 +37,14 @@ router
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(res, 400, "Request body is empty");
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
         // validate User ID
         try {
             data.uid = validateUserId(data.uid);
         } catch (err) {
-            return routeUtils.renderError(res, 400, err.message);
+            return routeUtils.renderError(req, res, 400, err.message);
         }
 
         // update profile picture, if one is supplied
@@ -54,15 +55,15 @@ router
                 if (!Array.isArray(pfpFile)) {
                     data.profilePicture = await profileUtils.updateProfilePicture(data.uid, pfpFile);
                 } else {
-                    return routeUtils.renderError(res, 400, "Only one image can be submitted");
+                    return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
                 }
             }
             // profile picture not provided, so don't change anything existing profile picture
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(req, res, 400, err.message);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(req, res, 500, err.message);
             }
         }
 
@@ -73,9 +74,9 @@ router
             return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
             if (err instanceof ValidationError) {
-                return routeUtils.renderError(res, 400, err.message);
+                return routeUtils.renderError(req, res, 400, err.message);
             } else {
-                return routeUtils.renderError(res, 500, err.message);
+                return routeUtils.renderError(req, res, 500, err.message);
             }
         }
     });
@@ -87,12 +88,12 @@ router.route("/:uid").get(async (req, res) => {
         const user = await getUserById(req.params.uid);
         return res.json(user);
 
-        // return res.render("profilePage", { user: user }); // todo implement HTML template
+        // return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) }); // todo implement HTML template
     } catch (err) {
         if (err instanceof ValidationError) {
-            return routeUtils.renderError(res, 400, err.message);
+            return routeUtils.renderError(req, res, 400, err.message);
         } else {
-            return routeUtils.renderError(res, 404, err.message);
+            return routeUtils.renderError(req, res, 404, err.message);
         }
     }
 });

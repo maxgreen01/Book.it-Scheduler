@@ -1,0 +1,223 @@
+/* Stylesheet used by the main.handlebars default view */
+/* By default is applied to all HTML pages on the site */
+
+body {
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+}
+
+/* Nav bar rules */
+header {
+    background-color: #6a5acd;
+    color: white;
+    width: 100%;
+}
+
+/* Placeholder: Can replace with a logo png or anything else */
+.title-text {
+    font-size: 24px;
+    margin: 0;
+}
+
+/* flexible div containing header elements */
+.bar {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+/* nav bar elements */
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+}
+nav li {
+    margin-left: 35px;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+nav a:hover {
+    text-decoration: underline;
+    color: #ff7f50;
+}
+
+/* reformat navbar when screen gets squished */
+@media (max-width: 700px) {
+    .bar {
+        flex-direction: column;
+        align-items: center;
+    }
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+    nav li {
+        margin: 10px 0;
+    }
+}
+
+/* View meeting page */
+.grid-container {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* 3/4 and 1/4 width */
+    grid-template-rows: auto auto 300px;
+    grid-template-areas:
+        "title-bar title-bar"
+        "calendar-section response-section"
+        "comments-section notes-section";
+    gap: 1rem;
+    margin: 2rem;
+}
+.title-bar {
+    overflow: hidden;
+    grid-area: title-bar;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-bottom: 2px solid #d1d8e0;
+    border-radius: 8px;
+}
+.calendar-section,
+.notes-section,
+.comments-section,
+.response-section {
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 1rem;
+    border: 1px solid #d1d8e0;
+}
+
+.calendar-section {
+    grid-area: calendar-section;
+    overflow-x: auto;
+}
+.notes-section {
+    overflow: auto;
+    grid-area: notes-section;
+}
+.comments-section {
+    overflow: auto;
+    grid-area: comments-section;
+}
+
+.response-section {
+    grid-area: response-section;
+}
+
+/* calendar elements */
+.calendar {
+    display: grid;
+    grid-template-columns: 100px repeat(var(--day-count), minmax(100px, auto)); /* pass --day-count through a style tag in handlebars */
+    grid-template-rows: auto;
+    background-color: #ffffff;
+    width: max-content;
+}
+
+/* contains calendar element as one entity */
+.calendar-wrapper {
+    width: 100%;
+    /* padding-bottom: 0.5rem; */
+}
+
+/* header spans whole element */
+.calendar-title-header {
+    grid-column: 2 / -1; /* skip first row */
+    grid-row: 1;
+    background-color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #d1d8e0;
+}
+
+/* Time column next to the calendar */
+.time-column {
+    grid-row: 2;
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+}
+.time-column-timestamp {
+    text-align: right;
+    vertical-align: top;
+    font-size: 12px;
+    height: 12px;
+}
+
+/* Each Day gets a column on the grid */
+.calendar-column {
+    grid-row: 2;
+    grid-column: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #d1d8e0;
+    border-bottom: 1px solid #d1d8e0;
+}
+/* put a border on the last column */
+.calendar-column:nth-last-of-type(1) {
+    border-right: 1px solid #d1d8e0;
+}
+
+/*  Section of day column containing the day header */
+.calendar-column-header {
+    background-color: #f5f5f5;
+    text-align: center;
+    height: 18px;
+    font-weight: bold;
+    padding: 0.25rem;
+    border-bottom: 1px solid #d1d8e0;
+}
+#time-column-header {
+    background-color: #ffffff;
+    border: none;
+}
+
+/* Section of day column containing the slots */
+.calendar-cells {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* the actual cells of the columns */
+.timeslot {
+    height: 12px;
+    overflow: hidden;
+}
+.timeslot:nth-child(even) {
+    border-bottom: 1px solid #ccc;
+}
+
+/* Comment objects */
+.comment {
+    border-bottom: 1px solid #d1d8e0;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+.comment:last-child {
+    border-bottom: none;
+}
+
+/* this can get reused for if we want a mouse-over effect on elements */
+/* might be nice for clickables like buttons and cells on the calendar */
+/* left out for now */
+
+/* .timeslot:hover {
+     background-color: #f7fafc; 
+} */
+
+.response-slot {
+    background-color: rgb(212, 237, 218, 0.75);
+}
+.selected {
+    background-color: rgba(205, 90, 90, 0.8);
+}

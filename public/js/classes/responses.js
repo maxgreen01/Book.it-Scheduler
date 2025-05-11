@@ -1,27 +1,15 @@
-import { validateArrayElements, validateAvailabilityObj, validateStrAsObjectId } from "../clientValidation.js";
-import { Availability } from "./availabilities.js";
+import { validateResponseObj } from "../clientValidation.js";
 
 export class Response {
+    // the ID of the user who submitted this Response
     uid = null;
-    availability = null;
+
+    // Array of Availability Objects corresponding to the dates of a meeting
+    availabilities = null;
 
     constructor(uid, availabilityArr) {
-        validateStrAsObjectId(uid, "Uid for Response Object");
-        this.uid = uid;
-        validateArrayElements(availabilityArr, "Availability Array", (elem) => {
-            validateAvailabilityObj(elem);
-        });
-        this.availability = availabilityArr;
-    }
-
-    static mergeResponsesToAvailability(responseArr, startTime = 0, endTime = 48) {
-        validateArrayElements(responseArr, "Array Availability Objects", (elem) => {
-            validateAvailabilityObj(elem);
-        });
-        let availabilityObjs;
-        for (let responseObj of responseArr) {
-            availabilityObjs.append(responseObj.availability);
-        }
-        return Availability.mergeAvailability(availabilityObjs, startTime, endTime);
+        const validated = validateResponseObj({ uid, availabilities: availabilityArr });
+        this.uid = validated.uid;
+        this.availabilities = validated.availabilities;
     }
 }
