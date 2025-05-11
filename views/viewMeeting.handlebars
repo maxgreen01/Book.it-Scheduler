@@ -6,11 +6,19 @@
             <br />
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
+            {{#if isOwner}}
+            <br />
+            <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a>
+            {{/if}}
+            <br />
+            <p>Share this meeting using the link below!</p>
+            <a id="share-link" href="https://localhost:3000/meetings/{{meetingId}}">Shareable Meeting Link</a> {{!-- TODO make this link to an actual domain if we can get one --}}
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div class="calendar-section">
             <h2>Meeting Calendar</h2>
+            <p>When viewing the group's overall availability, a darker color means that more people are available at a particular time. When editing your own availability, green indicates that you ARE available while red indicates that you are NOT available.</p>
 
             {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
@@ -46,10 +54,27 @@
 
             <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
             <button id="submit-response-button" hidden>Submit</button>
-            {{#if isOwner}}
-            <br />
-            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
-            {{/if}}
+
+            {{!-- display the computed best meeting times --}}
+            <div id="best-times-section">
+                <h3>Recommended Meeting Times</h3>
+
+                {{#if bestTimes.length}}
+                <p>Select a meeting time within one of the computed best meeting times below!</p>
+
+                {{!-- todo PV: make a jQuery button to hide the buttons that are too short --}}
+                <ul>
+                    {{#each bestTimes}}
+                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{date}}: &ensp;{{timeStart}} - {{timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>There are currently no best times for this meeting!</p>
+                {{/if}} {{#if isOwner}}
+                <h4>Book a Meeting Time</h4>
+                <p>Use the dropdown to select the start time for your meeting! The end time is automatically calculated based on the meeting duration of {{duration}}.</p>
+                {{!-- todo select --}} {{/if}}
+            </div>
         </div>
 
         {{!-- Container for filling in responder info --}}

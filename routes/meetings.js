@@ -2,14 +2,11 @@ import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getMeetingById, isUserMeetingOwner, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { mergeResponses } from "../public/js/helpers.js";
+import { computeBestTimes, constructTimeLabels, formatDate, mergeResponses } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { validateCommentNoteBody, validateUserId } from "../utils/validation.js";
 
 const router = express.Router();
-
-const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 router.route("/").get(async (req, res) => {
     return res.render("viewAllMeetings", {
@@ -40,34 +37,18 @@ router
             return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
 
+        const timeStart = meeting.timeStart;
+        const timeEnd = meeting.timeEnd;
+
         // convert and construct meeting fields to display the data, then render the page
         try {
             // convert data to prepare for rendering
 
-            // transform each date into an object with properties `date` and `dow`, representing the formatted date and corresponding day of the week
-            const formattedDates = meeting.dates.map((date) => {
-                const month = monthNames[date.getMonth()];
-                const dayOfMonth = date.getDate();
-                const dayOfWeek = daysOfWeek[date.getDay()];
-                return { date: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
-            });
+            // convert dates into human-readable format
+            const formattedDates = meeting.dates.map(formatDate);
 
-            // construct column labels between the meeting's start and end times (in 1-hour increments)
-            const columnLabels = [];
-            let hours = Math.floor(meeting.timeStart / 2); // round down since "2:30" is still in hour "2"
-            for (let i = meeting.timeStart; i < meeting.timeEnd; i++) {
-                // calculate the AM/PM hour
-                const pm = hours >= 12;
-                let adjustedHours = hours % 12;
-                if (adjustedHours == 0) adjustedHours = 12; // midnight
-
-                if (i % 2 == 0) {
-                    columnLabels.push({ label: `${adjustedHours}:00 ${pm ? "PM" : "AM"}`, small: false });
-                } else {
-                    columnLabels.push({ label: `${adjustedHours}:30 ${pm ? "PM" : "AM"}`, small: true });
-                    hours++; // move to the next hour on the next iteration
-                }
-            }
+            // construct column labels between the meeting's start and end times (including a `small` indicator for half hours)
+            const columnLabels = constructTimeLabels(timeStart, timeEnd, true);
 
             // process responses on the fly
             let merged = [];
@@ -78,10 +59,13 @@ router
                 }
             } else {
                 // compute merged availability based on responses
-                merged = mergeResponses(meeting.responses, meeting.timeStart, meeting.timeEnd);
+                merged = mergeResponses(meeting.responses, timeStart, timeEnd);
             }
             // extract the raw data and only display the slots within this meeting's time range
-            const processedMerged = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd));
+            const processedMerged = merged.map((avail) => avail.slots.slice(timeStart, timeEnd));
+
+            // compute the best times based on this meeting's availability
+            const bestTimes = computeBestTimes(merged, timeStart, timeEnd, meeting.users.length, meeting.duration, true);
 
             // retrieve and format comments for this meeting
             let comments = await getMeetingComments(meetingId);
@@ -108,6 +92,7 @@ router
                 responses: processedMerged,
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
+                bestTimes: bestTimes,
                 comments: comments,
                 note: note,
                 isOwner: await isUserMeetingOwner(meetingId, userId),

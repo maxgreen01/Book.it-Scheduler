@@ -94,29 +94,98 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
     return possibleTimes;
 }
 
-//returns an array of objects that have the best time for all users, with a boolean indicating whether each chunk is too short
-export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingDuration, keepShortTime = true) {
-    const mergedAvailabilities = mergeResponses(responseArr, meetingStart, meetingEnd);
-
-    // calculate all possible times
-    let possibleTimes = [];
-    let numUsers = responseArr.length;
+// Given the result of `mergeResponses` return an array of objects (with human-readable fields) representing the best times for all users, optionally with a boolean indicating whether each time is too short.
+export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd, numUsers, meetingDuration, keepShortTimes = true) {
+    let bestTimes = [];
     // loop until we start getting available times (or run out of users, meaning there are no times)
-    while (possibleTimes.length == 0 && numUsers > 0) {
-        possibleTimes = computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, numUsers);
-        if (possibleTimes.length == 0) numUsers -= 1; // not all users are available, so try again searching for fewer people
+    while (numUsers > 0) {
+        let times = computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, numUsers);
+        if (times.length == 0) {
+            // not all users are available, so try again searching for fewer people
+            numUsers -= 1;
+            continue;
+        } else {
+            // check if any of the chunks are too short for the meeting duration
+            if (!keepShortTimes) {
+                // discard meetings that are too short
+                times = times.filter((time) => !(meetingDuration > time.timeEnd - time.timeStart));
+            } else {
+                // mark meetings as being too short or not, and save them all
+                for (const time of times) {
+                    time.tooShort = meetingDuration > time.timeEnd - time.timeStart;
+                }
+            }
+
+            // save all the responses
+            bestTimes = bestTimes.concat(times);
+
+            if (times.length == 0 || times.every((time) => time.tooShort)) {
+                // all times are too short, so keep iterating
+                numUsers -= 1;
+                continue;
+            } else {
+                // the best times have been found, so exit the loop
+                break;
+            }
+        }
+    } // end of `while` loop
+
+    // convert fields into human-readable ones
+    for (const time of bestTimes) {
+        const dateParts = formatDate(time.date);
+        time.date = `${dateParts.date} (${dateParts.dow})`;
+        time.timeStart = convertIndexToLabel(time.timeStart);
+        time.timeEnd = convertIndexToLabel(time.timeEnd);
     }
 
-    // check if any of the chunks are too short for the meeting duration
-    if (!keepShortTime) {
-        possibleTimes.filter((time) => {
-            meetingDuration > time.timeEnd - time.timeStart;
-        });
+    return { times: bestTimes, numUsers: numUsers };
+}
+
+// Convert a single timeslot index (from 0-48) into its corresponding human-readable label.
+// Note that indices map to the "start" of the corresponding timeslot, so `0` corresponds to the start of the "12:00 AM" timeslot.
+// For example, `13` => "6:30 AM"
+export function convertIndexToLabel(timeIndex) {
+    let hours = Math.floor(timeIndex / 2) % 48; // round down since "2:30" is still in hour "2"
+    // calculate the AM/PM hour
+    const pm = hours >= 12;
+    let adjustedHours = hours % 12;
+    if (adjustedHours == 0) adjustedHours = 12; // account for midnight
+
+    // construct the time string
+    let label;
+    if (timeIndex % 2 == 0) {
+        label = `${adjustedHours}:00 ${pm ? "PM" : "AM"}`;
     } else {
-        for (const time of possibleTimes) {
-            time.tooShort = meetingDuration > time.timeEnd - time.timeStart;
+        label = `${adjustedHours}:30 ${pm ? "PM" : "AM"}`;
+        hours++; // move to the next hour on the next iteration
+    }
+
+    return label;
+}
+
+// Generate an array representing the human-readable labels between a start time index (inclusive) and end time index (exclusive).
+// If `asObject` is true, this returns objects with the label string stored in the `label` property, and the `small` boolean property indicating whether the time is on a half-hour
+export function constructTimeLabels(timeStart, timeEnd, asObject = false) {
+    const labels = [];
+    for (let i = timeStart; i < timeEnd; i++) {
+        const label = convertIndexToLabel(i);
+
+        // add the result to the output
+        if (asObject) {
+            labels.push({ label: label, small: i % 2 == 1 });
+        } else {
+            labels.push(label);
         }
     }
+    return labels;
+}
 
-    return possibleTimes;
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// transform a Date object into an object with properties `date` and `dow`, representing the formatted date and corresponding day of the week
+export function formatDate(date) {
+    const month = monthNames[date.getMonth()];
+    const dayOfMonth = date.getDate();
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    return { date: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
 }

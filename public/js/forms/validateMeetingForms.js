@@ -9,6 +9,7 @@ function setError(err, elemId) {
 // find form elements
 const createMeetingForm = document.getElementById("createMeeting");
 const editMeetingForm = document.getElementById("editMeeting");
+const bookMeetingForm = document.getElementById("bookMeeting");
 
 // If meeting creation form fields are not valid, prevent submission and display an error
 function validateCreateMeeting(event) {
@@ -63,6 +64,12 @@ function validateEditMeeting(event) {
     }
 }
 
+// ensure fields are valid and within the list of computed times before booking
+function validateBookMeeting(event) {
+    // todo how to access booked meeting times at this point?
+}
+
 // Attach event handlers
 if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);
 if (editMeetingForm) editMeetingForm.addEventListener("submit", validateEditMeeting);
+if (bookMeetingForm) bookMeetingForm.addEventListener("submit", validateBookMeeting);

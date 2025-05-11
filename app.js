@@ -8,9 +8,12 @@ import configRoutes from "./routes/index.js";
 import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
 import session from "express-session";
+import favicon from "serve-favicon";
+import path from "node:path";
 import Handlebars from "handlebars";
-import { renderError } from "./utils/routeUtils.js";
+import { __rootdir, renderError } from "./utils/routeUtils.js";
 import { isUserMeetingOwner } from "./data/meetings.js";
+import { convertIndexToLabel } from "./public/js/helpers.js";
 
 const app = express();
 
@@ -45,6 +48,9 @@ app.use(
     })
 );
 
+// send favicon
+app.use(favicon(path.join(__rootdir, "/public/icons/favicon.ico")));
+
 //
 // ================ custom middlewares ================
 //
@@ -57,8 +63,8 @@ app.use("/", async (req, res, next) => {
     next();
 });
 
-// Little handlebars helper to multiply inline the alpha value of the cell background
-// Ex: rgba(128, 0, 128, {{multiplyOpacity 4}}) where 0 is blank
+// Handlebars helper to multiply inline the alpha value of the cell background
+// Ex: rgba(128, 0, 128, {{#multiplyOpacity 4}}) where 0 is blank
 Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     // this a parameter passed to the route in the handlebars context
     // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
@@ -67,7 +73,7 @@ Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     return opacity.toFixed(2);
 });
 
-// Handlebar helper to grab elements from potentially out-of-block arrays by index
+// Handlebars helper to grab elements from potentially out-of-block arrays by index
 // example, grab day array elements while iterating under scope of meeting arrays
 // check out: https://stackoverflow.com/a/18763906
 /*
@@ -76,6 +82,19 @@ meetings: [ [@index property refers to this while iterating], [...], [...], ...]
  */
 Handlebars.registerHelper("at_index", function (context, index) {
     return context && context[index];
+});
+
+// Handlebars helper to emulate a `for` loop.
+// Use `{{this}}` to refer to the loop index.
+Handlebars.registerHelper("for", function (from, to, inc, options) {
+    let accum = "";
+    for (let i = from; i < to; i += inc) accum += options.fn(i);
+    return accum;
+});
+
+// Handlebars helper to convert a timeslot index into the corresponding human-readable time label
+Handlebars.registerHelper("convertIndexToLabel", function (context, options) {
+    return convertIndexToLabel(context);
 });
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
