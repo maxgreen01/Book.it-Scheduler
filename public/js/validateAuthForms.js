@@ -1,4 +1,4 @@
-import { validatePassword, validateUserId } from "./clientValidation.js";
+import { validateImageFileType, validatePassword, validateUserId } from "./clientValidation.js";
 import { createUserDocument } from "./documentCreation.js";
 
 // Set error text in html element with id "error"
@@ -14,6 +14,7 @@ function validateSignup(event) {
     const description = document.getElementById("descriptionInput").value;
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
+    const files = document.getElementById("profilePictureInput").files;
     try {
         const user = createUserDocument(
             {
@@ -27,6 +28,11 @@ function validateSignup(event) {
             },
             true
         ); // TODO remove true when above is implemented
+        if (files && files[0]) {
+            let pfp = files[0];
+            validateImageFileType(pfp.name, "Profile Picture Name");
+            if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
+        }
     } catch (e) {
         event.preventDefault();
         setError(e);
