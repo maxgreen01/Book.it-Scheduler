@@ -23,7 +23,7 @@ function clearMessageTimeout() {
 const genCommentHTML = (comment) => {
     return $(`<div class="comment-wrapper" id="commentWrapper${comment._id}">
                 <div class="comment" id="comment${comment._id}">
-                    <p>Author: ${comment.uid}</p>
+                    <p>Author: ${comment.uid} (You)</p>
                     <p>Text: ${comment.body}</p>
                     <p>Created at: ${comment.dateCreated}</p>
                     <button id="commentTrash${comment._id}" class="trashIcon" data="${comment._id}"></button>

@@ -67,6 +67,11 @@ Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     return opacity.toFixed(2);
 });
 
+//Handlebars Helper to check if two numbers are equal to each toher
+Handlebars.registerHelper("equal?", function (a, b) {
+    return a === b;
+});
+
 // Handlebar helper to grab elements from potentially out-of-block arrays by index
 // example, grab day array elements while iterating under scope of meeting arrays
 // check out: https://stackoverflow.com/a/18763906
