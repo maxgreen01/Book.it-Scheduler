@@ -1,5 +1,5 @@
-import { validateImageFileType, validatePassword, validateUserId } from "./clientValidation.js";
-import { createUserDocument } from "./documentCreation.js";
+import { validateImageFileType, validatePassword, validateUserId } from "../clientValidation.js";
+import { createUserDocument } from "../documentCreation.js";
 
 // Set error text in html element with id "error"
 function setError(err) {
@@ -44,8 +44,12 @@ function validateLogin(event) {
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
     try {
-        validateUserId(uid);
-        validatePassword(password);
+        try {
+            validateUserId(uid);
+            validatePassword(password);
+        } catch (err) {
+            throw new Error("Either username or password is invalid");
+        }
     } catch (e) {
         event.preventDefault();
         setError(e);

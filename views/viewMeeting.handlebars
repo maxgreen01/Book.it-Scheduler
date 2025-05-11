@@ -2,31 +2,40 @@
     <div class="grid-container">
         {{!-- header for meeting details --}}
         <div class="title-bar">
-            <h1>Meeting View Page</h1>
+            <h1>{{title}}</h1>
+            <br />
+            <p>Description: {{description}}</p>
+            <p>Duration: {{duration}}</p>
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div class="calendar-section">
-            <h2>Calendar Here</h2>
+            <h2>Meeting Calendar</h2>
 
-            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}} {{!-- This is the only fix I could find for css grid acting weird --}}
+            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
-                <div class="calendar" style="--day-count: {{meeting.length}}">
-                    <div class="calendar-title-header">Header details here</div>
+                <div class="calendar" style="--day-count: {{days.length}}">
+                    {{!-- indicate whether the user is viewing the group availability or editing their own --}}
+                    <div id="calendar-title-header">Group's Availability</div>
+
+                    {{!-- column with labels for hour markings --}}
                     <div class="time-column">
-                        <div id="time-column-header" class="calendar-column-header">{{index_of ../days @index}}</div>
                         {{#each timeColumn}}
-                        <div class="time-column-timestamp">{{this}}</div>
+                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
                         {{/each}}
                     </div>
 
-                    {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
+                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
                     <div class="calendar-column">
-                        <div class="calendar-column-header">{{index_of ../days @index}}</div>
+                        <div class="calendar-column-header">
+                            {{#with (at_index ../days @index)}}
+                            <p class="calendar-column-header-text">{{date}}</p>
+                            <p class="calendar-column-header-text">{{dow}}</p>
+                            {{/with}}
+                        </div>
                         <div class="calendar-cells">
-                            {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
+                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
                             <div class="timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
-                            {{/each}} {{!-- generate the same number of client slots in the background --}} {{#each this}}
                             <div class="timeslot response-slot" hidden></div>
                             {{/each}}
                         </div>
@@ -34,11 +43,16 @@
                     {{/each}}
                 </div>
             </div>
+
             <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
             <button id="submit-response-button" hidden>Submit</button>
+            {{#if isOwner}}
+            <br />
+            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
+            {{/if}}
         </div>
 
-        {{!-- Container for filling in respondee info --}}
+        {{!-- Container for filling in responder info --}}
         <div class="response-section">
             <h2>Responses & Other</h2>
             <p>fill remaining space</p>
@@ -52,7 +66,7 @@
                 <textarea type="text" id="commentInput" name="commentInput" class="text-input" placeholder="Add a comment."></textarea>
                 <button type="submit" id="commentSend" class="send-icon-comment" label="Send Note"></button>
             </form>
-            {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
+            {{#if comments.length}} {{!-- If comments exist, make a div for each one --}}
             <p id="comment-count" data="{{comments.length}}">{{comments.length}} comments</p>
             {{#each comments}}
             <div class="comment-wrapper" id="commentWrapper{{this._id}}">
@@ -61,13 +75,13 @@
                     <p>Text: {{this.body}}</p>
                     <p>Created at: {{{this.dateCreated}}}</p>
                     {{#if this.dateUpdated}}
-                    <p>Last changes made: {{this.dateUpdated}}</p>
+                    <p>Last edited: {{this.dateUpdated}}</p>
                     {{/if}} {{#if this.isViewerComment}}
                     <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
                     {{/if}}
                 </div>
             </div>
-            {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
+            {{/each}} {{!-- If they don't exist, do something else --}} {{else}}
             <p id="comment-count" data="0">0 comments</p>
             <p id="commentStart">Start the conversation by adding your own comment!</p>
             {{/if}}
@@ -88,6 +102,7 @@
         </div>
     </div>
 </main>
-<script src="../../public/js/calendars.js"></script>
+
+<script src="../../public/js/forms/calendarActions.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>

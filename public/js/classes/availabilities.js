@@ -38,13 +38,17 @@ export class Availability {
         // actually merge the timeslots of each Availability Object
         const mergedSlots = new Array(48).fill(0);
         for (const availability of availArray) {
-            for (let i = startTime; i <= endTime; i++) {
+            for (let i = startTime; i < endTime; i++) {
                 mergedSlots[i] += availability.slots[i];
             }
         }
 
         // construct the resulting object
         return new Availability(mergedSlots, commonDate);
+    }
+
+    static emptyAvailability(date) {
+        return new Availability(new Array(48).fill(0), date, false);
     }
 }
 

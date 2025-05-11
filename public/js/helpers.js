@@ -1,6 +1,5 @@
 //file that contains various helpers that can be anywhere client side
 
-import { getMeetingById } from "../../data/meetings.js";
 import { Availability } from "./classes/availabilities.js";
 import { validateArrayElements, validateIntRange, validateResponseArrHasSameDates, validateResponseObj, ValidationError } from "./clientValidation.js";
 
@@ -53,7 +52,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
 
         let start = -1;
         // loop over each timeslot in this day, saving chunks where `numUsers` are available
-        for (let i = meetingStart; i <= meetingEnd; i++) {
+        for (let i = meetingStart; i < meetingEnd; i++) {
             if (slots[i] == numUsers) {
                 // everyone is available
 
@@ -70,7 +69,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
                     const meetingTime = {
                         date: currDate,
                         timeStart: start,
-                        timeEnd: i - 1,
+                        timeEnd: i, // timeEnd is the time AFTER everyone is available
                         users: numUsers,
                     };
                     possibleTimes.push(meetingTime);
@@ -86,7 +85,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
             possibleTimes.push({
                 date: currDate,
                 timeStart: start,
-                timeEnd: meetingEnd,
+                timeEnd: meetingEnd, // timeEnd is the time AFTER everyone is available
                 users: numUsers,
             });
         }
@@ -109,7 +108,6 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
     }
 
     // check if any of the chunks are too short for the meeting duration
-
     if (!keepShortTime) {
         possibleTimes.filter((time) => {
             meetingDuration > time.timeEnd - time.timeStart;
@@ -122,10 +120,3 @@ export function computeBestTimes(responseArr, meetingStart, meetingEnd, meetingD
 
     return possibleTimes;
 }
-
-// FIXME: TEST FUNCTIONS REMOVE LATER!!!!!!
-const testMeeting = await getMeetingById("681e1bc3c436a9c51449dee2");
-const meetingResponse = testMeeting.responses;
-
-console.log(meetingResponse.map((r) => r.availabilities.map((a) => a.slots)));
-console.log(computeBestTimes(meetingResponse, testMeeting.timeStart, testMeeting.timeEnd, 2));

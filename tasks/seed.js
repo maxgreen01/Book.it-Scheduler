@@ -72,31 +72,25 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const changeDateToStart = (date) => {
-            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
-        };
+        const toDateStr = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-        const randomDate = changeDateToStart(faker.date.future());
-        const meetingDates = [];
+        const startDate = toDateStr(faker.date.soon({ days: 60 }));
+        const endDate = toDateStr(faker.date.soon({ days: 10, refDate: startDate }));
 
-        const meetingLengthDays = faker.number.int({ min: 1, max: 7 });
-        for (let i = 0; i < meetingLengthDays; i++) {
-            let dateToAdd = new Date(randomDate);
-            dateToAdd.setDate(dateToAdd.getDate() + i);
-            meetingDates.push(dateToAdd);
-        }
+        const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
         const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart, max: 42 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
 
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
-            duration: faker.number.int({ min: 1, max: meetingEnd - meetingStart }),
+            duration: (duration / 2).toString(), // convert to a string input in hours
             owner: faker.helpers.arrayElement(meetingUsers),
-            dates: meetingDates,
-            timeStart: meetingStart,
-            timeEnd: meetingEnd,
+            dateStart: startDate,
+            dateEnd: endDate,
+            timeStart: meetingStart.toString(),
+            timeEnd: meetingEnd.toString(),
         };
 
         console.log(`Adding meeting #${i}: ${newMeeting.name}`);
@@ -104,7 +98,7 @@ async function seed() {
         meetingIds.push(addedMeeting._id);
 
         const randomSlotGenerator = () => {
-            const slots = Array(48).fill(0);
+            const slots = new Array(48).fill(0);
             for (let i = meetingStart; i <= meetingEnd; i++) {
                 //80% of being available
                 slots[i] = Math.random() < 0.8 ? 1 : 0;
@@ -115,7 +109,7 @@ async function seed() {
 
         for (const user of meetingUsers) {
             let arrOfAvailability = [];
-            for (const date of meetingDates) {
+            for (const date of addedMeeting.dates) {
                 const newAvailability = new Availability(randomSlotGenerator(), date);
                 arrOfAvailability.push(newAvailability);
             }

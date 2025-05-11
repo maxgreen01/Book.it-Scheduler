@@ -26,11 +26,11 @@ export function redirectBack(req, res) {
     return res.redirect(req.get("Referrer") || "/");
 }
 
-//helper function that handles error cases
-export function handleReqError(res, error) {
-    if (error instanceof ValidationError) {
-        return res.status(400).json({ error: error.message });
+// When an error occurs, return a different error code if the error is a ValidationError or regular Error
+export function handleValidationError(req, res, err, validationCode = 400, regularCode = 500) {
+    if (err instanceof ValidationError) {
+        return renderError(req, res, validationCode, err.message);
     } else {
-        return res.status(500).json({ error: error.message });
+        return renderError(req, res, regularCode, err.message);
     }
 }

@@ -40,7 +40,7 @@ export async function validateUserExists(uid) {
 // Throw an error if a string is not valid or is not a valid meeting ID, or if the meeting with the given ID is not found.
 // If the meeting ID is valid and the corresponding meeting exists, return the validated meeting ID.
 export async function validateMeetingExists(id) {
-    id = clientValidation.validateStrAsObjectId(id);
+    id = clientValidation.validateStrAsObjectId(id, "Meeting ID");
     try {
         await getMeetingById(id);
         return id;

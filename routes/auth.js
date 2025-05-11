@@ -1,6 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { ValidationError, validateUserId } from "../utils/validation.js";
+import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, createUserDocument, getUserById } from "../data/users.js";
@@ -17,17 +17,23 @@ router
     })
     // log in
     .post(async (req, res) => {
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         try {
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
             if (!(await bcrypt.compare(req.body.password, user.password))) {
-                return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+                return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
             }
             delete user.password;
             req.session.user = user;
             res.redirect("/profile");
         } catch {
-            return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+            return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
         }
     });
 
@@ -61,7 +67,7 @@ router
         try {
             createUserDocument(data);
         } catch (err) {
-            return routeUtils.renderError(req, res, 400, err.message);
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         // upload & assign profile picture, if one is supplied
@@ -77,11 +83,7 @@ router
                 }
             }
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         // validate all inputs and add the user to the DB
@@ -89,12 +91,7 @@ router
         try {
             user = await createUser(data);
         } catch (err) {
-            // TODO: use new method
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
         delete user.password;
