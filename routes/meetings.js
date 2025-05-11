@@ -37,6 +37,8 @@ router.route("/").get(async (req, res) => {
     const myBookings = []; // bookingStatus == 1
     const myMeetings = []; // bookingStatus != 1 && owned by user
     const myResponses = []; // bookingStatus != 1 && NOT owned by user
+    const thisWeekMeetings = []; //booked meetings in the next 7 days
+    const today = new Date();
 
     for (let meeting of allMeetings) {
         //transformations applied to all meetings
@@ -51,8 +53,8 @@ router.route("/").get(async (req, res) => {
         if (meeting.bookingStatus === 1) {
             //parse booked time object
             meeting.bookingDate = routeUtils.formatDateString(meeting.bookedTime.date, false);
-            meeting.bookingStart = routeUtils.formatTimeIndex(meeting.bookedTime.timeStart);
-            meeting.bookingEnd = routeUtils.formatTimeIndex(meeting.bookedTime.timeEnd);
+            meeting.bookingStart = routeUtils.formatTimeIndex(meeting.bookedTime.startTime);
+            meeting.bookingEnd = routeUtils.formatTimeIndex(meeting.bookedTime.endTime);
             myBookings.push(meeting);
         } else if (meeting.owner == uid) {
             //set meeting matrix for calendar display

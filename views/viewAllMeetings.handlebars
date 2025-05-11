@@ -22,6 +22,17 @@
         </aside>
 
         <section class="meetings-main-content">
+            <h2>Upcoming This Week:</h2>
+            <div class="calendar-view">
+                {{#each upcomingDays}}
+                <a class="calendar-day {{#if hasMeeting}}has-meeting{{/if}}" href="{{#if meetingId}}/meeting/{{meetingId}}{{else}}#{{/if}}">
+                    <div class="calendar-day-name">{{this.day}}</div>
+                    <div class="calendar-day-date">{{this.date}}</div>
+                    <div class="calendar-node"></div>
+                </a>
+                {{/each}}
+            </div>
+
             <h2>My Meetings</h2>
             <div class="meetings-grid" id="my-meetings">
                 {{#each myMeetings}} {{!-- Mark each card with meeting id for clickability--}}
