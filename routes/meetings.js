@@ -2,6 +2,7 @@ import express from "express";
 import { getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getOwnedMeetings, getUserMeetings } from "../data/users.js";
+import { time } from "node:console";
 
 const router = express.Router();
 
@@ -30,22 +31,47 @@ for (let i = 0; i < testMatrix[0].length; i++) {
 
 router.route("/").get(async (req, res) => {
     const uid = req.session.user._id;
-    const myMeetings = await getOwnedMeetings(uid);
+
     const allMeetings = await getUserMeetings(uid);
-    myMeetings.forEach((element) => {
-        element.matrix = testMatrix;
-    });
 
-    //NOTE: This is a hack to avoid changing the schema,
-    //but in the future this should be separated into two lists in the document: Owned Meetings & Responded Meeting
+    const myBookings = []; // bookingStatus == 1
+    const myMeetings = []; // bookingStatus != 1 && owned by user
+    const myResponses = []; // bookingStatus != 1 && NOT owned by user
 
-    //filter out meetings user does not own
-    const otherMeetings = allMeetings.filter((meeting) => !myMeetings.some((myMeeting) => myMeeting._id.toString() === meeting._id.toString()));
+    for (let meeting of allMeetings) {
+        //transformations applied to all meetings
+        meeting.duration /= 2;
+
+        //make date range readable
+        const numDays = meeting.dates.length;
+        meeting.startDate = routeUtils.formatDateString(meeting.dates[0], false);
+        meeting.endDate = numDays == 1 ? null : routeUtils.formatDateString(meeting.dates[numDays - 1], false);
+
+        //filter by category
+        if (meeting.bookingStatus === 1) {
+            //parse booked time object
+            meeting.bookingDate = routeUtils.formatDateString(meeting.bookedTime.date, false);
+            meeting.bookingStart = routeUtils.formatTimeIndex(meeting.bookedTime.timeStart);
+            meeting.bookingEnd = routeUtils.formatTimeIndex(meeting.bookedTime.timeEnd);
+            myBookings.push(meeting);
+        } else if (meeting.owner == uid) {
+            //set meeting matrix for calendar display
+            meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
+            meeting.matrix = testMatrix; //todo replace with matrix generated from each meeting data
+            myMeetings.push(meeting);
+        } else {
+            //set meeting matrix for calendar display
+            meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
+            meeting.matrix = testMatrix; //todo replace with matrix generated from each meeting data
+            myResponses.push(meeting);
+        }
+    }
 
     return res.render("viewAllMeetings", {
-        title: "My Meetings",
+        title: "Dashboard",
+        myBookings,
         myMeetings,
-        otherMeetings,
+        myResponses,
         numUsers: 8, //todo make this number reflect the largest # attendees globally on the page
         //If we wanted to make this card-specific would need to rework the opacity helper
         ...routeUtils.prepareRenderOptions(req),

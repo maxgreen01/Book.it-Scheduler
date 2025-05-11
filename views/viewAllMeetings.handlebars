@@ -10,9 +10,13 @@
         <aside class="bookings-sidebar">
             <h3>My Bookings</h3>
             <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Show Past Meetings </label>
-            <ul id="booked-meetings-list">
-                {{#each bookedMeetings}}
-                <li>{{this.title}} — {{this.time}}</li>
+
+            <ul class="booked-meetings-list">
+                {{#each myBookings}}
+                <li class="booking-item" data-id="{{this._id}}">
+                    <div class="booking-title">{{this.name}}</div>
+                    <div class="booking-datetime">{{this.bookingDate}} : {{this.bookingStart}} - {{this.bookingEnd}}</div>
+                </li>
                 {{/each}}
             </ul>
         </aside>
@@ -24,12 +28,10 @@
                 <div class="meeting-card" data-id="{{this._id}}">
                     <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
                     <div class="meeting-info">
-                        <p><strong>Duration:</strong> {{this.duration}} hours</p>
-                        <p class="status-{{bookingStatus}}">
-                            <strong>Status: {{bookingStatus}}</strong>
-                            {{!-- {{#if isBooked}}Booked for {{bookedTime}}{{else}}Pending{{/if}} --}}
-                        </p>
-                        <p><strong>Respondents:</strong> {{this.responses.length}}</p>
+                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p>Respondents: {{this.responses.length}}</p>
+                        <p>Duration: {{this.duration}}h</p>
+                        <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">
@@ -51,8 +53,31 @@
 
             <h2>My Responses</h2>
             <div class="meetings-grid" id="responded-meetings">
-                {{#each otherMeetings}}
-                <div class="meeting-card">{{this.name}}</div>
+                {{#each myResponses}}
+                <div class="meeting-card" data-id="{{this._id}}">
+                    <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
+                    <div class="meeting-info">
+                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p>Owner: {{this.owner}}</p>
+                        <p>Respondents: {{this.responses.length}}</p>
+                        <p>Duration: {{this.duration}}h</p>
+                        <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
+                    </div>
+                    <div class="mini-calendar-wrapper">
+                        <div class="mini-calendar" style="--day-count: {{meeting.length}}">
+                            {{#each this.matrix}}
+                            <div class="mini-calendar-column">
+                                {{!-- Only cells, no headers --}}
+                                <div class="mini-calendar-cells">
+                                    {{#each this}}
+                                    <div class="mini-timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
                 {{/each}}
             </div>
         </section>

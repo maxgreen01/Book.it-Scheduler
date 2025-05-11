@@ -145,7 +145,7 @@ export async function updateMeetingNote(mid, uid, body) {
 
 //Set the Meeting Status and Booked Time of the Meeting
 //Booking Status = Integer from 1 to -1
-//Booked Time = Availability Object
+//Booked Time = {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
 export async function setBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);

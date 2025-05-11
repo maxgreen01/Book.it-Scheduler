@@ -20,6 +20,7 @@
             <div class="calendar-wrapper">
                 <div class="calendar" style="--day-count: {{meeting.length}}">
                     <div class="calendar-title-header">Header details here</div>
+                    {{!-- todo put the month & year of the event, or both months if it overlaps --}}
                     <div class="time-column">
                         <div id="time-column-header" class="calendar-column-header">{{index_of ../days @index}}</div>
                         {{#each timeColumn}}
