@@ -30,7 +30,7 @@ function validateSignup(event) {
         );
         if (files && files[0]) {
             let pfp = files[0];
-            validateImageFileType(pfp.name, "Profile Picture Name");
+            validateImageFileType(pfp.name, "Profile Picture");
             if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
         }
     } catch (e) {

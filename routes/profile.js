@@ -15,7 +15,7 @@ router
             title: "My Profile",
             canEdit: true,
             fullName: `${req.session.user.firstName} ${req.session.user.lastName}`,
-            pfpUrl: `/public/images/${req.session.user.profilePicture}`,
+            pfpUrl: `${profileUtils.imagesDir}/${req.session.user.profilePicture}`,
             ...routeUtils.prepareRenderOptions(req),
         });
 

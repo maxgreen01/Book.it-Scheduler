@@ -89,6 +89,7 @@ router
         try {
             user = await createUser(data);
         } catch (err) {
+            // TODO: use new method
             if (err instanceof ValidationError) {
                 return routeUtils.renderError(req, res, 400, err.message);
             } else {
