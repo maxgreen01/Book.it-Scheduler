@@ -86,9 +86,13 @@ router.route("/:uid").get(async (req, res) => {
     // validate ID and retrieve other's profile
     try {
         const user = await getUserById(req.params.uid);
-        return res.json(user);
-
-        // return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) }); // todo implement HTML template
+        return res.render("profile", {
+            title: `${user.firstName}'s Profile`,
+            canEdit: false,
+            fullName: `${user.firstName} ${user.lastName}`,
+            pfpUrl: `/public/images/${user.profilePicture}`,
+            ...routeUtils.prepareRenderOptions(req),
+        });
     } catch (err) {
         if (err instanceof ValidationError) {
             return routeUtils.renderError(req, res, 400, err.message);
