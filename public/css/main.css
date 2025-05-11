@@ -1,14 +1,16 @@
 /* Stylesheet used by the main.handlebars default view */
 /* By default is applied to all HTML pages on the site */
 
+/* ==================== Universal ==================== */
 body {
     margin: 0 auto;
     font-family: Arial, sans-serif;
     background-color: #f8f8f8;
     color: #333;
+    margin-bottom: 50px;
 }
 
-/* Nav bar rules */
+/* ==================== Navbar ==================== */
 header {
     background-color: #6a5acd;
     color: white;
@@ -67,8 +69,54 @@ nav a:hover {
     }
 }
 
-/* View meeting page */
-.grid-container {
+/* ==================== Page Title Bars ==================== */
+/* for pages that use them (Dashboard + View Meeting) */
+.title-bar {
+    /* grid-area: __ ; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    border-bottom: 2px solid #d1d8e0;
+}
+.page-title {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.title-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title-bar-actions button {
+    font-size: 14px;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #6a5acd;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.title-bar-actions button:hover {
+    background-color: #5a4abc;
+}
+
+.title-bar-actions label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ==================== View meeting page ==================== */
+.view-meetings-grid {
     display: grid;
     grid-template-columns: 3fr 1fr; /* 3/4 and 1/4 width */
     grid-template-rows: auto auto 300px;
@@ -106,9 +154,11 @@ nav a:hover {
     grid-area: notes-section;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 .comments-section {
     overflow: auto;
+    height: 100%;
     grid-area: comments-section;
 }
 
@@ -116,7 +166,7 @@ nav a:hover {
     grid-area: response-section;
 }
 
-/* calendar elements */
+/* ==================== Calendar UI Element ==================== */
 .calendar {
     display: grid;
     grid-template-columns: 100px repeat(var(--day-count), minmax(100px, auto)); /* pass --day-count through a style tag in handlebars */
@@ -126,10 +176,11 @@ nav a:hover {
     padding-right: 10px;
 }
 
-/* contains calendar element as one entity */
+/* contains calendar in one element */
 .calendar-wrapper {
     width: 100%;
     padding-bottom: 0.5rem;
+    padding-top: 20px;
 }
 
 /* header spans whole element */
@@ -208,15 +259,6 @@ nav a:hover {
     overflow: hidden;
     border-bottom: 1px solid #ccc;
 }
-
-/* this can get reused for if we want a mouse-over effect on elements */
-/* might be nice for clickables like buttons and cells on the calendar */
-/* left out for now */
-
-/* .timeslot:hover {
-     background-color: #f7fafc; 
-} */
-
 .response-slot {
     background-color: rgb(212, 237, 218, 0.75);
 }
@@ -396,4 +438,22 @@ Comments Form CSS
     color: white;
     border-radius: 6px;
     border: 1px solid #86909c;
+}
+
+/* Styling for edit Meeting Response button*/
+
+.response-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+}
+
+.button-image {
+    width: 16px;
+    height: 16px;
+}
+
+.blocked-out-slot {
+    background-color: rgb(0, 0, 0, 0.75);
 }

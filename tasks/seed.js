@@ -10,9 +10,10 @@ import { Response } from "../public/js/classes/responses.js";
 
 // define the seed procedure, which is called below
 async function seed() {
-    const N_USR = 10; // create n users
+    //todo change nuser back when done testing
+    const N_USR = 4; // create n users
     const N_COM = 25; // create n comments
-    const N_MTG = 5; // create n meetings
+    const N_MTG = 15; // create n meetings
 
     // random user generation
     console.log(`\nGenerating ${N_USR} users...`);
@@ -52,6 +53,20 @@ async function seed() {
         };
 
         console.log(`Adding user #${i}: ${fname} ${lname}`);
+        if (i == 0) {
+            const brendan = await createUser({
+                uid: "Brendan123",
+                password: "Brendan123!",
+                firstName: "Brendan",
+                lastName: "Lee",
+                description: faker.lorem.sentences({ min: 0, max: 2 }),
+                profilePicture: "_default.jpg",
+                availability: new WeeklyAvailability(generateWeeklyAvailability()),
+            });
+            userIds.push("Brendan123");
+            console.log("Brendan Added");
+        }
+
         const user = await createUser({
             uid: username,
             //FIXME: Test Password so I can login and check comments
@@ -82,6 +97,7 @@ async function seed() {
         const meetingStart = faker.number.int({ min: 1, max: 40 });
         const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
 
+        //todo: uncomment when done testing dashboard --bl
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
