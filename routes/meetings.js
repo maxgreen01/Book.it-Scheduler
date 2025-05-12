@@ -86,7 +86,7 @@ router
             // compute the best times based on this meeting's availability
             const bestTimes = computeBestTimes(merged, timeStart, timeEnd, meeting.users.length, meeting.duration, true);
 
-            //get user default availability
+            // get user's default availability
             let userDefaultAvail = await getUserById(userId);
             userDefaultAvail = userDefaultAvail.availability;
             let userAvail = [];
@@ -100,7 +100,7 @@ router
                 userAvail.push(mergedDayAvail);
             }
 
-            //if the user has responded before overwrite with their response
+            //if the user has responded before, overwrite with their response
             for (let response of meeting.responses) {
                 if (response.uid === userId) {
                     for (let i = 0; i < response.availabilities.length; i++) {
@@ -109,18 +109,21 @@ router
                 }
             }
 
-            //If a previous meeting has been booked add that to the user's availability
+            // If a other meetings have already been booked within this timeframe, add them to the user's availability
             const userMeetings = await getUserMeetings(userId);
-            for (const userMeeting of userMeetings) {
-                if (userMeeting.bookingStatus === 1) {
-                    for (let i = 0; i < meeting.dates.length; i++) {
-                        if (isSameDay(meeting.dates[i], userMeeting.bookedTime.date)) {
-                            for (let j = userMeeting.bookedTime.timeStart; j <= userMeeting.bookedTime.timeEnd; j++) {
-                                const currMeetingIdx = j - meeting.timeStart;
-                                if (currMeetingIdx >= 0 && currMeetingIdx < meeting.timeEnd - meeting.timeStart) {
-                                    userAvail[i][currMeetingIdx] = 2;
-                                }
-                            }
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+
+                for (let i = 0; i < meeting.dates.length; i++) {
+                    // find the day (if any) where the booked date lines up with this meeting's calendar
+                    if (!isSameDay(meeting.dates[i], bookedMeeting.bookedTime.date)) continue;
+
+                    // block out the user's availability for the timeslots that intersect with the booked meeting
+                    for (let j = bookedMeeting.bookedTime.timeStart; j < bookedMeeting.bookedTime.timeEnd; j++) {
+                        const timeslotIdx = j - meeting.timeStart;
+                        // make sure the timeslot is valid within this meeting
+                        if (timeslotIdx >= 0 && timeslotIdx < meeting.timeEnd - meeting.timeStart) {
+                            userAvail[i][timeslotIdx] = 2;
                         }
                     }
                 }
@@ -211,17 +214,20 @@ router
             );
 
             const userMeetings = await getUserMeetings(userId);
-            for (const userMeeting of userMeetings) {
-                if (userMeeting.bookingStatus === 1) {
-                    for (let i = 0; i < meeting.dates.length; i++) {
-                        if (isSameDay(meeting.dates[i], userMeeting.bookedTime.date)) {
-                            for (let j = userMeeting.bookedTime.timeStart; j <= userMeeting.bookedTime.timeEnd; j++) {
-                                const currMeetingIdx = j - meeting.timeStart;
-                                if (currMeetingIdx >= 0 && currMeetingIdx < meeting.timeEnd - meeting.timeStart) {
-                                    if (response[i][currMeetingIdx] === 1) {
-                                        throw new Error(`Cannot respond to a time where you're already booked for a meeting!`);
-                                    }
-                                }
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+
+                for (let i = 0; i < meeting.dates.length; i++) {
+                    // find the day (if any) where the booked date lines up with this meeting's calendar
+                    if (!isSameDay(meeting.dates[i], bookedMeeting.bookedTime.date)) continue;
+
+                    // prevent the user from responding "available" during the timeslots that intersect with the booked meeting
+                    for (let j = bookedMeeting.bookedTime.timeStart; j < bookedMeeting.bookedTime.timeEnd; j++) {
+                        const timeslotIdx = j - meeting.timeStart;
+                        // make sure the timeslot is valid within this meeting
+                        if (timeslotIdx >= 0 && timeslotIdx < meeting.timeEnd - meeting.timeStart) {
+                            if (response[i][timeslotIdx] === 1) {
+                                throw new Error(`Cannot respond to a time where you're already booked for a different meeting`);
                             }
                         }
                     }
@@ -327,7 +333,7 @@ router
             // book the meeting
 
             // validate new inputs
-            let date, timeStart;
+            let date, timeStart, timeEnd;
             try {
                 try {
                     const [year, month, day] = data.date.split("-").map(Number);
@@ -336,12 +342,17 @@ router
                     throw new ValidationError("You must select a valid Date");
                 }
                 try {
-                    timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Time", 0, 47);
+                    timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Start Time", 0, 47);
                 } catch {
-                    throw new ValidationError(`You must select a valid Start Time and End Time`);
+                    throw new ValidationError("You must select a valid Start Time and End Time");
+                }
+                try {
+                    timeEnd = validateIntRange(timeStart + meeting.duration, "Meeting Booking End Time", 1, 48);
+                } catch {
+                    throw new ValidationError("Meeting Bookings cannot span multiple days");
                 }
             } catch (err) {
-                return routeUtils.renderError(req, res, 400, err.msg);
+                return routeUtils.renderError(req, res, 400, err.message);
             }
 
             // recompute best times to make sure the selected time matches one of them
@@ -375,7 +386,7 @@ router
                 const bookedTime = {
                     date: date,
                     timeStart: timeStart,
-                    timeEnd: timeStart + meeting.duration,
+                    timeEnd: timeEnd,
                 };
                 await setMeetingBooking(meetingId, bookingStatus, bookedTime);
                 return res.redirect(`/meetings/${meetingId}`);

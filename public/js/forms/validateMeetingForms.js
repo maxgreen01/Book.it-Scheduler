@@ -59,7 +59,6 @@ function validateEditMeeting(event) {
             },
             true
         );
-        console.log(meeting);
     } catch (err) {
         event.preventDefault();
         setError(err, "edit-error");
@@ -81,7 +80,7 @@ function validateBookMeeting(event) {
             throw new ValidationError("You must select a valid Date");
         }
         try {
-            timeStart = validateIntRange(convertStrToInt(timeStartInput.value), "Meeting Booking Time", 0, 47);
+            timeStart = validateIntRange(convertStrToInt(timeStartInput.value), "Meeting Booking Start Time", 1, 47);
         } catch {
             throw new ValidationError(`You must select a valid Start Time and End Time`);
         }

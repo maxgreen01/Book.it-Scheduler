@@ -67,7 +67,7 @@ const genHTMLforRespondees = (users, vUid) => {
 };
 
 const bindSlot = (slot, uids, currUid) => {
-    console.log("Binding event to slot:", slot);
+    // console.log("Binding event to slot:", slot);
     slot.addEventListener("mouseover", () => {
         const respondeeHTML = genHTMLforRespondees(uids, currUid);
         $("#responsePeople").empty();
@@ -104,7 +104,7 @@ $("#calendarSection").mouseout(() => {
 
 $.ajax(getResponsesReq)
     .then((res) => {
-        console.log(res);
+        // console.log(res);
         bindCalendarSlots(res.responses, res.start, res.uid);
     })
     .fail(() => {
@@ -171,7 +171,7 @@ if (submitButton) {
         };
         $.ajax(reqBody)
             .then(() => {
-                console.log("success!");
+                // console.log("success!");
                 window.location.reload();
             })
             .fail(() => {

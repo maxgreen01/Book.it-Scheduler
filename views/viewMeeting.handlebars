@@ -53,12 +53,6 @@
                 </div>
             </div>
 
-            {{#unless (or bookedTime isCancelled)}} {{!-- prevent submission when meeting is booked or cancelled --}}
-            <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
-            <button id="submit-response-button" hidden>Submit</button>
-            {{/unless}}
-            <br />
-
             {{!-- display the computed best meeting times --}}
             <div id="best-times-section">
                 {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
@@ -136,11 +130,16 @@
                 </div>
             </div>
             <div class="title-bar-actions">
+                {{#unless (or bookedTime isCancelled)}} {{!-- prevent submission when meeting is booked or cancelled --}}
                 <button id="edit-response-button" class="response-button">
-                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />
+                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="pencil icon" class="button-image" />
                     Respond
                 </button>
-                <button id="submit-response-button" hidden class="response-button"><img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />Submit</button>
+                <button id="submit-response-button" hidden class="response-button">
+                    <img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="paper airplane icon" class="button-image" />
+                    Submit
+                </button>
+                {{/unless}}
             </div>
         </div>
 

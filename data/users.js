@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import * as validation from "../utils/validation.js";
 import { meetingsCollection, usersCollection } from "../config/mongoCollections.js";
 import { createUserDocument } from "../public/js/documentCreation.js";
+import { updateMeetingInviteStatus } from "./meetings.js";
 export { createUserDocument } from "../public/js/documentCreation.js";
 
 // create a user object and save it to the DB, then return the added object
@@ -57,25 +58,28 @@ export async function getUserById(uid) {
     return user;
 }
 
-//return all meetings user has responded to
+// return all meetings user has responded to
 export async function getUserMeetings(uid) {
     uid = validation.validateUserId(uid);
     const user = await getUserById(uid);
     if (!user && !user.meetings) throw new Error(`Could not retrieve meetings from the user with ID "${uid}"`);
+    const meetingIds = user.meetings.map((obj) => validation.convertStrToObjectId(obj.meetingId));
+
     const collection = await meetingsCollection();
-    const meetingIds = user.meetings.map((id) => validation.convertStrToObjectId(id));
     const meetings = await collection.find({ _id: { $in: meetingIds } }).toArray();
     if (!meetings) throw new Error(`Could not retrieve user ${uid}'s meetings`);
     meetings.map((meeting) => meeting._id.toString());
+    // TODO MG - might want to add the invite status from `.meetings` to the return values for convenience?
     return meetings;
 }
 
 //return all meetings user is the owner of
 export async function getOwnedMeetings(uid) {
     uid = await validation.validateUserExists(uid);
+
     const collection = await meetingsCollection();
     const meetings = await collection.find({ owner: validation.uidToCaseInsensitive(uid) }).toArray();
-    if (!meetings) throw new Error(`Could not retrieve user ${uid}'s meetings`);
+    if (!meetings) throw new Error(`Could not retrieve user ${uid}'s owned meetings`);
     meetings.map((meeting) => meeting._id.toString());
     return meetings;
 }
@@ -107,10 +111,44 @@ export async function updateUser(uid, { password, firstName, lastName, descripti
 export async function modifyUserMeeting(uid, meetingId, isAdd) {
     uid = validation.validateUserId(uid);
     meetingId = validation.validateStrAsObjectId(meetingId, "Meeting ID");
-    const action = isAdd ? "$addToSet" : "$pull";
 
     const collection = await usersCollection();
-    const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { [action]: { meetings: meetingId } }, { returnDocument: "after" });
-    if (!updated) throw new Error(`Could not ${isAdd ? "add" : "remove"} meeting ID "${meetingId}" ${isAdd ? "to" : "from"} the user with ID "${uid}"`);
+
+    // remove the specified meeting so it can be overwritten (or not)
+    let updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { $pull: { meetings: { meetingId: meetingId } } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not ${isAdd ? "add" : "remove"} meeting with ID "${meetingId}" ${isAdd ? "to" : "from"} the user with ID "${uid}"`);
+
+    // add the new meeting back
+    if (isAdd) {
+        const newObj = {
+            meetingId: meetingId,
+            inviteStatus: null, // default value since meeting isn't booked yet
+        };
+
+        updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid) }, { $addToSet: { meetings: newObj } }, { returnDocument: "after" });
+        if (!updated) throw new Error(`Could not ${isAdd ? "add" : "remove"} meeting ID "${meetingId}" ${isAdd ? "to" : "from"} the user with ID "${uid}"`);
+    }
+
     return updated;
+}
+
+// update the users's invite status for a particular meeting, where status is an int between -1 and 1 (or null)
+export async function updateUserInviteStatus(uid, mid, inviteStatus) {
+    // make sure meeting and user actually exist
+    uid = await validation.validateUserExists(uid);
+    mid = await validation.validateMeetingExists(mid);
+    if (inviteStatus !== null) inviteStatus = validation.validateIntRange(inviteStatus, "Invite Status", -1, 1);
+
+    const collection = await usersCollection();
+    // find the object in `meetings` that corresponds to the given meeting ID (stored as a string!), and set its inviteStatus
+    const updated = await collection.findOneAndUpdate({ _id: validation.uidToCaseInsensitive(uid), "meetings.meetingId": mid }, { $set: { "meetings.$.inviteStatus": inviteStatus } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not set the Invite Status information for the user with ID "${uid} and the meeting with ID "${mid}"`);
+    updated._id = updated._id.toString();
+    return updated;
+}
+
+// either accept, decline, or reset their invitation to a meeting, simultaneously updating the invite status for both the user and meeting objects
+export async function respondToInvitation(uid, mid, inviteStatus) {
+    await updateMeetingInviteStatus(mid, uid, inviteStatus);
+    await updateUserInviteStatus(uid, mid, inviteStatus);
 }

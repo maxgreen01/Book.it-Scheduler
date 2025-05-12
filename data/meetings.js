@@ -4,7 +4,7 @@ import * as validation from "../utils/validation.js";
 import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
-import { modifyUserMeeting } from "./users.js";
+import { modifyUserMeeting, updateUserInviteStatus } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
 export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }) {
@@ -15,6 +15,7 @@ export async function createMeeting({ name, description, duration, owner, dateSt
     meeting.users = [];
     meeting.responses = [];
     meeting.notes = {};
+    meeting.invitations = null;
 
     // make sure owner actually exists
     await validation.validateUserExists(meeting.owner);
@@ -51,13 +52,12 @@ export async function getMeetingById(mid) {
     return meeting;
 }
 
-// TODO uncomment if we implement private meetings (i.e. for checking whether a user is allowed to respond)
-/* // return a boolean indicating whether a user is involved in a meeting, i.e. is the owner of the meeting or has responded to it
+// return a boolean indicating whether a user is involved in a meeting, i.e. is the owner of the meeting or has responded to it
 export async function isUserInMeeting(mid, uid) {
     const meeting = await getMeetingById(mid);
     uid = validation.validateUserId(uid);
     return meeting.users.includes(uid) || meeting.owner === uid;
-} */
+}
 
 export async function isUserMeetingOwner(mid, uid) {
     const meeting = await getMeetingById(mid);
@@ -105,12 +105,15 @@ export async function updateMeeting(mid, { name, description, duration, timeStar
 export async function addResponseToMeeting(mid, response) {
     // make sure meeting actually exists
     mid = await validation.validateMeetingExists(mid);
-
-    const collection = await meetingsCollection();
     response = validation.validateResponseObj(response);
 
-    //initial check that there is at least one response to the meeting so mongo won't error on traversing through a field that doesn't exist
+    const collection = await meetingsCollection();
     const foundMeeting = await getMeetingById(mid);
+
+    // don't allow responses if the meeting is booked or cancelled
+    if (foundMeeting.bookingStatus !== 0) throw new Error("Cannot submit a response to a booked or cancelled meeting");
+
+    //initial check that there is at least one response to the meeting so mongo won't error on traversing through a field that doesn't exist
     let currResponses = foundMeeting.responses;
     currResponses = currResponses.filter((currResponse) => {
         return currResponse.uid !== response.uid;
@@ -154,28 +157,55 @@ export async function updateMeetingNote(mid, uid, body) {
 //Set the Meeting Status and Booked Time of the Meeting
 //Booking Status:  Integer from 1 to -1
 //Booked Time:  null unless bookingStatus == 1, otherwise Object like { date, timeStart, timeEnd }
-// FIXME MG - will need to do lots of other logic here for inviting (or cancelling invites) to users based on new status
-export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
+export async function setMeetingBooking(mid, bookingStatus, bookedTime = null) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-    if (bookingStatus == 1) {
-        bookedTime = validation.validateBookedTimeObj(bookedTime);
-    } else {
-        bookedTime = null; // enforce no booked time
-    }
 
     const collection = await meetingsCollection();
-    const updated = await collection.findOneAndUpdate(
-        { _id: validation.convertStrToObjectId(mid) },
-        {
-            $set: {
-                bookingStatus,
-                bookedTime,
-            },
-        },
-        { returnDocument: "after" }
-    );
-    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID "${mid}"`);
+    const meeting = await getMeetingById(mid);
+    const users = meeting.users;
+
+    // process invitation logic based on the new booking status
+    let invitations;
+    if (bookingStatus === 1) {
+        bookedTime = validation.validateBookedTimeObj(bookedTime);
+
+        // "send" invitations
+        invitations = {};
+        for (const user of users) {
+            invitations[user] = 0; // pending invite status
+            await updateUserInviteStatus(user, mid, 0);
+        }
+    } else {
+        bookedTime = null; // enforce no booked time
+        invitations = null; // reset all invitations
+
+        // "remove" invitations
+        for (const user of users) {
+            await updateUserInviteStatus(user, mid, null);
+        }
+    }
+
+    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { bookingStatus, bookedTime, invitations } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not set the Booking information for the meeting with ID "${mid}"`);
+    updated._id = updated._id.toString();
+    return updated;
+}
+
+// update the meeting's invite status for a particular user, where status is an int between -1 and 1
+export async function updateMeetingInviteStatus(mid, uid, inviteStatus) {
+    // make sure meeting and user actually exist, and that the user is a part of the meeting
+    mid = await validation.validateMeetingExists(mid);
+    uid = await validation.validateUserExists(uid);
+    inviteStatus = validation.validateIntRange(inviteStatus, "Invite Status", -1, 1);
+
+    const meeting = await getMeetingById(mid);
+    if (!meeting.users.includes(uid) && meeting.owner !== uid) throw new Error("User cannot respond to an invitation for a meeting they aren't involved in");
+    if (meeting.bookingStatus !== 1) throw new Error("User cannot respond to an invitation for a meeting that hasn't been booked");
+
+    const collection = await meetingsCollection();
+    const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { [`invitations.${uid}`]: inviteStatus } }, { returnDocument: "after" });
+    if (!updated) throw new Error(`Could not set the Invite Status information for the meeting with ID "${mid} and the user with ID "${uid}"`);
     updated._id = updated._id.toString();
     return updated;
 }

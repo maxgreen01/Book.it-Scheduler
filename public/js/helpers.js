@@ -11,11 +11,9 @@ export function mergeResponses(responseArr, meetingStart, meetingEnd) {
     });
 
     //validate Meeting Start and End
-    validateIntRange(meetingStart, "Meeting Start", 0, 47);
-    validateIntRange(meetingEnd, "Meeting Start", 0, 47);
-    if (meetingStart > meetingEnd) {
-        throw new ValidationError(`Meeting ending time (${meetingEnd}) is before starting time (${meetingStart})!`);
-    }
+    validateIntRange(meetingStart, "Meeting Start Time", 0, 47);
+    validateIntRange(meetingEnd, "Meeting End Time", 1, 48);
+    if (meetingStart >= meetingEnd) throw new ValidationError("Meeting End Time must be later than Start Time");
 
     //check that the dates for all the Availability objects in the Response Objects are the same (and in the same order too!)
     const dates = validateResponseArrHasSameDates(responseArr);
