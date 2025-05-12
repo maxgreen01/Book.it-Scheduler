@@ -152,15 +152,21 @@ export async function updateMeetingNote(mid, uid, body) {
 }
 
 //Set the Meeting Status and Booked Time of the Meeting
-//Booking Status = Integer from 1 to -1
-//Booked Time = Availability Object
-export async function setBooking(mid, bookingStatus, bookedTime) {
+//Booking Status:  Integer from 1 to -1
+//Booked Time:  null unless bookingStatus == 1, otherwise Object like { date, timeStart, timeEnd }
+// FIXME MG - will need to do lots of other logic here for inviting (or cancelling invites) to users based on new status
+export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-    bookedTime = validation.validateAvailabilityObj(bookedTime);
+    if (bookingStatus == 1) {
+        bookedTime = validation.validateBookedTimeObj(bookedTime);
+    } else {
+        bookedTime = null; // enforce no booked time
+    }
+
     const collection = await meetingsCollection();
     const updated = await collection.findOneAndUpdate(
-        { _id: mid },
+        { _id: validation.convertStrToObjectId(mid) },
         {
             $set: {
                 bookingStatus,
@@ -169,7 +175,7 @@ export async function setBooking(mid, bookingStatus, bookedTime) {
         },
         { returnDocument: "after" }
     );
-    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
+    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }

@@ -136,43 +136,47 @@ $.ajax(getResponsesReq)
     });
 
 //respond button clicked
-editButton.addEventListener("click", () => {
-    onMainCalendar = false;
-    //toggle off meeting calendar
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = true;
-    }
+if (editButton) {
+    editButton.addEventListener("click", () => {
+        onMainCalendar = false;
+        //toggle off meeting calendar
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = true;
+        }
 
-    //replace with response
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = false;
-    }
+        //replace with response
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = false;
+        }
 
-    // update calendar title
-    calendarTitle.innerHTML = "Your Availability";
+        // update calendar title
+        calendarTitle.innerHTML = "Your Availability";
 
-    //replace self with submit button
-    $("#edit-response-button").hide();
-    $("#submit-response-button").show();
-});
+        //replace self with submit button
+        $("#edit-response-button").hide();
+        $("#submit-response-button").show();
+    });
+}
 
 //listener for submit button
 //TODO: POST reponse here!!
-submitButton.addEventListener("click", () => {
-    onMainCalendar = true;
-    //toggle off response
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = false;
-    }
+if (submitButton) {
+    submitButton.addEventListener("click", () => {
+        onMainCalendar = true;
+        //toggle off response
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = false;
+        }
 
-    //replace with meeting calendar
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = true;
-    }
+        //replace with meeting calendar
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = true;
+        }
+
 
     // update calendar title
     calendarTitle.innerHTML = "Group's Availability";
