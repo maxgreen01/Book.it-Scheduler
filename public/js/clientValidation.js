@@ -256,10 +256,12 @@ export function validateImageFileType(fileName, label) {
 // Throw an error if bookedTime object for setBooking() is not of the form:
 // {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
 export function validateBookedTimeObj(bookedTime) {
-    if (!bookedTime || typeof bookedTime != "object" || Object.keys(bookedTime).length != 3 || !bookedTime.startTime || !bookedTime.endTime || !bookedTime.date) throw new ValidationError("bookedTime object or at least one of its keys are missing");
+    const allowedKeys = ["date", "timeStart", "timeEnd"];
+    bookedTime = validateObjectKeys(bookedTime, allowedKeys, "Meeting Booking Object");
+    bookedTime.date = validateDateObj(bookedTime.date, "Meeting Booking Date");
     bookedTime.startTime = validateIntRange(bookedTime.startTime, "Booking startTime", 0, 47);
-    bookedTime.endTime = validateIntRange(bookedTime.endTime, "Booking endTime", 0, 47);
-    if (bookedTime.startTime >= bookedTime.endTime) throw new ValidationError("Booking startTime must be before endTime");
-    bookedTime.date = validateDateObj(bookedTime.date);
+    bookedTime.endTime = validateIntRange(bookedTime.endTime, "Booking endTime", 1, 48);
+    if (bookedTime.startTime >= bookedTime.endTime) throw new ValidationError(`Booking startTime (${bookedTime.startTime}) must be before endTime (${bookedTime.endTime})`);
+
     return bookedTime;
 }

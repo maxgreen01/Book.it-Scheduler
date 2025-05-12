@@ -33,14 +33,17 @@ router.route("/").get(async (req, res) => {
     const uid = req.session.user._id;
 
     const allMeetings = await getUserMeetings(uid);
+    let maxUsers = 0; //keep track of the highest number of users in meeting for global display
 
     const myBookings = []; // bookingStatus == 1
     const myMeetings = []; // bookingStatus != 1 && owned by user
     const myResponses = []; // bookingStatus != 1 && NOT owned by user
     const thisWeekMeetings = []; //booked meetings in the next 7 days
     const today = new Date();
+    const nextWeekDays = [];
 
     for (let meeting of allMeetings) {
+        if (meeting.responses.length > maxUsers) maxUsers = meeting.responses.length;
         //transformations applied to all meetings
         meeting.duration /= 2;
 
@@ -52,6 +55,7 @@ router.route("/").get(async (req, res) => {
         //filter by category
         if (meeting.bookingStatus === 1) {
             //parse booked time object
+            if (meeting.bookedTime.date < today) meeting.isPast = true;
             meeting.bookingDate = routeUtils.formatDateString(meeting.bookedTime.date, false);
             meeting.bookingStart = routeUtils.formatTimeIndex(meeting.bookedTime.startTime);
             meeting.bookingEnd = routeUtils.formatTimeIndex(meeting.bookedTime.endTime);
@@ -74,8 +78,7 @@ router.route("/").get(async (req, res) => {
         myBookings,
         myMeetings,
         myResponses,
-        numUsers: 8, //todo make this number reflect the largest # attendees globally on the page
-        //If we wanted to make this card-specific would need to rework the opacity helper
+        numUsers: maxUsers * 2, //shade at most halfway
         ...routeUtils.prepareRenderOptions(req),
     });
 });

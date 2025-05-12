@@ -13,7 +13,7 @@
 
             <ul class="booked-meetings-list">
                 {{#each myBookings}}
-                <li class="booking-item" data-id="{{this._id}}">
+                <li class="booking-item {{#if isPast}}past-booking{{/if}}" data-id="{{this._id}}">
                     <div class="booking-title">{{this.name}}</div>
                     <div class="booking-datetime">{{this.bookingDate}} : {{this.bookingStart}} - {{this.bookingEnd}}</div>
                 </li>

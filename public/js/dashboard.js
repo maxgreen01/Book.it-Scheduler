@@ -26,4 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //connect a listener to the checkbox
     const checkbox = document.querySelector(".sidebar-checkbox");
+    const pastMeetings = document.querySelectorAll(".past-booking");
+
+    checkbox.addEventListener("change", () => {
+        pastMeetings.forEach((item) => {
+            item.style.display = checkbox.checked ? "block" : "none";
+        });
+    });
 });
