@@ -1,10 +1,14 @@
 //component included in a script tag where calendar clickables are needed
 //can integrate this into a main.js client script if necessary
 
+import { serverFail } from "../pages/server-AJAX.js";
+
 //state variables
 let isMouseDown = false;
 let isDeselecting = false;
 let selectedSlots = new Set();
+
+let onMainCalendar = true;
 
 const calendarTitle = document.getElementById("calendar-title-header");
 const editButton = document.getElementById("edit-response-button");
@@ -21,16 +25,97 @@ function availabilityFromCalendar() {
         const responseSlots = ts.querySelectorAll(".response-slot");
         const colValues = [];
         for (let slot of responseSlots) {
-            colValues.push(slot.classList.contains("selected") ? 0 : 1);
+            colValues.push(slot.classList.contains("selected") || slot.classList.contains("blocked-out-slot") ? 0 : 1);
         }
         responseMatrix.push(colValues);
     }
     return responseMatrix;
 }
 
+let currTimeoutId = null;
+
+const clearMessages = () => {
+    $("#server-fail").remove();
+    $("#server-success").remove();
+};
+
+//clear current error/success then wait for 3000ms before clearing again
+function clearMessageTimeout() {
+    clearMessages();
+    if (currTimeoutId !== null) {
+        clearTimeout(currTimeoutId);
+    }
+    currTimeoutId = setTimeout(clearMessages, 3000);
+}
+
+const getResponsesReq = {
+    method: "GET",
+    url: window.location.href + "/responses/",
+    contentType: "application/json",
+};
+
+const genHTMLforRespondees = (users, vUid) => {
+    let output = "";
+    for (const user of users) {
+        output += `<p class="userResText">${user}`;
+        if (user === vUid) {
+            output += " (You)";
+        }
+        output += "</p>";
+    }
+    return $(`${output}`);
+};
+
+const bindSlot = (slot, uids, currUid) => {
+    console.log("Binding event to slot:", slot);
+    slot.addEventListener("mouseover", () => {
+        const respondeeHTML = genHTMLforRespondees(uids, currUid);
+        $("#responsePeople").empty();
+        $("#edit-response-button").hide();
+        $("#responsePeople").append(respondeeHTML);
+    });
+};
+
+const bindCalendarSlots = (responsesArr, timeStart, uid) => {
+    const calendarColumns = document.querySelectorAll(".calendar-column");
+    let i = 0;
+    for (const ts of calendarColumns) {
+        const slots = ts.querySelectorAll(".response-merged");
+        let j = timeStart;
+        for (const slot of slots) {
+            const usersAvail = [];
+            for (let response of responsesArr) {
+                const isAvail = response.availabilities[i].slots[j] === 1;
+                //console.log(response.availabilities[i].slots[j]);
+                if (isAvail) usersAvail.push(response.uid);
+            }
+            j++;
+            bindSlot(slot, usersAvail, uid);
+        }
+        i++;
+    }
+};
+
+$("#calendarSection").mouseout(() => {
+    $("#responsePeople").empty();
+    $("#responsePeople").append(`<p>Hover over the calendar to see who's available!</p>`);
+    if (onMainCalendar) $("#edit-response-button").show();
+});
+
+$.ajax(getResponsesReq)
+    .then((res) => {
+        console.log(res);
+        bindCalendarSlots(res.responses, res.start, res.uid);
+    })
+    .fail(() => {
+        const errorDiv = serverFail("Failed to connect to the server to get your private note! Try reloading page or checking your network connection.");
+        $("#responseSection").prepend(errorDiv);
+    });
+
 //respond button clicked
 if (editButton) {
     editButton.addEventListener("click", () => {
+        onMainCalendar = false;
         //toggle off meeting calendar
         const timeslots = document.querySelectorAll(".timeslot");
         for (let ts of timeslots) {
@@ -47,8 +132,8 @@ if (editButton) {
         calendarTitle.innerHTML = "Your Availability";
 
         //replace self with submit button
-        editButton.hidden = true;
-        submitButton.hidden = false;
+        $("#edit-response-button").hide();
+        $("#submit-response-button").show();
     });
 }
 
@@ -56,6 +141,7 @@ if (editButton) {
 //TODO: POST reponse here!!
 if (submitButton) {
     submitButton.addEventListener("click", () => {
+        onMainCalendar = true;
         //toggle off response
         const timeslots = document.querySelectorAll(".timeslot");
         for (let ts of timeslots) {
@@ -73,11 +159,26 @@ if (submitButton) {
 
         //replace self with edit response button
         //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
-        editButton.hidden = false;
-        submitButton.hidden = true;
+        $("#edit-response-button").show();
+        $("#submit-response-button").hide();
 
         //TODO: Send over the complete matrix to the server or make response object here and send it
-        console.log(availabilityFromCalendar()); //right now just log in browser console
+        const reqBody = {
+            method: "POST",
+            data: JSON.stringify(availabilityFromCalendar()),
+            url: window.location.href,
+            contentType: "application/json",
+        };
+        $.ajax(reqBody)
+            .then(() => {
+                console.log("success!");
+                window.location.reload();
+            })
+            .fail(() => {
+                const errorDiv = serverFail(`An unexpected error occurred when trying to submit your response! Try reloading the page or checking your network connection.`);
+                clearMessageTimeout();
+                $("#responseSection").append(errorDiv);
+            });
     });
 }
 
@@ -127,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isMouseDown = false;
             isDeselecting = false;
         });
+        $("#submit-response-button").hide();
     }
 
     // Click released OUTside cell: End selection

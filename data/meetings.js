@@ -111,9 +111,9 @@ export async function addResponseToMeeting(mid, response) {
 
     //initial check that there is at least one response to the meeting so mongo won't error on traversing through a field that doesn't exist
     const foundMeeting = await getMeetingById(mid);
-    const currResponses = foundMeeting.responses;
-    currResponses.filter((currResponse) => {
-        currResponse.uid !== response.uid;
+    let currResponses = foundMeeting.responses;
+    currResponses = currResponses.filter((currResponse) => {
+        return currResponse.uid !== response.uid;
     });
 
     for (let i = 0; i < foundMeeting.dates.length; i++) {

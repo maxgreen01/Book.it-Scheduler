@@ -1,8 +1,9 @@
 <main>
-    <div class="grid-container">
+    <div class="view-meetings-grid">
         {{!-- header for meeting details --}}
         <div class="title-bar">
-            <h1>{{title}}</h1>
+            <h1 style="margin-right: 20px">{{title}}</h1>
+            <div class="title-bar-actions">{{!-- todo: put meeting owner actions in here if owner --}}</div>
             <br />
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
@@ -16,7 +17,7 @@
         </div>
 
         {{!-- Container for calendar element + details --}}
-        <div class="calendar-section">
+        <div id="calendarSection" class="calendar-section">
             <h2>Meeting Calendar</h2>
             <p>When viewing the group's overall availability, a darker color means that more people are available at a particular time. When editing your own availability, green indicates that you ARE available while red indicates that you are NOT available.</p>
 
@@ -43,8 +44,8 @@
                         </div>
                         <div class="calendar-cells">
                             {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
-                            <div class="timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
-                            <div class="timeslot response-slot" hidden></div>
+                            <div class="timeslot response-merged" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this.merged}});"></div>
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}" hidden></div>
                             {{/each}}
                         </div>
                     </div>
@@ -123,9 +124,24 @@
         </div>
 
         {{!-- Container for filling in responder info --}}
-        <div class="response-section">
+        <div class="response-section" id="responseSection">
             <h2>Responses & Other</h2>
-            <p>fill remaining space</p>
+            {{#if viewerNotResponse}}
+            <p>You've not responded to this meeting yet!</p>
+            {{/if}}
+            <div id="responsePeopleSection">
+                <h4>Available:</h4>
+                <div id="responsePeople">
+                    <p>Hover over the calendar to see who's available!</p>
+                </div>
+            </div>
+            <div class="title-bar-actions">
+                <button id="edit-response-button" class="response-button">
+                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />
+                    Respond
+                </button>
+                <button id="submit-response-button" hidden class="response-button"><img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />Submit</button>
+            </div>
         </div>
 
         {{!-- scrollable container for comments --}}
@@ -141,11 +157,11 @@
             {{#each comments}}
             <div class="comment-wrapper" id="commentWrapper{{this._id}}">
                 <div class="comment" id="comment{{this._id}}">
-                    <p>Author: {{this.uid}}</p>
+                    <p>Author: {{this.uid}} {{#if this.isViewerComment}} (You) {{/if}}</p>
                     <p>Text: {{this.body}}</p>
                     <p>Created at: {{{this.dateCreated}}}</p>
                     {{#if this.dateUpdated}}
-                    <p>Last edited: {{this.dateUpdated}}</p>
+                    <p>Edited on: {{this.dateUpdated}}</p>
                     {{/if}} {{#if this.isViewerComment}}
                     <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
                     {{/if}}
@@ -173,7 +189,7 @@
     </div>
 </main>
 
-<script src="../../public/js/forms/calendarActions.js"></script>
+<script type="module" src="../../public/js/forms/calendarActions.js"></script>
 <script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>
