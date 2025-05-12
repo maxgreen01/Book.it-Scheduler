@@ -55,4 +55,4 @@ document.getElementById("cancelEdit").addEventListener("click", () => toggleEdit
 document.getElementById("deleteUser").addEventListener("click", () => toggleEditor(2));
 document.getElementById("confirmDelete").addEventListener("click", deleteUser);
 document.getElementById("cancelDelete").addEventListener("click", () => toggleEditor(1));
-document.getElementById("editor").addEventListener("submit", validateProfile);
+document.getElementById("editorForm").addEventListener("submit", validateProfile);
