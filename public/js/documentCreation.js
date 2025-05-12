@@ -83,7 +83,7 @@ export function createMeetingDocument({ name, description, duration, owner, date
     } catch {
         throw new validation.ValidationError("You must select a valid Start Date and End Date");
     }
-    if (dateStart > dateEnd) throw new validation.ValidationError(`End Date cannot be earlier than Start Date`);
+    if (dateStart > dateEnd) throw new validation.ValidationError(`Start Date must be earlier than End Date`);
     const now = new Date();
     if (dateStart < new Date(now.getFullYear(), now.getMonth(), now.getDate())) throw new validation.ValidationError(`Cannot create a meeting for dates that have already passed`);
 

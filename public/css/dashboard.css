@@ -1,0 +1,147 @@
+/* ==================== Dashboard page ==================== */
+
+/* entire page content grid */
+.meetings-dashboard {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 250px 1fr;
+    grid-template-areas:
+        "title-bar title-bar"
+        "sidebar main";
+    height: 100vh;
+    background-color: #f8f8f8;
+}
+
+.meetings-dashboard .title-bar {
+    grid-area: title-bar;
+}
+
+/* ==================== Completed Bookings Sidebar ==================== */
+.bookings-sidebar {
+    grid-area: sidebar;
+    background-color: #f0f0f0;
+    padding: 1.5rem;
+    border-right: 1px solid #d1d8e0;
+    overflow-y: auto;
+}
+
+.bookings-sidebar h3 {
+    font-size: 18px;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.sidebar-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/* ==================== Page Content section w/ Grids ==================== */
+.meetings-main-content {
+    grid-area: main;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.meetings-main-content h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 20px;
+    color: #333;
+    border-bottom: 2px solid #d1d8e0;
+    padding-bottom: 0.5rem;
+}
+.meetings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* grid item content */
+.meeting-card {
+    background-color: #ffffff;
+    border: 1px solid #d1d8e0;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: box-shadow 0.2s ease;
+
+    cursor: pointer;
+}
+.meeting-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: rgba(240, 240, 255, 0.5);
+}
+.meeting-title {
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+
+    /* 
+    Apparently we have a way in css to force line count with -webkit 
+    See: https://www.geeksforgeeks.org/css-webkit-line-clamp-property/
+    
+    */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.meeting-info p {
+    margin: 0.25rem 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* ==================== Mini Calendars inside Meeting Cards ==================== */
+.mini-calendar-wrapper {
+    margin-top: 0.5rem;
+    overflow-x: auto;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 0.5rem;
+}
+
+.mini-calendar {
+    display: grid;
+    grid-auto-flow: column;
+    /* grid-template-columns: auto; */
+}
+
+.mini-calendar-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-calendar-cells {
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-timeslot {
+    height: 4px; /* small fixed height for thumbnail cols since cards are vertical */
+    width: 100%;
+}
+
+/* Status message text */
+.status {
+    font-weight: bold;
+}
+
+/* Pending Status */
+.status-0 {
+    color: #d17b0f; /* orange tone */
+}
+
+/* Booked Status */
+.status-1 {
+    color: #228b22; /* forest green */
+}

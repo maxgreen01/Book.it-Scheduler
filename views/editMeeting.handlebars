@@ -31,16 +31,27 @@
     </div>
 
     <div id="book-meeting">
-        <h2>Book/Cancel Meeting</h2>
+        {{#if isCancelled}} {{!-- restore the meeting --}}
+        <h2>Restore Meeting</h2>
 
-        <p>As the owner of this meeting, you can edit some of its fields!</p>
-        <p>Usage Notes:</p>
-        <ul>
-            <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
-            <li>Other users' responses, comments, and private notes cannot be modified by the meeting owner.</li>
-        </ul>
+        <p>This meeting is currently cancelled, but you can restore it here!</p>
 
-        {{!-- TODO --}}
+        <form method="POST" name="restoreMeeting" id="restoreMeeting" action="/meetings/{{meetingId}}/edit">
+            {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
+            <button type="submit" name="action" value="restore">Restore Meeting</button>
+        </form>
+
+        {{else}} {{!-- cancel the meeting --}}
+        <h2>Cancel Meeting</h2>
+
+        <p>If you no longer wish to host this meeting, you can cancel it here!</p>
+        <p>You can restore the meeting later if needed, but you'll need to book the meeting time again if you already have one booked.</p>
+
+        <form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
+            {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
+            <button type="submit" name="action" value="cancel">Cancel Meeting</button>
+        </form>
+        {{/if}}
     </div>
 
     {{!-- note: meeting deletion would go here if we implement it --}}

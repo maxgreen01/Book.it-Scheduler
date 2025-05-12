@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import * as validation from "../utils/validation.js";
-import { usersCollection } from "../config/mongoCollections.js";
+import { meetingsCollection, usersCollection } from "../config/mongoCollections.js";
 import { createUserDocument } from "../public/js/documentCreation.js";
 export { createUserDocument } from "../public/js/documentCreation.js";
 
@@ -12,14 +12,18 @@ export async function createUser({ uid, password, firstName, lastName, descripti
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
     user.meetings = [];
 
+    let userInDB = undefined;
     // make sure username (which is already validated) is unique in the DB
     try {
-        await getUserById(user._id);
+        userInDB = await getUserById(user._id);
         // if no error occurs, then the user already exists
-        throw new Error(`User ID "${user._id}" is already taken`);
     } catch {
         // if an error is thrown, then the username should be available (which is a good thing)
         // todo - maybe add some way to identify and NOT ignore MongoDB errors here
+    }
+
+    if (userInDB) {
+        throw new Error(`User ID "${user._id}" is already taken`);
     }
 
     // hash password
@@ -55,6 +59,29 @@ export async function getUserById(uid) {
     const user = await collection.findOne({ _id: validation.uidToCaseInsensitive(uid) });
     if (!user) throw new Error(`Could not retrieve the user with ID "${uid}"`);
     return user;
+}
+
+//return all meetings user has responded to
+export async function getUserMeetings(uid) {
+    uid = validation.validateUserId(uid);
+    const user = await getUserById(uid);
+    if (!user && !user.meetings) throw new Error(`Could not retrieve meetings from the user with ID "${uid}"`);
+    const collection = await meetingsCollection();
+    const meetingIds = user.meetings.map((id) => validation.convertStrToObjectId(id));
+    const meetings = await collection.find({ _id: { $in: meetingIds } }).toArray();
+    if (!meetings) throw new Error(`Could not retrieve user ${uid}'s meetings`);
+    meetings.map((meeting) => meeting._id.toString());
+    return meetings;
+}
+
+//return all meetings user is the owner of
+export async function getOwnedMeetings(uid) {
+    uid = await validation.validateUserExists(uid);
+    const collection = await meetingsCollection();
+    const meetings = await collection.find({ owner: validation.uidToCaseInsensitive(uid) }).toArray();
+    if (!meetings) throw new Error(`Could not retrieve user ${uid}'s meetings`);
+    meetings.map((meeting) => meeting._id.toString());
+    return meetings;
 }
 
 // remove the user with the specified ID from the DB, and return true to indicate success

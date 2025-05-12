@@ -1,4 +1,5 @@
 import express from "express";
+import { xss } from "express-xss-sanitizer";
 import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
@@ -22,7 +23,7 @@ router
         });
     })
     // update current user's profile
-    .post(async (req, res) => {
+    .post(xss(), async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
