@@ -1,5 +1,4 @@
-import { validateArrayElements, validateAvailabilityObj, validateUserId } from "../clientValidation.js";
-import { Availability } from "./availabilities.js";
+import { validateResponseObj } from "../clientValidation.js";
 
 export class Response {
     // the ID of the user who submitted this Response
@@ -9,18 +8,8 @@ export class Response {
     availabilities = null;
 
     constructor(uid, availabilityArr) {
-        this.uid = validateUserId(uid, "UID for Response Object");
-        this.availabilities = validateArrayElements(availabilityArr, "Availability Array", (elem) => validateAvailabilityObj(elem));
-    }
-
-    static mergeResponsesToAvailability(responseArr, startTime = 0, endTime = 48) {
-        responseArr = validateArrayElements(responseArr, "Array Availability Objects", (availability) => validateAvailabilityObj(availability));
-
-        // FIXME - only merge availabilities that correspond to the same date -- maybe using `isSameDate` in validation file
-        let availabilityObjs;
-        for (let responseObj of responseArr) {
-            availabilityObjs.append(responseObj.availabilities);
-        }
-        return Availability.mergeAvailability(availabilityObjs, startTime, endTime);
+        const validated = validateResponseObj({ uid, availabilities: availabilityArr });
+        this.uid = validated.uid;
+        this.availabilities = validated.availabilities;
     }
 }

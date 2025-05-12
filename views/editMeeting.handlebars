@@ -1,8 +1,52 @@
 <main>
-    <h1>{{title}}</h1>
-    <p>{{meetingDescription}}</p>
-    <p>TODO: other meeting info + availability display</p>
-    <button onclick="alert('TODO: Return data to server')">Save</button>
+    <h1>Editing {{title}}</h1>
+
+    <a href="/meetings/{{meetingId}}">Go Back</a>
+
+    <div id="edit-meeting-details">
+        <h2>Edit Meeting Details</h2>
+
+        <p>As the owner of this meeting, you can edit some of its fields!</p>
+        <p>Usage Notes:</p>
+        <ul>
+            <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
+            <li>Other users' responses, comments, and private notes cannot be modified by the meeting owner.</li>
+        </ul>
+
+        <p id="edit-error"></p>
+        <form method="POST" name="editMeeting" id="editMeeting" data-time-start="{{timeStart}}" data-time-end="{{timeEnd}}">
+            <input type="hidden" name="_method" value="PATCH" /> {{!-- interpret this a PATCH request --}}
+
+            <label for="titleInput">Title:</label>
+            <input name="name" id="titleInput" type="text" value="{{title}}" />
+            <br />
+            <label for="descriptionInput">Description:</label>
+            <input name="description" id="descriptionInput" type="text" value="{{description}}" />
+            <br />
+            <label for="durationInput">Duration:</label>
+            <input name="duration" id="durationInput" type="number" step="0.5" min="0.5" max="24" value="{{duration}}" />
+            <br />
+            <input type="submit" value="Save" />
+        </form>
+    </div>
+
+    <div id="book-meeting">
+        <h2>Book/Cancel Meeting</h2>
+
+        <p>As the owner of this meeting, you can edit some of its fields!</p>
+        <p>Usage Notes:</p>
+        <ul>
+            <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
+            <li>Other users' responses, comments, and private notes cannot be modified by the meeting owner.</li>
+        </ul>
+
+        {{!-- TODO --}}
+    </div>
+
+    {{!-- note: meeting deletion would go here if we implement it --}}
+
     <a href="/meetings">My Meetings</a>
-    <a href="/create">Create Meeting</a>
+    <a href="/create">Create a New Meeting</a>
 </main>
+
+<script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>

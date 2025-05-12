@@ -55,16 +55,59 @@ export function createCommentDocument({ uid, meetingId, body }) {
 // Construct a meeting document given an object containing the required fields, or throw an error if any fields are invalid.
 // Fields like `bookingStatus` and `responses` should never be modified directly by the user, so they are excluded from this function and should instead be handled by other server routes.
 // Set `allowUndefined` to `true` to ignore `undefined` values, i.e. create partial objects for PATCH requests.
-export function createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd }, allowUndefined = false) {
+export function createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, allowUndefined = false) {
     // ============= validate inputs =============
 
     if (!allowUndefined || typeof name !== "undefined") name = validation.sanitizeSpaces(validation.validateAndTrimString(name, "Meeting Name", 3, 60));
     if (!allowUndefined || typeof description !== "undefined") description = validation.validateAndTrimString(description, "Meeting Description", 1, 500);
     if (!allowUndefined || typeof owner !== "undefined") owner = validation.validateUserId(owner);
-    if (!allowUndefined || typeof duration !== "undefined") duration = validation.validateIntRange(duration, "Meeting Duration", 1, 48);
-    if (!allowUndefined || typeof dates !== "undefined") dates = validation.validateArrayElements(dates, "Meeting Dates", (date) => validation.validateDateObj(date));
-    if (!allowUndefined || typeof timeStart !== "undefined") timeStart = validation.validateIntRange(timeStart, "Meeting Starting Time", 1, 48);
-    if (!allowUndefined || typeof timeEnd !== "undefined") timeEnd = validation.validateIntRange(timeEnd, "Meeting Ending Time", 1, 48);
+
+    if (!allowUndefined || typeof duration !== "undefined") {
+        try {
+            duration = validation.convertStrToFloat(duration, "Meeting Duration") * 2; // convert string to float, then multiply by 2 to get number of 30-min increments
+            duration = validation.validateIntRange(duration, "Meeting Duration", 1, 48);
+        } catch {
+            throw new validation.ValidationError("Meeting Duration must be a number in hours, only supporting half-hour increments");
+        }
+    }
+
+    try {
+        if (!allowUndefined || typeof dateStart !== "undefined") {
+            const [year, month, day] = dateStart.split("-").map(Number);
+            dateStart = validation.validateDateObj(new Date(year, month - 1, day), "Meeting Start Date");
+        }
+        if (!allowUndefined || typeof dateEnd !== "undefined") {
+            const [year, month, day] = dateEnd.split("-").map(Number);
+            dateEnd = validation.validateDateObj(new Date(year, month - 1, day), "Meeting End Date");
+        }
+    } catch {
+        throw new validation.ValidationError("You must select a valid Start Date and End Date");
+    }
+    if (dateStart > dateEnd) throw new validation.ValidationError(`End Date cannot be earlier than Start Date`);
+    const now = new Date();
+    if (dateStart < new Date(now.getFullYear(), now.getMonth(), now.getDate())) throw new validation.ValidationError(`Cannot create a meeting for dates that have already passed`);
+
+    let dates;
+    if (!allowUndefined && typeof dateStart !== "undefined" && typeof dateEnd !== "undefined") {
+        // create Date range between start and end dates
+        dates = [];
+        const currDate = dateStart;
+        while (currDate <= dateEnd) {
+            dates.push(new Date(currDate)); // copy to avoid reference sharing
+            currDate.setDate(currDate.getDate() + 1); // increment the day by 1
+        }
+        // limit number of dates to 20 per meeting
+        if (dates.length > 20) throw new validation.ValidationError("Meeting cannot involve more than 20 days");
+    }
+
+    try {
+        if (!allowUndefined || typeof timeStart !== "undefined") timeStart = validation.validateIntRange(validation.convertStrToInt(timeStart), "Meeting Start Time", 0, 47);
+        if (!allowUndefined || typeof timeEnd !== "undefined") timeEnd = validation.validateIntRange(validation.convertStrToInt(timeEnd), "Meeting End Time", 1, 48);
+    } catch {
+        throw new validation.ValidationError(`You must select a valid Start Time and End Time`);
+    }
+    if (timeStart >= timeEnd) throw new validation.ValidationError("End Time must be later than Start Time");
+    if (duration > timeEnd - timeStart) throw new validation.ValidationError("Duration is too long for the given Start and End Times");
 
     // ============= construct the document =============
 

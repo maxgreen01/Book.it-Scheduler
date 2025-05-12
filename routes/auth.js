@@ -1,9 +1,10 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { ValidationError, validateUserId } from "../utils/validation.js";
+import { xss } from "express-xss-sanitizer";
+import { validateUserExists, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
-import { createUser, getUserById, updateUser } from "../data/users.js";
+import { createUser, createUserDocument, getUserById } from "../data/users.js";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 const router = express.Router();
@@ -17,17 +18,23 @@ router
     })
     // log in
     .post(async (req, res) => {
+        // ensure non-empty request body
+        const data = req.body;
+        if (!data || Object.keys(data).length === 0) {
+            return routeUtils.renderError(req, res, 400, "Request body is empty");
+        }
+
         try {
             const userId = validateUserId(req.body.uid);
             const user = await getUserById(userId);
             if (!(await bcrypt.compare(req.body.password, user.password))) {
-                return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+                return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
             }
             delete user.password;
             req.session.user = user;
             res.redirect("/profile");
         } catch {
-            return routeUtils.renderError(req, res, 400, "Either userId or password is invalid");
+            return routeUtils.renderError(req, res, 400, "Either username or password is invalid");
         }
     });
 
@@ -45,61 +52,56 @@ router
         return res.render("signup", { title: "Sign up", ...routeUtils.prepareRenderOptions(req) });
     })
     // create a new profile (i.e. "sign up")
-    .post(async (req, res) => {
+    .post(xss(), async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
-        // validate User ID
-        try {
-            data.uid = validateUserId(data.uid);
-        } catch (err) {
-            return routeUtils.renderError(req, res, 400, err.message);
-        }
-
         // assign default profile picture (which may be updated later in this route)
         data.profilePicture = profileUtils.defaultProfilePicture;
+        // TODO: remove this temp fix when availability can be entered on the page
+        data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
 
-        // validate all inputs and add the user to the DB
-        let user;
+        // validate User
         try {
-            // TODO: remove this temp fix when availability can be entered on the page
-            data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
-            user = await createUser(data);
+            createUserDocument(data);
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
+
+        try {
+            await validateUserExists(data.uid);
+            return routeUtils.renderError(req, res, 400, `The user ID: ${data.uid} already exists!`);
+        } catch (e) {
+            //Should always error
         }
 
         // upload & assign profile picture, if one is supplied
-        // note: profile picture logic happens AFTER creating the account to ensure all user info is valid before modifying the server's filesystem
         try {
             const pfpFile = req.files?.profilePicture;
             if (typeof pfpFile === "object") {
                 // make sure only one file is submitted
                 if (!Array.isArray(pfpFile)) {
                     const profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
-
-                    // update the user's profile picture in the database
-                    await updateUser(req.body.uid, { profilePicture: profilePicture });
+                    data.profilePicture = profilePicture;
                 } else {
                     return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
                 }
             }
         } catch (err) {
-            if (err instanceof ValidationError) {
-                return routeUtils.renderError(req, res, 400, err.message);
-            } else {
-                return routeUtils.renderError(req, res, 500, err.message);
-            }
+            return routeUtils.handleValidationError(req, res, err, 400);
         }
 
-        // todo create auth session here?
+        // validate all inputs and add the user to the DB
+        let user;
+        try {
+            user = await createUser(data);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
+
         delete user.password;
         req.session.user = user;
 

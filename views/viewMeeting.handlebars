@@ -2,77 +2,129 @@
     <div class="view-meetings-grid">
         {{!-- header for meeting details --}}
         <div class="title-bar">
-            <h1>{{title}}</h1>
+            <h1 style="margin-right: 20px">{{title}}</h1>
             <div class="title-bar-actions">{{!-- todo: put meeting owner actions in here if owner --}}</div>
+            <br />
+            <p>Description: {{description}}</p>
+            <p>Duration: {{duration}}</p>
         </div>
 
         {{!-- Container for calendar element + details --}}
-        <div class="calendar-section">
+        <div id="calendarSection" class="calendar-section">
+            {{!--
             <div class="title-bar">
-                <h2>Calendar Here</h2>
+                <h2>Calendar</h2>
                 <div class="title-bar-actions">
                     <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
                     <button id="submit-response-button" hidden>Submit</button>
                 </div>
             </div>
-
-            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}} {{!-- This is the only fix I could find for css grid acting weird --}}
+            --}} {{!--
+            <h2>Meeting Calendar</h2>
+            --}} {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
-                <div class="calendar" style="--day-count: {{meeting.length}}">
-                    <div class="calendar-title-header">Header details here</div>
-                    {{!-- todo put the month & year of the event, or both months if it overlaps --}}
+                <div class="calendar" style="--day-count: {{days.length}}">
+                    {{!-- indicate whether the user is viewing the group availability or editing their own --}}
+                    <div id="calendar-title-header">Group's Availability</div>
+
+                    {{!-- column with labels for hour markings --}}
                     <div class="time-column">
-                        <div id="time-column-header" class="calendar-column-header">{{index_of ../days @index}}</div>
                         {{#each timeColumn}}
-                        <div class="time-column-timestamp">{{this}}</div>
+                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
                         {{/each}}
                     </div>
 
-                    {{!-- spawn a column with: header | cells for each day of meeting --}} {{!-- header contains calendar date + DotW --}} {{#each meeting}}
+                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
                     <div class="calendar-column">
-                        <div class="calendar-column-header">{{index_of ../days @index}}</div>
+                        <div class="calendar-column-header">
+                            {{#with (at_index ../days @index)}}
+                            <p class="calendar-column-header-text">{{date}}</p>
+                            <p class="calendar-column-header-text">{{dow}}</p>
+                            {{/with}}
+                        </div>
                         <div class="calendar-cells">
-                            {{!-- generate all 48 timeslots. Each cell color is rendered by matrix data --}} {{#each this}}
-                            <div class="timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
-                            {{/each}} {{!-- generate the same number of client slots in the background --}} {{#each this}}
-                            <div class="timeslot response-slot" hidden></div>
+                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
+                            <div class="timeslot response-merged" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this.merged}});"></div>
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}" hidden></div>
                             {{/each}}
                         </div>
                     </div>
                     {{/each}}
                 </div>
             </div>
+
+            {{#if isOwner}}
+            <br />
+            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
+            {{/if}}
         </div>
 
-        {{!-- Container for filling in respondee info --}}
-        <div class="response-section">
+        {{!-- Container for filling in responder info --}}
+        <div class="response-section" id="responseSection">
             <h2>Responses & Other</h2>
-            <p>fill remaining space</p>
+            {{#if viewerNotResponse}}
+            <p>You've not responded to this meeting yet!</p>
+            {{/if}}
+            <div id="responsePeopleSection">
+                <h4 id="responsePeopleHeader">Respondents:</h4>
+                <div id="responsePeople">
+                    <p>Hover over the calendar to see who's available!</p>
+                </div>
+            </div>
+            <div class="title-bar-actions">
+                <button id="edit-response-button" class="response-button">
+                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />
+                    Respond
+                </button>
+                <button id="submit-response-button" hidden class="response-button"><img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />Submit</button>
+            </div>
         </div>
 
         {{!-- scrollable container for comments --}}
         <div class="comments-section">
             <h2>Comments</h2>
-            {{!-- If comments exist, make a div for each one --}} {{#if comments.length}}
-            <p>{{comments.length}} comments</p>
+            <form method="POST" name="commentsForm" id="commentsForm" class="comments-form" action="./note">
+                <label for="commentInput" class="hidden-label">Enter a Comment:</label>
+                <textarea type="text" id="commentInput" name="commentInput" class="text-input" placeholder="Add a comment."></textarea>
+                <button type="submit" id="commentSend" class="send-icon-comment" label="Send Note"></button>
+            </form>
+            {{#if comments.length}} {{!-- If comments exist, make a div for each one --}}
+            <p id="comment-count" data="{{comments.length}}">{{comments.length}} comments</p>
             {{#each comments}}
-            <div class="comment">
-                <p>Author: {{this.uid}}</p>
-                <p>Text: {{this.body}}</p>
-                <p>Created at: {{this.dateCreated}}</p>
-                <p>{{#if dateUpdated}}Edited on {{this.dateUpdated}}{{/if}}</p>
+            <div class="comment-wrapper" id="commentWrapper{{this._id}}">
+                <div class="comment" id="comment{{this._id}}">
+                    <p>Author: {{this.uid}} {{#if this.isViewerComment}} (You) {{/if}}</p>
+                    <p>Text: {{this.body}}</p>
+                    <p>Created at: {{{this.dateCreated}}}</p>
+                    {{#if this.dateUpdated}}
+                    <p>Edited on: {{this.dateUpdated}}</p>
+                    {{/if}} {{#if this.isViewerComment}}
+                    <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
+                    {{/if}}
+                </div>
             </div>
-            {{/each}} {{!-- If they don't exist: do something else --}} {{else}}
-            <p>0 comments</p>
-            <p>Hint: try me with test meeting Id 1234abcd1234abcd1234abcd</p>
+            {{/each}} {{!-- If they don't exist, do something else --}} {{else}}
+            <p id="comment-count" data="0">0 comments</p>
+            <p id="commentStart">Start the conversation by adding your own comment!</p>
             {{/if}}
         </div>
 
         {{!-- Container for note --}}
-        <div class="notes-section">
+        <div class="notes-section" id="noteSection">
             <h2>Notes</h2>
-            <p>Add a private note.</p>
+            <form method="POST" name="notesForm" id="notesForm" class="notes-form" action="./note">
+                <label for="noteInput" class="hidden-label">Enter a Note:</label>
+                {{#if note}}
+                <textarea type="text" id="noteInput" name="noteInput" class="prev-Note" class="text-input" placeholder="Add a private note."></textarea>
+                {{else}}
+                <textarea type="text" id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
+                {{/if}}
+                <button type="submit" id="noteSend" class="send-icon" label="Send Note"></button>
+            </form>
         </div>
     </div>
 </main>
-<script src="../../public/js/calendars.js"></script>
+
+<script type="module" src="../../public/js/forms/calendarActions.js"></script>
+<script type="module" src="../../public/js/pages/note.js"></script>
+<script type="module" src="../../public/js/pages/comments.js"></script>

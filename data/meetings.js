@@ -4,13 +4,12 @@ import * as validation from "../utils/validation.js";
 import { meetingsCollection } from "../config/mongoCollections.js";
 import { createMeetingDocument } from "../public/js/documentCreation.js";
 export { createMeetingDocument } from "../public/js/documentCreation.js";
-import { Response } from "../public/js/classes/responses.js";
 import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
-export async function createMeeting({ name, description, duration, owner, dates, timeStart, timeEnd }) {
+export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }) {
     // set up the document that will be saved to the DB
-    const meeting = createMeetingDocument({ name, description, duration, owner, dates, timeStart, timeEnd });
+    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd });
     meeting.bookingStatus = 0; // todo make an enum for status code meanings
     meeting.bookedTime = null;
     meeting.users = [];
@@ -25,7 +24,10 @@ export async function createMeeting({ name, description, duration, owner, dates,
     const insertResponse = await collection.insertOne(meeting);
     if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`Could not add meeting "${meeting.name}" to the database`);
     meeting._id = meeting._id.toString();
+
+    // add the newly created meeting to the owner's profile
     await modifyUserMeeting(owner, meeting._id, true);
+
     return meeting;
 }
 
@@ -79,14 +81,19 @@ export async function deleteMeeting(mid) {
     return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
 }
 
-// Update certain fields (only the non-`undefined` ones) of the meeting with the specified ID.
+// Update the "easy" fields of the meeting with the specified ID.
+// `timeStart` and `timeEnd` are never actually updated, and are only provided for validating `duration`.
 // Return the updated meeting object if operation is successful.
-export async function updateMeeting(mid, { name, description, duration }) {
+export async function updateMeeting(mid, { name, description, duration, timeStart, timeEnd }) {
     // make sure meeting actually exists
     mid = await validation.validateMeetingExists(mid);
 
     const collection = await meetingsCollection();
-    const newFields = createMeetingDocument({ name, description, duration }, true);
+    const newFields = createMeetingDocument({ name, description, duration, timeStart, timeEnd }, true);
+
+    // don't actually update these fields
+    delete newFields.timeStart;
+    delete newFields.timeEnd;
 
     const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: newFields }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update the meeting with ID "${mid}"`);
@@ -104,20 +111,21 @@ export async function addResponseToMeeting(mid, response) {
 
     //initial check that there is at least one response to the meeting so mongo won't error on traversing through a field that doesn't exist
     const foundMeeting = await getMeetingById(mid);
-    const currResponses = foundMeeting.responses;
-    currResponses.filter((currResponse) => {
-        currResponse.uid !== response.uid;
+    let currResponses = foundMeeting.responses;
+    currResponses = currResponses.filter((currResponse) => {
+        return currResponse.uid !== response.uid;
     });
 
     for (let i = 0; i < foundMeeting.dates.length; i++) {
         if (!validation.isSameDay(foundMeeting.dates[i], response.availabilities[i].date)) {
-            throw new Error(`Expect response to have date ${foundMeeting.dates[i]} but instead it had response.availabilities[i].date`);
+            throw new Error(`Expect Response to have date ${foundMeeting.dates[i]} but instead found ${response.availabilities[i].date}`);
         }
     }
 
     currResponses.push(response);
-    // add the Response to the meeting
-    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses } }, { returnDocument: "after" });
+
+    // add the Response (and corresponding user ID) to the meeting
+    let updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { responses: currResponses }, $addToSet: { users: response.uid } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not add a response to the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
 
