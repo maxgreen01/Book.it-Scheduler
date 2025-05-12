@@ -325,6 +325,11 @@ Paper Plane Send Icon
     border: none;
 }
 
+.send-icon:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
+}
+
 .send-icon-comment {
     width: 40px;
     height: 100%;
@@ -336,6 +341,11 @@ Paper Plane Send Icon
     background-size: 60%;
     border: none;
     border-radius: 8px;
+}
+
+.send-icon-comment:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
 }
 
 /*Styling for AJAX-divs after response/success*/
@@ -384,7 +394,7 @@ Paper Plane Send Icon
     height: 35px;
     width: 35px;
     margin-top: 10px;
-    background-color: #dc354689;
+    background-color: #c62232d0;
     /*Send Icon Image from: svgrepo.com full credit to them!*/
     background-image: url("/public/icons/trash-blank-svgrepo-com.svg");
     position: absolute;
@@ -395,6 +405,11 @@ Paper Plane Send Icon
     right: 10px;
     border: none;
     border-radius: 8px;
+}
+
+.trashIcon:hover {
+    cursor: pointer;
+    background-color: rgba(197, 13, 31, 0.867);
 }
 
 /* 
@@ -412,7 +427,6 @@ Comments Form CSS
 }
 
 /* Styling for the prompt that asks if the user actually wants to delete a comment */
-
 .deletePrompt {
     padding: 10px;
     margin-bottom: 10px;
@@ -456,4 +470,21 @@ Comments Form CSS
 
 .blocked-out-slot {
     background-color: rgb(0, 0, 0, 0.75);
+}
+
+.userResText,
+.profileLink {
+    display: block;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    text-decoration: none;
+}
+
+.userResText:hover,
+.profileLink:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
 }
