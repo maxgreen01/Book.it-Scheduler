@@ -54,7 +54,7 @@ if (editButton) {
 
 //listener for submit button
 //TODO: POST reponse here!!
-if (!submitButton) {
+if (submitButton) {
     submitButton.addEventListener("click", () => {
         //toggle off response
         const timeslots = document.querySelectorAll(".timeslot");

@@ -145,6 +145,7 @@ router
             duration: meeting.duration / 2, // convert from index back into hours
             timeStart: meeting.timeStart,
             timeEnd: meeting.timeEnd,
+            isCancelled: meeting.bookingStatus == -1,
             ...routeUtils.prepareRenderOptions(req),
         });
     })
@@ -178,7 +179,7 @@ router
             return routeUtils.handleValidationError(req, res, err, 400);
         }
     })
-    // book or unbook the meeting time
+    // book or unbook the meeting time, or cancel/restore the entire meeting
     .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
@@ -199,6 +200,8 @@ router
         // split functionality based on `action` property from submission button
         const action = data.action;
         if (action === "book") {
+            // book the meeting
+
             // validate new inputs
             let date, timeStart;
             try {
@@ -259,8 +262,25 @@ router
             // remove the booking
             try {
                 const bookingStatus = 0; // indicates pending
-                const bookedTime = null;
-                await setMeetingBooking(meetingId, bookingStatus, bookedTime);
+                await setMeetingBooking(meetingId, bookingStatus);
+                return res.redirect(`/meetings/${meetingId}`);
+            } catch (err) {
+                return routeUtils.handleValidationError(req, res, err);
+            }
+        } else if (action === "cancel") {
+            // cancel the meeting
+            try {
+                const bookingStatus = -1; // indicates cancelled
+                await setMeetingBooking(meetingId, bookingStatus);
+                return res.redirect(`/meetings/${meetingId}`);
+            } catch (err) {
+                return routeUtils.handleValidationError(req, res, err);
+            }
+        } else if (action === "restore") {
+            // restore the meeting
+            try {
+                const bookingStatus = 0; // indicates pending
+                await setMeetingBooking(meetingId, bookingStatus);
                 return res.redirect(`/meetings/${meetingId}`);
             } catch (err) {
                 return routeUtils.handleValidationError(req, res, err);

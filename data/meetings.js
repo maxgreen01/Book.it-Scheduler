@@ -153,7 +153,8 @@ export async function updateMeetingNote(mid, uid, body) {
 
 //Set the Meeting Status and Booked Time of the Meeting
 //Booking Status:  Integer from 1 to -1
-//Booked Time:  Object like { date, timeStart, timeEnd }
+//Booked Time:  null unless bookingStatus == 1, otherwise Object like { date, timeStart, timeEnd }
+// FIXME MG - will need to do lots of other logic here for inviting (or cancelling invites) to users based on new status
 export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);

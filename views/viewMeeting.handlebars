@@ -65,6 +65,10 @@
                 <h4>This meeting has been booked for {{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</h4>
                 <p>This time was selected by the meeting owner based on the group's collective availabilities!</p>
 
+                {{else if isCancelled}} {{!-- show a cancellation message --}}
+                <h3>Meeting Cancelled</h3>
+                <p>This meeting was cancelled by the owner. All responses are still saved, but a meeting time cannot be booked unless the meeting is restored first.</p>
+
                 {{else}} {{!-- show the computed times --}}
                 <h3>Recommended Meeting Times</h3>
 
@@ -86,11 +90,13 @@
                 <p>Want to change this meeting's booking time? Remove the booking using this button, and the best times will be recomputed so you can choose a different time!</p>
                 <p>Keep in mind that users who have responded to this meeting will need to accept the new booked time again, even if they already accepted previously!</p>
 
-                <p id="unbooking-error"></p>
                 <form method="POST" name="unbookMeeting" id="unbookMeeting" action="/meetings/{{meetingId}}/edit">
                     {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
                     <button type="submit" name="action" value="unbook">Remove Meeting Booking</button>
                 </form>
+
+                {{else if isCancelled}}
+                <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
                 {{else}}
                 <h4>Book a Meeting Time</h4>
