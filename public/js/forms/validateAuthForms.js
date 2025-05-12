@@ -1,10 +1,29 @@
+import { WeeklyAvailability } from "../classes/availabilities.js";
 import { validateImageFileType, validatePassword, validateUserId } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
+import { serverFail } from "../pages/server-AJAX.js";
 
 // Set error text in html element with id "error"
 function setError(err) {
     const errNode = document.getElementById("error");
     errNode.innerHTML = `${err.message}`;
+}
+
+//returns a matrix form of the user's response when submit is clicked
+function availabilityFromCalendar() {
+    const calendarColumns = document.querySelectorAll(".calendar-column");
+    let responseMatrix = [];
+
+    //find all slots under this column and push it to the response
+    for (let ts of calendarColumns) {
+        const responseSlots = ts.querySelectorAll(".response-slot");
+        const colValues = [];
+        for (let slot of responseSlots) {
+            colValues.push(slot.classList.contains("selected") || slot.classList.contains("blocked-out-slot") ? 0 : 1);
+        }
+        responseMatrix.push(colValues);
+    }
+    return responseMatrix;
 }
 
 // If signup form fields are not valid, prevent submission and display an error
@@ -15,6 +34,11 @@ function validateSignup(event) {
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
     const files = document.getElementById("profilePictureInput").files;
+    const signUpForm = document.getElementById("signup");
+    let signUpFormData = new FormData(signUpForm);
+    const userDefaultAvail = availabilityFromCalendar();
+    signUpFormData.append("availability", JSON.stringify(userDefaultAvail));
+    event.preventDefault();
     try {
         const user = createUserDocument(
             {
@@ -33,9 +57,24 @@ function validateSignup(event) {
             validateImageFileType(pfp.name, "Profile Picture");
             if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
         }
+        $.ajax({
+            url: "/signup",
+            type: "POST",
+            data: signUpFormData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log("Success:", response);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            },
+        });
     } catch (e) {
+        $("#server-fail").remove();
+        const errorDiv = serverFail(e.message);
         event.preventDefault();
-        setError(e);
+        $("#signupFormWrapper").prepend(errorDiv);
     }
 }
 

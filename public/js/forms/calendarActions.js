@@ -159,7 +159,6 @@ editButton.addEventListener("click", () => {
 });
 
 //listener for submit button
-//TODO: POST reponse here!!
 submitButton.addEventListener("click", () => {
     onMainCalendar = true;
     //toggle off response
