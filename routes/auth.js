@@ -72,7 +72,7 @@ router
         }
 
         try {
-            validateUserExists(data.uid);
+            await validateUserExists(data.uid);
             return routeUtils.renderError(req, res, 400, `The user ID: ${data.uid} already exists!`);
         } catch (e) {
             //Should always error

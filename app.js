@@ -9,9 +9,12 @@ import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
 import { xss } from "express-xss-sanitizer";
 import session from "express-session";
+import favicon from "serve-favicon";
+import path from "node:path";
 import Handlebars from "handlebars";
-import { renderError } from "./utils/routeUtils.js";
+import { __rootdir, renderError } from "./utils/routeUtils.js";
 import { isUserMeetingOwner } from "./data/meetings.js";
+import { augmentFormatDate, convertIndexToLabel } from "./public/js/helpers.js";
 
 const app = express();
 
@@ -47,20 +50,15 @@ app.use(
     })
 );
 
+// send favicon
+app.use(favicon(path.join(__rootdir, "/public/icons/favicon.ico")));
+
 //
-// ================ custom middlewares ================
+// ================ Handlebars helpers ================
 //
 
-// Logging middleware
-app.use("/", async (req, res, next) => {
-    const timestamp = new Date().toString();
-    const auth = req.session?.user?._id ?? "?";
-    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
-    next();
-});
-
-// Little handlebars helper to multiply inline the alpha value of the cell background
-// Ex: rgba(128, 0, 128, {{multiplyOpacity 4}}) where 0 is blank
+// Handlebars helper to multiply inline the alpha value of the cell background
+// Ex: rgba(128, 0, 128, {{#multiplyOpacity 4}}) where 0 is blank
 Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     // this a parameter passed to the route in the handlebars context
     // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
@@ -69,7 +67,7 @@ Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     return opacity.toFixed(2);
 });
 
-//Handlebars Helper to check if two numbers are equal to each toher
+//Handlebars Helper to check if two numbers are equal to each other
 Handlebars.registerHelper("equal?", function (a, b) {
     return a === b;
 });
@@ -85,6 +83,44 @@ Handlebars.registerHelper("at_index", function (context, index) {
     return context && context[index];
 });
 
+Handlebars.registerHelper("or", function (e1, e2) {
+    return e1 || e2;
+});
+
+// Handlebars helper to return the last element of an array
+Handlebars.registerHelper("last_elem", function (array) {
+    return array[array.length - 1];
+});
+
+// Handlebars helper to get a property of an object, like `context.property`.
+// Note that `property` should be a string!
+Handlebars.registerHelper("get_prop", function (context, property) {
+    return context[property];
+});
+
+// Handlebars helper to emulate a `for` loop.
+// Use `{{this}}` to refer to the loop index.
+Handlebars.registerHelper("for", function (from, to, inc, options) {
+    let accum = "";
+    for (let i = from; i < to; i += inc) accum += options.fn(i);
+    return accum;
+});
+
+// Handlebars helper to convert a timeslot index into the corresponding human-readable time label
+Handlebars.registerHelper("convertIndexToLabel", function (context) {
+    return convertIndexToLabel(context);
+});
+
+// Handlebars helper to convert a Date into a more readable format
+Handlebars.registerHelper("formatDate", function (context) {
+    const dateParts = augmentFormatDate(context);
+    return `${dateParts.day} (${dateParts.dow})`;
+});
+
+//
+// ================ custom middlewares ================
+//
+
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     // If the user posts to the server with a property called _method, rewrite the request's method to be that method
     if (req.body && req.body._method) {
@@ -95,6 +131,14 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     next();
 };
 app.use(rewriteUnsupportedBrowserMethods);
+
+// Logging middleware
+app.use("/", async (req, res, next) => {
+    const timestamp = new Date().toString();
+    const auth = req.session?.user?._id ?? "?";
+    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
+    next();
+});
 
 // prevent unauthenticated access to meeting and profile routes
 app.use(["/meetings", "/profile", "/create", "/signout"], async (req, res, next) => {
