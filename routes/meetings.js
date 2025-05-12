@@ -31,17 +31,29 @@ for (let i = 0; i < testMatrix[0].length; i++) {
 
 router.route("/").get(async (req, res) => {
     const uid = req.session.user._id;
-
     const allMeetings = await getUserMeetings(uid);
+
     let maxUsers = 0; //keep track of the highest number of users in meeting for global display
+
+    //date information
+    const today = new Date();
+    const sevenDaysLater = new Date();
+    sevenDaysLater.setDate(today.getDate() + 7);
 
     const myBookings = []; // bookingStatus == 1
     const myMeetings = []; // bookingStatus != 1 && owned by user
     const myResponses = []; // bookingStatus != 1 && NOT owned by user
-    const thisWeekMeetings = []; //booked meetings in the next 7 days
-    const today = new Date();
-    const nextWeekDays = [];
+    const upcomingMeetings = {}; //calendar timeline dictionary
 
+    //fill the calendar timeline w proper keys, initially empty
+    for (let i = 0; i < 7; i++) {
+        const day = new Date();
+        day.setDate(today.getDate() + i);
+        const key = routeUtils.formatDateString(day, true);
+        upcomingMeetings[key] = [];
+    }
+
+    //filter all meetings based on their statuses, and add handlebars fields where needed
     for (let meeting of allMeetings) {
         if (meeting.responses.length > maxUsers) maxUsers = meeting.responses.length;
         //transformations applied to all meetings
@@ -54,11 +66,33 @@ router.route("/").get(async (req, res) => {
 
         //filter by category
         if (meeting.bookingStatus === 1) {
-            //parse booked time object
-            if (meeting.bookedTime.date < today) meeting.isPast = true;
-            meeting.bookingDate = routeUtils.formatDateString(meeting.bookedTime.date, false);
+            //this was destroying my sanity. mongo timestamps are convertible to dates, but not comparable !!
+            //delete this if we somehow get bookedTime.date() as a real date()
+            const bookingDate = new Date(meeting.bookedTime.date);
+
+            //parse booked time object for handlebars render
+            meeting.bookingDate = routeUtils.formatDateString(bookingDate, false);
             meeting.bookingStart = routeUtils.formatTimeIndex(meeting.bookedTime.startTime);
             meeting.bookingEnd = routeUtils.formatTimeIndex(meeting.bookedTime.endTime);
+
+            //mark past meetings
+            if (bookingDate < today) meeting.isPast = true;
+
+            //mark upcoming meetings
+            if (bookingDate >= today && bookingDate <= sevenDaysLater) {
+                const key = routeUtils.formatDateString(bookingDate, true);
+
+                //push calendar object to value of dictionary
+                if (key in upcomingMeetings) {
+                    const calendarItem = {
+                        _id: meeting._id,
+                        name: meeting.name,
+                    };
+                    upcomingMeetings[key].push(calendarItem);
+                }
+            }
+
+            //push all booked meetings to bookings bar
             myBookings.push(meeting);
         } else if (meeting.owner == uid) {
             //set meeting matrix for calendar display
@@ -73,8 +107,17 @@ router.route("/").get(async (req, res) => {
         }
     }
 
+    //split up upcomingMeetings for handlebars
+    let upcomingDays = Object.keys(upcomingMeetings).map((key) => {
+        let tokens = key.split(", "); //split Sun, May 21 -> Sun | May 21
+        return { weekday: tokens[0], date: tokens[1] };
+    });
+    let upcomingDaysContent = Object.values(upcomingMeetings); //{name: , _id: } (for an href)
+
     return res.render("viewAllMeetings", {
         title: "Dashboard",
+        upcomingDays,
+        upcomingDaysContent,
         myBookings,
         myMeetings,
         myResponses,

@@ -102,7 +102,7 @@
 
 .meetings-main-content h2 {
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     font-size: 20px;
     color: #333;
     border-bottom: 2px solid #d1d8e0;
@@ -142,7 +142,7 @@
 }
 .meeting-info p {
     margin: 0.25rem 0;
-    font-size: 14px;
+    font-size: 0.85rem;
     color: #555;
 }
 
@@ -190,49 +190,97 @@
     color: #b82424 !important;
 }
 
-/* Calendar View */
-.calendar-view {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    padding: 0 1rem;
+/* ==================== Calendar View for Upcoming Meetings ==================== */
+
+/* flexible row atop the meeting */
+.calendar-timeline {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #d1d8e0;
+    border-top: 1px solid #d1d8e0;
+    overflow-x: auto;
+    gap: 1rem;
 }
 
+/* Each element of the calendar: header + node */
 .calendar-day {
-    text-align: center;
-    text-decoration: none;
-    color: inherit;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.5rem 0;
-    transition: transform 0.2s ease;
+    position: relative;
+    flex: 1;
+    min-width: 80px;
+    cursor: default;
 }
 
-.calendar-day:hover {
-    transform: scale(1.05);
+/* Header for day + date */
+.calendar-date {
+    text-align: center;
+    margin-bottom: 0.5rem;
 }
 
 .calendar-day-name {
-    font-size: 1rem;
     font-weight: 600;
+    font-size: 1rem;
+    color: #333;
 }
 
-.calendar-day-date {
-    font-size: 0.75rem;
-    color: #666;
-    margin-bottom: 0.3rem;
+.calendar-day-number {
+    font-size: 0.85rem;
+    color: #777;
 }
 
+/* Little purple (or gray if empty) button */
 .calendar-node {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background-color: #ccc;
-    margin-top: 0.25rem;
 }
 
-.calendar-day.has-meeting .calendar-node {
-    background-color: #6a5acd; /* slateblue for visibility */
+.calendar-node.has-meetings {
+    background-color: #6a5acd;
+}
+
+/* Floating textbox when viewing a booked date */
+.meeting-tooltip {
+    /* Fixed positioning + js would allow this to "hover" over other elements and not extend the timeline box */
+    display: none;
+    text-align: center;
+    background-color: #ffffff;
+    border: 1px solid #d1d8e0;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    white-space: nowrap; /*forces 1 line*/
+}
+
+/* tooltip items */
+.meeting-tooltip a {
+    color: #333;
+    text-decoration: none;
+}
+
+.meeting-tooltip a:hover {
+    color: #111;
+    text-decoration: underline;
+}
+
+.meeting-tooltip ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.meeting-tooltip li {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+/* show tooltip on hover */
+.calendar-day:hover .meeting-tooltip {
+    display: block;
 }

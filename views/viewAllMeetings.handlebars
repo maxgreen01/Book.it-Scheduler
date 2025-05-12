@@ -7,9 +7,10 @@
             </div>
         </div>
 
+        {{!-- booked sidebar --}}
         <aside class="bookings-sidebar">
             <h3>My Bookings</h3>
-            <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Show Past Meetings </label>
+            <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Hide Past Bookings </label>
 
             <ul class="booked-meetings-list">
                 {{#each myBookings}}
@@ -21,17 +22,34 @@
             </ul>
         </aside>
 
+        {{!-- main section with cal, my meetings, my responses --}}
         <section class="meetings-main-content">
             <h2>Upcoming This Week:</h2>
-            <div class="calendar-view">
+            <div class="calendar-timeline">
                 {{#each upcomingDays}}
-                <a class="calendar-day {{#if hasMeeting}}has-meeting{{/if}}" href="{{#if meetingId}}/meeting/{{meetingId}}{{else}}#{{/if}}">
-                    <div class="calendar-day-name">{{this.day}}</div>
-                    <div class="calendar-day-date">{{this.date}}</div>
+                <div class="calendar-day" data-day-index="{{@index}}">
+                    <div class="calendar-date">
+                        <div class="calendar-day-name">{{this.weekday}}</div>
+                        <div class="calendar-day-number">{{this.date}}</div>
+                    </div>
+                    {{!-- if there is content for this day, highlight the node --}} {{#if (index_of ../upcomingDaysContent @index)}}
+                    <div class="calendar-node has-meetings"></div>
+                    <div class="meeting-tooltip">
+                        {{!-- iterate over each meeting in the meetingsContent (same position) at this day --}}
+                        <ul>
+                            {{#each (index_of ../upcomingDaysContent @index)}}
+                            <li><a href="meetings/{{this._id}}">{{this.name}}</a></li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    {{else}}
                     <div class="calendar-node"></div>
-                </a>
+                    {{/if}}
+                </div>
                 {{/each}}
             </div>
+
+            <div class="meeting-list"></div>
 
             <h2>My Meetings</h2>
             <div class="meetings-grid" id="my-meetings">

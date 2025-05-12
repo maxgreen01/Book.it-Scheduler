@@ -1,9 +1,13 @@
 //script used to add links to meeting cards & bookings on the dashboard page
 
 document.addEventListener("DOMContentLoaded", () => {
-    const bookingItems = document.querySelectorAll(".booking-item");
+    // set up + button
+    document.getElementById("create-meeting").addEventListener("click", () => {
+        window.location.href = "/create";
+    });
 
-    //link booked meetings
+    //link booked meetings to their pages
+    const bookingItems = document.querySelectorAll(".booking-item");
     for (let item of bookingItems) {
         item.addEventListener("click", () => {
             const meetingId = item.dataset.id;
@@ -25,12 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     //connect a listener to the checkbox
-    const checkbox = document.querySelector(".sidebar-checkbox");
+    const checkbox = document.querySelector(".sidebar-checkbox input");
     const pastMeetings = document.querySelectorAll(".past-booking");
 
     checkbox.addEventListener("change", () => {
         pastMeetings.forEach((item) => {
-            item.style.display = checkbox.checked ? "block" : "none";
+            if (checkbox.checked) {
+                // Hide the item if the checkbox is checked
+                item.style.display = "none";
+            } else {
+                // Show the item if the checkbox is unchecked
+                item.style.display = "";
+            }
         });
     });
 });
