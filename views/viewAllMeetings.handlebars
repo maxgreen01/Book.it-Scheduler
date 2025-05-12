@@ -32,12 +32,12 @@
                         <div class="calendar-day-name">{{this.weekday}}</div>
                         <div class="calendar-day-number">{{this.date}}</div>
                     </div>
-                    {{!-- if there is content for this day, highlight the node --}} {{#if (index_of ../upcomingDaysContent @index)}}
+                    {{!-- if there is content for this day, highlight the node --}} {{#if (at_index ../upcomingDaysContent @index)}}
                     <div class="calendar-node has-meetings"></div>
                     <div class="meeting-tooltip">
                         {{!-- iterate over each meeting in the meetingsContent (same position) at this day --}}
                         <ul>
-                            {{#each (index_of ../upcomingDaysContent @index)}}
+                            {{#each (at_index ../upcomingDaysContent @index)}}
                             <li><a href="meetings/{{this._id}}">{{this.name}}</a></li>
                             {{/each}}
                         </ul>
