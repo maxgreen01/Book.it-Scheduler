@@ -2,7 +2,7 @@ import express from "express";
 import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
-import { getUserById, updateUser } from "../data/users.js";
+import { deleteUser, getUserById, updateUser } from "../data/users.js";
 
 const router = express.Router();
 
@@ -52,6 +52,17 @@ router
             return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400);
+        }
+    })
+    .delete(async (req, res) => {
+        try {
+            let uid = req.session.user._id;
+            await profileUtils.deleteProfilePicture(uid);
+            await deleteUser(uid);
+            req.session.destroy();
+            return res.sendStatus(204);
+        } catch (err) {
+            return routeUtils.renderError(req, res, 500, "Internal server error");
         }
     });
 
