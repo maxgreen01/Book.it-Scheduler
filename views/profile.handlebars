@@ -10,7 +10,8 @@
         {{/if}}
     </div>
     <div id="editor" hidden>
-        <form method="POST" name="editProfile" id="editProfile" enctype="multipart/form-data">
+        <p id="error"></p>
+        <form method="POST" name="editor" id="editor" enctype="multipart/form-data">
             <label for="firstNameInput">First Name:</label>
             <input name="firstName" id="firstNameInput" type="text" value="{{firstName}}" />
             <br />
@@ -22,6 +23,9 @@
             <br />
             <label for="passwordInput">Password:</label>
             <input name="password" id="passwordInput" type="password" />
+            <br />
+            <label for="confirmPasswordInput">Confirm Password:</label>
+            <input name="confirmPassword" id="confirmPasswordInput" type="password" />
             <br />
             <label for="profilePictureInput">Profile Picture:</label>
             <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" />
@@ -41,4 +45,4 @@
     <a href="/meetings">My Meetings</a>
     <a href="/create">Create Meeting</a>
 </main>
-<script src="/public/js/forms/profileEditor.js"></script>
+<script type="module" src="/public/js/forms/profileEditor.js"></script>
