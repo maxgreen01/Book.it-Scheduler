@@ -6,7 +6,6 @@ import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, createUserDocument, getUserById } from "../data/users.js";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
-import { da } from "@faker-js/faker";
 
 const router = express.Router();
 
