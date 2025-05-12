@@ -5,3 +5,8 @@ export const serverSucc = (message = "Server Success") => {
 export const serverFail = (message = "Server Fail") => {
     return $(`<div id="server-fail"><p id="server-fail-message">${message}</p></div>`);
 };
+
+export const clearMessages = () => {
+    $("#server-fail").remove();
+    $("#server-success").remove();
+};
