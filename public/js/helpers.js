@@ -98,7 +98,7 @@ function computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, 
 export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd, numUsers, meetingDuration, keepShortTimes = true) {
     let bestTimes = [];
     // loop until we start getting available times (or run out of users, meaning there are no times)
-    while (numUsers > 0) {
+    while (numUsers > 1) {
         let times = computeBestTimesHelper(mergedAvailabilities, meetingStart, meetingEnd, numUsers);
         if (times.length == 0) {
             // not all users are available, so try again searching for fewer people
@@ -132,13 +132,12 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
 
     // convert fields into human-readable ones
     for (const time of bestTimes) {
-        const dateParts = formatDate(time.date);
+        time.minmaxDate = formatDateAsMinMaxString(time.date); // store a copy formatted like Date pickers for validation
+        const dateParts = augmentDate(time.date);
         time.date = `${dateParts.date} (${dateParts.dow})`;
-        time.timeStart = convertIndexToLabel(time.timeStart);
-        time.timeEnd = convertIndexToLabel(time.timeEnd);
     }
 
-    return { times: bestTimes, numUsers: numUsers };
+    return bestTimes;
 }
 
 // Convert a single timeslot index (from 0-48) into its corresponding human-readable label.
@@ -183,9 +182,14 @@ export function constructTimeLabels(timeStart, timeEnd, asObject = false) {
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // transform a Date object into an object with properties `date` and `dow`, representing the formatted date and corresponding day of the week
-export function formatDate(date) {
+export function augmentDate(date) {
     const month = monthNames[date.getMonth()];
     const dayOfMonth = date.getDate();
     const dayOfWeek = daysOfWeek[date.getDay()];
     return { date: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
+}
+
+// convert a Date into a string like "YYYY-MM-DD" which can be used for setting the `min` or `max` property of a date picker
+export function formatDateAsMinMaxString(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }

@@ -1,12 +1,27 @@
 import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import { getMeetingById, isUserMeetingOwner, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { computeBestTimes, constructTimeLabels, formatDate, mergeResponses } from "../public/js/helpers.js";
+import { getMeetingById, isUserMeetingOwner, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
+import { computeBestTimes, constructTimeLabels, augmentDate as augmentFormatDate, mergeResponses, formatDateAsMinMaxString } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
-import { validateCommentNoteBody, validateUserId } from "../utils/validation.js";
+import { convertStrToInt, validateCommentNoteBody, validateDateObj, validateIntRange, validateUserId, ValidationError } from "../utils/validation.js";
 
 const router = express.Router();
+
+// wrapper function to merge responses, or return a list of empty Availabilities if no responses have been submitted yet
+const safeMergeResponses = (responses, dates, timeStart, timeEnd) => {
+    let merged = [];
+    if (responses.length == 0) {
+        // no responses, so create empty Availability data
+        for (const date of dates) {
+            merged.push(Availability.emptyAvailability(date));
+        }
+    } else {
+        // compute merged availability based on responses
+        merged = mergeResponses(responses, timeStart, timeEnd);
+    }
+    return merged;
+};
 
 router.route("/").get(async (req, res) => {
     return res.render("viewAllMeetings", {
@@ -45,22 +60,13 @@ router
             // convert data to prepare for rendering
 
             // convert dates into human-readable format
-            const formattedDates = meeting.dates.map(formatDate);
+            const formattedDates = meeting.dates.map(augmentFormatDate);
 
             // construct column labels between the meeting's start and end times (including a `small` indicator for half hours)
             const columnLabels = constructTimeLabels(timeStart, timeEnd, true);
 
             // process responses on the fly
-            let merged = [];
-            if (meeting.responses.length == 0) {
-                // no responses, so create empty Availability data
-                for (const date of meeting.dates) {
-                    merged.push(Availability.emptyAvailability(date));
-                }
-            } else {
-                // compute merged availability based on responses
-                merged = mergeResponses(meeting.responses, timeStart, timeEnd);
-            }
+            const merged = safeMergeResponses(meeting.responses, meeting.dates, timeStart, timeEnd);
             // extract the raw data and only display the slots within this meeting's time range
             const processedMerged = merged.map((avail) => avail.slots.slice(timeStart, timeEnd));
 
@@ -93,6 +99,8 @@ router
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
                 bestTimes: bestTimes,
+                bestTimesJSON: JSON.stringify(bestTimes), // pass the entire array as JSON so it can be reused by validation
+                bookedTime: meeting.bookedTime,
                 comments: comments,
                 note: note,
                 isOwner: await isUserMeetingOwner(meetingId, userId),
@@ -171,15 +179,78 @@ router
     })
     // book the meeting time
     .post(async (req, res) => {
-        // TODO
-
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
-        return res.status(404).json({ error: "Route not implemented yet" });
+        const meetingId = req.params.meetingId;
+
+        // get the existing meeting
+        let meeting;
+        try {
+            meeting = await getMeetingById(meetingId);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400, 404);
+        }
+
+        // validate new inputs
+        let date, timeStart;
+        try {
+            try {
+                const [year, month, day] = data.date.split("-").map(Number);
+                date = validateDateObj(new Date(year, month - 1, day), "Meeting Booking Date");
+            } catch {
+                throw new ValidationError("You must select a valid Date");
+            }
+            try {
+                timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Time", 0, 47);
+            } catch {
+                throw new ValidationError(`You must select a valid Start Time and End Time`);
+            }
+        } catch (err) {
+            return routeUtils.renderError(req, res, 400, err.msg);
+        }
+
+        // recompute best times to make sure the selected time matches one of them
+        const merged = safeMergeResponses(meeting.responses, meeting.dates, meeting.timeStart, meeting.timeEnd);
+        const bestTimes = computeBestTimes(merged, meeting.timeStart, meeting.timeEnd, meeting.users.length, meeting.duration, true);
+
+        // ensure the selected time is valid in the context of this meeting
+        let match = false;
+        for (const time of bestTimes) {
+            // move on if the date doesn't match
+            if (formatDateAsMinMaxString(date) !== time.minmaxDate) {
+                continue;
+            }
+
+            // check if the selected time is within the date range
+            // note: this is where you would make changes to check if the booking time is entirely contained
+            if (timeStart >= time.timeStart && timeStart < time.timeEnd) {
+                match = true;
+                break;
+            }
+            // else the current time doesn't contain the selected date, so keep checking
+        }
+
+        if (!match) {
+            return routeUtils.renderError(req, res, 400, "Meeting Booking must be (at least partially) contained within one of the computed best times");
+        }
+
+        // actually book the meeting in the DB
+        try {
+            const bookingStatus = 1; // indicates booked
+            const bookedTime = {
+                date: date,
+                timeStart: timeStart,
+                timeEnd: timeStart + meeting.duration,
+            };
+            await setMeetingBooking(meetingId, bookingStatus, bookedTime);
+            return res.redirect(`/meetings/${meetingId}`);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err);
+        }
     })
     // delete a meeting entirely
     .delete(async (req, res) => {

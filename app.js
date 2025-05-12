@@ -52,16 +52,8 @@ app.use(
 app.use(favicon(path.join(__rootdir, "/public/icons/favicon.ico")));
 
 //
-// ================ custom middlewares ================
+// ================ Handlebars helpers ================
 //
-
-// Logging middleware
-app.use("/", async (req, res, next) => {
-    const timestamp = new Date().toString();
-    const auth = req.session?.user?._id ?? "?";
-    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
-    next();
-});
 
 // Handlebars helper to multiply inline the alpha value of the cell background
 // Ex: rgba(128, 0, 128, {{#multiplyOpacity 4}}) where 0 is blank
@@ -84,6 +76,17 @@ Handlebars.registerHelper("at_index", function (context, index) {
     return context && context[index];
 });
 
+// Handlebars helper to return the last element of an array
+Handlebars.registerHelper("last_elem", function (array) {
+    return array[array.length - 1];
+});
+
+// Handlebars helper to get a property of an object, like `context.property`.
+// Note that `property` should be a string!
+Handlebars.registerHelper("get_prop", function (context, property) {
+    return context[property];
+});
+
 // Handlebars helper to emulate a `for` loop.
 // Use `{{this}}` to refer to the loop index.
 Handlebars.registerHelper("for", function (from, to, inc, options) {
@@ -93,9 +96,13 @@ Handlebars.registerHelper("for", function (from, to, inc, options) {
 });
 
 // Handlebars helper to convert a timeslot index into the corresponding human-readable time label
-Handlebars.registerHelper("convertIndexToLabel", function (context, options) {
+Handlebars.registerHelper("convertIndexToLabel", function (context) {
     return convertIndexToLabel(context);
 });
+
+//
+// ================ custom middlewares ================
+//
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     // If the user posts to the server with a property called _method, rewrite the request's method to be that method
@@ -107,6 +114,14 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     next();
 };
 app.use(rewriteUnsupportedBrowserMethods);
+
+// Logging middleware
+app.use("/", async (req, res, next) => {
+    const timestamp = new Date().toString();
+    const auth = req.session?.user?._id ?? "?";
+    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
+    next();
+});
 
 // prevent unauthenticated access to meeting and profile routes
 app.use(["/meetings", "/profile", "/create", "/signout"], async (req, res, next) => {

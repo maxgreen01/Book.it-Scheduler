@@ -227,6 +227,17 @@ export function validateResponseArrHasSameDates(responseArr) {
     return responseDates;
 }
 
+export function validateBookedTimeObj(obj) {
+    const allowedKeys = ["date", "timeStart", "timeEnd"];
+    obj = validateObjectKeys(obj, allowedKeys, "Meeting Booking Object");
+
+    obj.date = validateDateObj(obj.date, "Meeting Booking Date");
+    obj.timeStart = validateIntRange(obj.timeStart, "Meeting Booking Start Time", 0, 47);
+    obj.timeEnd = validateIntRange(obj.timeEnd, "Meeting Booking End Time", 1, 48);
+
+    return obj;
+}
+
 //
 // ============ Misc Validation & Utility ============
 //

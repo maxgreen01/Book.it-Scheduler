@@ -152,12 +152,13 @@ export async function updateMeetingNote(mid, uid, body) {
 }
 
 //Set the Meeting Status and Booked Time of the Meeting
-//Booking Status = Integer from 1 to -1
-//Booked Time = Availability Object
-export async function setBooking(mid, bookingStatus, bookedTime) {
+//Booking Status:  Integer from 1 to -1
+//Booked Time:  Object like { date, timeStart, timeEnd }
+export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-    bookedTime = validation.validateAvailabilityObj(bookedTime);
+    bookedTime = validation.validateBookedTimeObj(bookedTime);
+
     const collection = await meetingsCollection();
     const updated = await collection.findOneAndUpdate(
         { _id: mid },
@@ -169,7 +170,7 @@ export async function setBooking(mid, bookingStatus, bookedTime) {
         },
         { returnDocument: "after" }
     );
-    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
+    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }

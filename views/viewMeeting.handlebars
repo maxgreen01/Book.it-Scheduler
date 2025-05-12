@@ -59,21 +59,46 @@
             <div id="best-times-section">
                 <h3>Recommended Meeting Times</h3>
 
-                {{#if bestTimes.length}}
-                <p>Select a meeting time within one of the computed best meeting times below!</p>
+                {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
+                <h4>This meeting has been booked for {{bookedTime.date}} from {{convertIndexToLabel bookedTime.timeEnd}} to {{bookedTime.timeEnd}}!</h4>
+                <p>Regardless, below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
+                {{else}}
+                <p>Below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
+                {{/if}}
 
-                {{!-- todo PV: make a jQuery button to hide the buttons that are too short --}}
+                <br />
+                {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the buttons that are too short --}}
                 <ul>
                     {{#each bestTimes}}
-                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{date}}: &ensp;{{timeStart}} - {{timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
+                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{date}}: &ensp;{{convertIndexToLabel timeStart}} - {{convertIndexToLabel timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
                     {{/each}}
                 </ul>
                 {{else}}
                 <p>There are currently no best times for this meeting!</p>
-                {{/if}} {{#if isOwner}}
+                {{/if}}
+                <br />
+
+                {{#if isOwner}} {{!-- owner-only section for actually booking the meeting --}}
                 <h4>Book a Meeting Time</h4>
-                <p>Use the dropdown to select the start time for your meeting! The end time is automatically calculated based on the meeting duration of {{duration}}.</p>
-                {{!-- todo select --}} {{/if}}
+                <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
+
+                <p id="booking-error"></p>
+                <form method="POST" name="bookMeeting" id="bookMeeting" action="/meetings/{{meetingId}}/edit" data-best-times="{{bestTimesJSON}}">
+                    <label for="dateInput">Date:</label>
+                    <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
+                    <br />
+                    <label for="timeStartInput">Start Time:</label>
+                    <select name="timeStart" id="timeStartInput" type="text">
+                        <option value="">--Choose a time--</option>
+                        {{#for 0 48 1}}
+                        <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                        {{/for}}
+                    </select>
+                    <br />
+                    <input type="submit" value="Book Meeting" />
+                </form>
+
+                {{/if}}
             </div>
         </div>
 
@@ -129,5 +154,6 @@
 </main>
 
 <script src="../../public/js/forms/calendarActions.js"></script>
+<script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>

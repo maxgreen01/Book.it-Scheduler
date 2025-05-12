@@ -2,6 +2,7 @@ import express from "express";
 import * as routeUtils from "../utils/routeUtils.js";
 import { convertStrToInt } from "../utils/validation.js";
 import { createMeeting } from "../data/meetings.js";
+import { formatDateAsMinMaxString } from "../public/js/helpers.js";
 
 const router = express.Router();
 
@@ -10,8 +11,7 @@ router
     // serve HTML
     .get(async (req, res) => {
         const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-        return res.render("createMeeting", { title: "Create New Meeting", todayStr: todayStr, ...routeUtils.prepareRenderOptions(req) });
+        return res.render("createMeeting", { title: "Create New Meeting", todayStr: formatDateAsMinMaxString(now), ...routeUtils.prepareRenderOptions(req) });
     })
     // create a meeting
     .post(async (req, res) => {
