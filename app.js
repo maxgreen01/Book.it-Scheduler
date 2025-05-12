@@ -7,6 +7,7 @@ import express from "express";
 import configRoutes from "./routes/index.js";
 import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
+import { xss } from "express-xss-sanitizer";
 import session from "express-session";
 import favicon from "serve-favicon";
 import path from "node:path";
@@ -24,6 +25,7 @@ const app = express();
 app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(xss());
 
 // Handlebars setup
 app.engine("handlebars", handlebars.engine({ defaultLayout: "main" }));
