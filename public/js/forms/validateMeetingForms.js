@@ -25,7 +25,6 @@ function validateCreateMeeting(event) {
     const timeEndInput = document.getElementById("timeEndInput");
 
     // convert dates from UTC time into local timezone (to match other funcs)
-    console.log("hello!");
     try {
         const meeting = createMeetingDocument({
             name: titleInput.value,
@@ -63,7 +62,6 @@ function validateEditMeeting(event) {
             },
             true
         );
-        console.log(meeting);
         $("#editMeeting").submit();
     } catch (err) {
         clearMessages();
