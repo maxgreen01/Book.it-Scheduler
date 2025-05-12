@@ -2,7 +2,7 @@ import express from "express";
 import { validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
-import { deleteUser, getUserById, updateUser } from "../data/users.js";
+import { createUserDocument, deleteUser, getUserById, updateUser } from "../data/users.js";
 
 const router = express.Router();
 
@@ -29,13 +29,22 @@ router
             return routeUtils.renderError(req, res, 400, "Request body is empty");
         }
 
+        if (data.password === "") delete data.password;
+
+        // validate data
+        try {
+            createUserDocument(data, true);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
+
         // update profile picture, if one is supplied
         try {
             const pfpFile = req.files?.profilePicture;
             if (typeof pfpFile === "object") {
                 // make sure only one file is submitted
                 if (!Array.isArray(pfpFile)) {
-                    data.profilePicture = await profileUtils.updateProfilePicture(data.uid, pfpFile);
+                    data.profilePicture = await profileUtils.updateProfilePicture(req.session.user._id, pfpFile);
                 } else {
                     return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
                 }

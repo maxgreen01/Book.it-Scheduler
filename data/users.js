@@ -70,6 +70,10 @@ export async function deleteUser(uid) {
 // Return the updated user object if operation is successful.
 export async function updateUser(uid, { password, firstName, lastName, description, profilePicture, availability }) {
     uid = validation.validateUserId(uid);
+    if (password) {
+        password = validation.validatePassword(password);
+        password = await bcrypt.hash(password, 10);
+    }
     const collection = await usersCollection();
     const newFields = createUserDocument({ password, firstName, lastName, description, profilePicture, availability }, true);
 
