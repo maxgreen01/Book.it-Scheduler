@@ -64,9 +64,11 @@ router.route("/").get(async (req, res) => {
         meeting.startDate = routeUtils.formatDateString(meeting.dates[0], false);
         meeting.endDate = numDays == 1 ? null : routeUtils.formatDateString(meeting.dates[numDays - 1], false);
 
-        //filter by category
+        //========== FILTER MEETINGS AROUND PAGE ===========
+
+        //booked meetings
         if (meeting.bookingStatus === 1) {
-            //this was destroying my sanity. mongo timestamps are convertible to dates, but not comparable !!
+            //bl -- this was destroying my sanity. mongo timestamps are convertible to dates, but not comparable !!
             //delete this if we somehow get bookedTime.date() as a real date()
             const bookingDate = new Date(meeting.bookedTime.date);
 
@@ -91,23 +93,23 @@ router.route("/").get(async (req, res) => {
                     upcomingMeetings[key].push(calendarItem);
                 }
             }
-
-            //push all booked meetings to bookings bar
             myBookings.push(meeting);
+
+            //owned meetings
         } else if (meeting.owner == uid) {
-            //set meeting matrix for calendar display
             meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
             meeting.matrix = testMatrix; //todo replace with matrix generated from each meeting data
             myMeetings.push(meeting);
+
+            //responded meetings
         } else {
-            //set meeting matrix for calendar display
             meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
             meeting.matrix = testMatrix; //todo replace with matrix generated from each meeting data
             myResponses.push(meeting);
         }
     }
 
-    //split up upcomingMeetings for handlebars
+    //split up upcomingMeetings for easier handlebars rendering
     let upcomingDays = Object.keys(upcomingMeetings).map((key) => {
         let tokens = key.split(", "); //split Sun, May 21 -> Sun | May 21
         return { weekday: tokens[0], date: tokens[1] };
