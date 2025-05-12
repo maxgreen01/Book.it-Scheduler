@@ -209,3 +209,9 @@ export async function updateMeetingInviteStatus(mid, uid, inviteStatus) {
     updated._id = updated._id.toString();
     return updated;
 }
+
+// either accept, decline, or reset an invitation to a meeting, simultaneously updating the invite status for both the meeting and user objects
+export async function replyToMeetingInvitation(mid, uid, inviteStatus) {
+    await updateMeetingInviteStatus(mid, uid, inviteStatus);
+    await updateUserInviteStatus(uid, mid, inviteStatus);
+}

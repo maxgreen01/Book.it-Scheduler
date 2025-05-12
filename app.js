@@ -14,7 +14,6 @@ import Handlebars from "handlebars";
 import { __rootdir, renderError } from "./utils/routeUtils.js";
 import { isUserMeetingOwner } from "./data/meetings.js";
 import { augmentFormatDate, convertIndexToLabel } from "./public/js/helpers.js";
-import { modifyUserMeeting, respondToInvitation } from "./data/users.js";
 
 const app = express();
 

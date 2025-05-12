@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import * as validation from "../utils/validation.js";
 import { meetingsCollection, usersCollection } from "../config/mongoCollections.js";
 import { createUserDocument } from "../public/js/documentCreation.js";
-import { updateMeetingInviteStatus } from "./meetings.js";
 export { createUserDocument } from "../public/js/documentCreation.js";
 
 // create a user object and save it to the DB, then return the added object
@@ -145,10 +144,4 @@ export async function updateUserInviteStatus(uid, mid, inviteStatus) {
     if (!updated) throw new Error(`Could not set the Invite Status information for the user with ID "${uid} and the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
-}
-
-// either accept, decline, or reset their invitation to a meeting, simultaneously updating the invite status for both the user and meeting objects
-export async function respondToInvitation(uid, mid, inviteStatus) {
-    await updateMeetingInviteStatus(mid, uid, inviteStatus);
-    await updateUserInviteStatus(uid, mid, inviteStatus);
 }

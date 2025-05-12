@@ -2,7 +2,7 @@ import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getOwnedMeetings, getUserById, getUserMeetings } from "../data/users.js";
-import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
+import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
 import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
@@ -310,6 +310,7 @@ router
         }
     })
     // book or unbook the meeting time, or cancel/restore the entire meeting
+    // note: calls to this route must have an `action` property in the body with one of the following values:  "book", "unbook", "cancel", "restore"
     .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
@@ -421,7 +422,7 @@ router
                 return routeUtils.handleValidationError(req, res, err);
             }
         } else {
-            return routeUtils.renderError(req, res, 400, "Invalid booking action");
+            return routeUtils.renderError(req, res, 400, "Invalid meeting booking action");
         }
     })
     // delete a meeting entirely
@@ -531,6 +532,7 @@ router
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
+// AJAX route for getting meeting responses
 router.route("/:meetingId/responses").get(async (req, res) => {
     try {
         const meetingId = req.params.meetingId;
@@ -539,6 +541,27 @@ router.route("/:meetingId/responses").get(async (req, res) => {
         return res.status(200).json({ responses: meeting.responses, uid: userId, start: meeting.timeStart, end: meeting.timeEnd });
     } catch (err) {
         return routeUtils.handleValidationError(req, res, err, 400, 404);
+    }
+});
+
+// reply to a meeting invitation
+// note: calls to this route must have an `action` property in the body with one of the following values:  "accept", "reset", "decline"
+router.route("/:meetingId/inviteReply").post(async (req, res) => {
+    // determine the status code that should be used for this request
+    const actionToCode = {
+        accept: 1,
+        reset: 0,
+        decline: -1,
+    };
+    const inviteStatus = actionToCode[req.body.action];
+    if (typeof inviteStatus === "undefined") return routeUtils.renderError(req, res, 400, "Invalid meeting invite action");
+
+    // actually update the invite status in the DB
+    try {
+        await replyToMeetingInvitation(req.params.meetingId, req.session.user?._id, inviteStatus);
+        return routeUtils.redirectBack(req, res);
+    } catch (err) {
+        return routeUtils.handleValidationError(req, res, err);
     }
 });
 
