@@ -37,7 +37,7 @@
                     <div class="calendar-column">
                         <div class="calendar-column-header">
                             {{#with (at_index ../days @index)}}
-                            <p class="calendar-column-header-text">{{date}}</p>
+                            <p class="calendar-column-header-text">{{day}}</p>
                             <p class="calendar-column-header-text">{{dow}}</p>
                             {{/with}}
                         </div>
@@ -52,33 +52,47 @@
                 </div>
             </div>
 
+            {{#unless (or bookedTime isCancelled)}} {{!-- prevent submission when meeting is booked or cancelled --}}
             <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
             <button id="submit-response-button" hidden>Submit</button>
+            {{/unless}}
+            <br />
 
             {{!-- display the computed best meeting times --}}
             <div id="best-times-section">
+                {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
+                <h3>Meeting Booking</h3>
+                <h4>This meeting has been booked for {{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</h4>
+                <p>This time was selected by the meeting owner based on the group's collective availabilities!</p>
+
+                {{else}} {{!-- show the computed times --}}
                 <h3>Recommended Meeting Times</h3>
 
-                {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
-                <h4>This meeting has been booked for {{bookedTime.date}} from {{convertIndexToLabel bookedTime.timeEnd}} to {{bookedTime.timeEnd}}!</h4>
-                <p>Regardless, below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
-                {{else}}
                 <p>Below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
-                {{/if}}
 
                 <br />
-                {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the buttons that are too short --}}
+                {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the times that are too short --}}
                 <ul>
                     {{#each bestTimes}}
-                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{date}}: &ensp;{{convertIndexToLabel timeStart}} - {{convertIndexToLabel timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
+                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{formatDate date}}: &ensp;{{convertIndexToLabel timeStart}} - {{convertIndexToLabel timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
                     {{/each}}
                 </ul>
                 {{else}}
                 <p>There are currently no best times for this meeting!</p>
-                {{/if}}
+                {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
                 <br />
 
-                {{#if isOwner}} {{!-- owner-only section for actually booking the meeting --}}
+                {{#if isOwner}} {{#if bookedTime}} {{!-- owner-only section for actually booking the meeting --}}
+                <p>Want to change this meeting's booking time? Remove the booking using this button, and the best times will be recomputed so you can choose a different time!</p>
+                <p>Keep in mind that users who have responded to this meeting will need to accept the new booked time again, even if they already accepted previously!</p>
+
+                <p id="unbooking-error"></p>
+                <form method="POST" name="unbookMeeting" id="unbookMeeting" action="/meetings/{{meetingId}}/edit">
+                    {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
+                    <button type="submit" name="action" value="unbook">Remove Meeting Booking</button>
+                </form>
+
+                {{else}}
                 <h4>Book a Meeting Time</h4>
                 <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 
@@ -95,10 +109,10 @@
                         {{/for}}
                     </select>
                     <br />
-                    <input type="submit" value="Book Meeting" />
+                    <button type="submit" name="action" value="book">Book Meeting</button>
                 </form>
 
-                {{/if}}
+                {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
             </div>
         </div>
 

@@ -13,7 +13,7 @@ import path from "node:path";
 import Handlebars from "handlebars";
 import { __rootdir, renderError } from "./utils/routeUtils.js";
 import { isUserMeetingOwner } from "./data/meetings.js";
-import { convertIndexToLabel } from "./public/js/helpers.js";
+import { augmentFormatDate, convertIndexToLabel } from "./public/js/helpers.js";
 
 const app = express();
 
@@ -76,6 +76,10 @@ Handlebars.registerHelper("at_index", function (context, index) {
     return context && context[index];
 });
 
+Handlebars.registerHelper("or", function (e1, e2) {
+    return e1 || e2;
+});
+
 // Handlebars helper to return the last element of an array
 Handlebars.registerHelper("last_elem", function (array) {
     return array[array.length - 1];
@@ -98,6 +102,12 @@ Handlebars.registerHelper("for", function (from, to, inc, options) {
 // Handlebars helper to convert a timeslot index into the corresponding human-readable time label
 Handlebars.registerHelper("convertIndexToLabel", function (context) {
     return convertIndexToLabel(context);
+});
+
+// Handlebars helper to convert a Date into a more readable format
+Handlebars.registerHelper("formatDate", function (context) {
+    const dateParts = augmentFormatDate(context);
+    return `${dateParts.day} (${dateParts.dow})`;
 });
 
 //

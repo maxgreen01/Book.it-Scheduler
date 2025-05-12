@@ -2,7 +2,7 @@ import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getMeetingById, isUserMeetingOwner, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { computeBestTimes, constructTimeLabels, augmentDate as augmentFormatDate, mergeResponses, formatDateAsMinMaxString } from "../public/js/helpers.js";
+import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { convertStrToInt, validateCommentNoteBody, validateDateObj, validateIntRange, validateUserId, ValidationError } from "../utils/validation.js";
 
@@ -101,6 +101,7 @@ router
                 bestTimes: bestTimes,
                 bestTimesJSON: JSON.stringify(bestTimes), // pass the entire array as JSON so it can be reused by validation
                 bookedTime: meeting.bookedTime,
+                isCancelled: meeting.bookingStatus == -1,
                 comments: comments,
                 note: note,
                 isOwner: await isUserMeetingOwner(meetingId, userId),
@@ -177,7 +178,7 @@ router
             return routeUtils.handleValidationError(req, res, err, 400);
         }
     })
-    // book the meeting time
+    // book or unbook the meeting time
     .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
@@ -195,61 +196,77 @@ router
             return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
 
-        // validate new inputs
-        let date, timeStart;
-        try {
+        // split functionality based on `action` property from submission button
+        const action = data.action;
+        if (action === "book") {
+            // validate new inputs
+            let date, timeStart;
             try {
-                const [year, month, day] = data.date.split("-").map(Number);
-                date = validateDateObj(new Date(year, month - 1, day), "Meeting Booking Date");
-            } catch {
-                throw new ValidationError("You must select a valid Date");
+                try {
+                    const [year, month, day] = data.date.split("-").map(Number);
+                    date = validateDateObj(new Date(year, month - 1, day), "Meeting Booking Date");
+                } catch {
+                    throw new ValidationError("You must select a valid Date");
+                }
+                try {
+                    timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Time", 0, 47);
+                } catch {
+                    throw new ValidationError(`You must select a valid Start Time and End Time`);
+                }
+            } catch (err) {
+                return routeUtils.renderError(req, res, 400, err.msg);
             }
+
+            // recompute best times to make sure the selected time matches one of them
+            const merged = safeMergeResponses(meeting.responses, meeting.dates, meeting.timeStart, meeting.timeEnd);
+            const bestTimes = computeBestTimes(merged, meeting.timeStart, meeting.timeEnd, meeting.users.length, meeting.duration, true);
+
+            // ensure the selected time is valid in the context of this meeting
+            let match = false;
+            for (const time of bestTimes) {
+                // move on if the date doesn't match
+                if (formatDateAsMinMaxString(date) !== time.minmaxDate) {
+                    continue;
+                }
+
+                // check if the selected time is within the date range
+                // note: this is where you would make changes to check if the booking time is entirely contained
+                if (timeStart >= time.timeStart && timeStart < time.timeEnd) {
+                    match = true;
+                    break;
+                }
+                // else the current time doesn't contain the selected date, so keep checking
+            }
+
+            if (!match) {
+                return routeUtils.renderError(req, res, 400, "Meeting Booking must be (at least partially) contained within one of the computed best times");
+            }
+
+            // actually book the meeting in the DB
             try {
-                timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Time", 0, 47);
-            } catch {
-                throw new ValidationError(`You must select a valid Start Time and End Time`);
+                const bookingStatus = 1; // indicates booked
+                const bookedTime = {
+                    date: date,
+                    timeStart: timeStart,
+                    timeEnd: timeStart + meeting.duration,
+                };
+                await setMeetingBooking(meetingId, bookingStatus, bookedTime);
+                return res.redirect(`/meetings/${meetingId}`);
+            } catch (err) {
+                return routeUtils.handleValidationError(req, res, err);
             }
-        } catch (err) {
-            return routeUtils.renderError(req, res, 400, err.msg);
-        }
-
-        // recompute best times to make sure the selected time matches one of them
-        const merged = safeMergeResponses(meeting.responses, meeting.dates, meeting.timeStart, meeting.timeEnd);
-        const bestTimes = computeBestTimes(merged, meeting.timeStart, meeting.timeEnd, meeting.users.length, meeting.duration, true);
-
-        // ensure the selected time is valid in the context of this meeting
-        let match = false;
-        for (const time of bestTimes) {
-            // move on if the date doesn't match
-            if (formatDateAsMinMaxString(date) !== time.minmaxDate) {
-                continue;
+        } else if (action === "unbook") {
+            // remove the booking
+            try {
+                const bookingStatus = 0; // indicates pending
+                const bookedTime = null;
+                await setMeetingBooking(meetingId, bookingStatus, bookedTime);
+                return res.redirect(`/meetings/${meetingId}`);
+            } catch (err) {
+                return routeUtils.handleValidationError(req, res, err);
             }
-
-            // check if the selected time is within the date range
-            // note: this is where you would make changes to check if the booking time is entirely contained
-            if (timeStart >= time.timeStart && timeStart < time.timeEnd) {
-                match = true;
-                break;
-            }
-            // else the current time doesn't contain the selected date, so keep checking
-        }
-
-        if (!match) {
-            return routeUtils.renderError(req, res, 400, "Meeting Booking must be (at least partially) contained within one of the computed best times");
-        }
-
-        // actually book the meeting in the DB
-        try {
-            const bookingStatus = 1; // indicates booked
-            const bookedTime = {
-                date: date,
-                timeStart: timeStart,
-                timeEnd: timeStart + meeting.duration,
-            };
-            await setMeetingBooking(meetingId, bookingStatus, bookedTime);
-            return res.redirect(`/meetings/${meetingId}`);
-        } catch (err) {
-            return routeUtils.handleValidationError(req, res, err);
+        } else {
+            return routeUtils.renderError(req, res, 400, "Invalid booking action");
         }
     })
     // delete a meeting entirely

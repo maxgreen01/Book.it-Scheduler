@@ -157,11 +157,15 @@ export async function updateMeetingNote(mid, uid, body) {
 export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-    bookedTime = validation.validateBookedTimeObj(bookedTime);
+    if (bookingStatus == 1) {
+        bookedTime = validation.validateBookedTimeObj(bookedTime);
+    } else {
+        bookedTime = null; // enforce no booked time
+    }
 
     const collection = await meetingsCollection();
     const updated = await collection.findOneAndUpdate(
-        { _id: mid },
+        { _id: validation.convertStrToObjectId(mid) },
         {
             $set: {
                 bookingStatus,

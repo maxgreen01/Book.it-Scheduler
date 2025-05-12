@@ -29,53 +29,57 @@ function availabilityFromCalendar() {
 }
 
 //respond button clicked
-editButton.addEventListener("click", () => {
-    //toggle off meeting calendar
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = true;
-    }
+if (editButton) {
+    editButton.addEventListener("click", () => {
+        //toggle off meeting calendar
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = true;
+        }
 
-    //replace with response
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = false;
-    }
+        //replace with response
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = false;
+        }
 
-    // update calendar title
-    calendarTitle.innerHTML = "Your Availability";
+        // update calendar title
+        calendarTitle.innerHTML = "Your Availability";
 
-    //replace self with submit button
-    editButton.hidden = true;
-    submitButton.hidden = false;
-});
+        //replace self with submit button
+        editButton.hidden = true;
+        submitButton.hidden = false;
+    });
+}
 
 //listener for submit button
 //TODO: POST reponse here!!
-submitButton.addEventListener("click", () => {
-    //toggle off response
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = false;
-    }
+if (!submitButton) {
+    submitButton.addEventListener("click", () => {
+        //toggle off response
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = false;
+        }
 
-    //replace with meeting calendar
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = true;
-    }
+        //replace with meeting calendar
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = true;
+        }
 
-    // update calendar title
-    calendarTitle.innerHTML = "Group's Availability";
+        // update calendar title
+        calendarTitle.innerHTML = "Group's Availability";
 
-    //replace self with edit response button
-    //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
-    editButton.hidden = false;
-    submitButton.hidden = true;
+        //replace self with edit response button
+        //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
+        editButton.hidden = false;
+        submitButton.hidden = true;
 
-    //TODO: Send over the complete matrix to the server or make response object here and send it
-    console.log(availabilityFromCalendar()); //right now just log in browser console
-});
+        //TODO: Send over the complete matrix to the server or make response object here and send it
+        console.log(availabilityFromCalendar()); //right now just log in browser console
+    });
+}
 
 //on page load register the listeners
 // TODO maybe add a way to query which users are available at the selected time

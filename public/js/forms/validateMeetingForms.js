@@ -1,6 +1,6 @@
 import { convertStrToInt, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
 import { createMeetingDocument } from "../documentCreation.js";
-import { augmentDate, formatDateAsMinMaxString } from "../helpers.js";
+import { formatDateAsMinMaxString } from "../helpers.js";
 
 // Set error text in html element with id "error"
 function setError(err, elemId) {
@@ -114,6 +114,8 @@ function validateBookMeeting(event) {
         setError(err, "booking-error");
     }
 }
+
+// remove a meeting's booking, and return it to `pending`
 
 // Attach event handlers
 if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);

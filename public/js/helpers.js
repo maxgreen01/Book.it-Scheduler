@@ -130,11 +130,9 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
         }
     } // end of `while` loop
 
-    // convert fields into human-readable ones
+    // additional field conversions
     for (const time of bestTimes) {
         time.minmaxDate = formatDateAsMinMaxString(time.date); // store a copy formatted like Date pickers for validation
-        const dateParts = augmentDate(time.date);
-        time.date = `${dateParts.date} (${dateParts.dow})`;
     }
 
     return bestTimes;
@@ -143,23 +141,17 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
 // Convert a single timeslot index (from 0-48) into its corresponding human-readable label.
 // Note that indices map to the "start" of the corresponding timeslot, so `0` corresponds to the start of the "12:00 AM" timeslot.
 // For example, `13` => "6:30 AM"
+// TODO delete the duplicate version of this -- `routeUtils.formatTimeIndex()`
 export function convertIndexToLabel(timeIndex) {
-    let hours = Math.floor(timeIndex / 2) % 48; // round down since "2:30" is still in hour "2"
-    // calculate the AM/PM hour
-    const pm = hours >= 12;
-    let adjustedHours = hours % 12;
-    if (adjustedHours == 0) adjustedHours = 12; // account for midnight
+    if (typeof timeIndex === "undefined") throw new Error("Unable to format time index: no index given");
+
+    const hours24 = Math.floor(timeIndex / 2) % 48; // round down since "2:30" is still in hour "2"
+    const minutes = timeIndex % 2 === 0 ? "00" : "30";
+    const meridian = hours24 >= 12 ? "PM" : "AM";
+    const hours12 = hours24 % 12 || 12; // account for midnight when hours12 == 0
 
     // construct the time string
-    let label;
-    if (timeIndex % 2 == 0) {
-        label = `${adjustedHours}:00 ${pm ? "PM" : "AM"}`;
-    } else {
-        label = `${adjustedHours}:30 ${pm ? "PM" : "AM"}`;
-        hours++; // move to the next hour on the next iteration
-    }
-
-    return label;
+    return `${hours12}:${minutes} ${meridian}`;
 }
 
 // Generate an array representing the human-readable labels between a start time index (inclusive) and end time index (exclusive).
@@ -181,12 +173,13 @@ export function constructTimeLabels(timeStart, timeEnd, asObject = false) {
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-// transform a Date object into an object with properties `date` and `dow`, representing the formatted date and corresponding day of the week
-export function augmentDate(date) {
+// transform a Date object into an object with properties `day` and `dow`, representing the formatted day of the month and corresponding day of the week
+// todo maybe replace/combine with duplicate `routeUtils.formatDateString()`
+export function augmentFormatDate(date) {
     const month = monthNames[date.getMonth()];
     const dayOfMonth = date.getDate();
     const dayOfWeek = daysOfWeek[date.getDay()];
-    return { date: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
+    return { day: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
 }
 
 // convert a Date into a string like "YYYY-MM-DD" which can be used for setting the `min` or `max` property of a date picker
