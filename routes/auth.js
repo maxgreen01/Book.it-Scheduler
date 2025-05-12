@@ -1,11 +1,12 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import { xss } from "express-xss-sanitizer";
-import { validateUserId } from "../utils/validation.js";
+import { validateUserExists, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, createUserDocument, getUserById } from "../data/users.js";
 import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { da } from "@faker-js/faker";
 
 const router = express.Router();
 
@@ -69,6 +70,13 @@ router
             createUserDocument(data);
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400);
+        }
+
+        try {
+            validateUserExists(data.uid);
+            return routeUtils.renderError(req, res, 400, `The user ID: ${data.uid} already exists!`);
+        } catch (e) {
+            //Should always error
         }
 
         // upload & assign profile picture, if one is supplied
