@@ -14,32 +14,19 @@ router
         return res.render("profile", {
             title: "My Profile",
             canEdit: true,
-            fullName: `${req.session.user.firstName} ${req.session.user.lastName}`,
+            firstName: req.session.user.firstName,
+            lastName: req.session.user.lastName,
+            description: req.session.user.description,
             pfpUrl: profileUtils.profilePictureToPath(req.session.user.profilePicture),
             ...routeUtils.prepareRenderOptions(req),
         });
-
-        // todo - get current UID from session, then pass user object to HTML template
-        // try {
-        //     const user = req.session.;
-        //     return res.render("profilePage", { user: user, ...routeUtils.prepareRenderOptions(req) });
-        // } catch (err) {
-        //    return routeUtils.handleValidationError(req, res, err, 404);
-        // }
     })
     // update current user's profile
-    .patch(async (req, res) => {
+    .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
             return routeUtils.renderError(req, res, 400, "Request body is empty");
-        }
-
-        // validate User ID
-        try {
-            data.uid = validateUserId(data.uid);
-        } catch (err) {
-            return routeUtils.renderError(req, res, 400, err.message);
         }
 
         // update profile picture, if one is supplied
@@ -60,7 +47,7 @@ router
 
         // validate all inputs and add the user to the DB
         try {
-            await updateUser(req.body.uid, data);
+            req.session.user = await updateUser(req.session.user._id, data);
 
             return res.redirect("/profile"); // go to the updated profile page
         } catch (err) {
