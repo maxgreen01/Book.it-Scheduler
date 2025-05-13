@@ -144,8 +144,9 @@
                     <br />
                     <button type="submit" name="action" value="book">Book Meeting</button>
                 </form>
-
-                {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
+                {{else}}
+                <p>Invite People to this meeting if you'd like to book a meeting!</p>
+                {{/if}} {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
             </div>
         </div>
 

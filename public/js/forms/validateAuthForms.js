@@ -1,4 +1,3 @@
-import { WeeklyAvailability } from "../classes/availabilities.js";
 import { validateImageFileType, validatePassword, validateUserId } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
 import { serverFail } from "../pages/server-AJAX.js";
@@ -105,14 +104,22 @@ function validateLogin(event) {
         try {
             validateUserId(uid);
             validatePassword(password);
+            //submit login if everything passes
+            $("#login").submit();
         } catch (err) {
             throw new Error("Either username or password is invalid");
         }
     } catch (e) {
-        event.preventDefault();
-        setError(e);
+        $("#server-fail").remove();
+        const errorDiv = serverFail(e.message);
+        $("#formWrapper").prepend(errorDiv);
     }
 }
+
+//bind clicking of the submit div
+$("#loginSubmit").click((event) => {
+    validateLogin(event);
+});
 
 // Attach event handlers
 const signupForm = document.getElementById("signup");
