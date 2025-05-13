@@ -107,7 +107,7 @@ export function createMeetingDocument({ name, description, duration, owner, date
     } catch {
         throw new validation.ValidationError(`You must select a valid Start Time and End Time`);
     }
-    if (timeStart >= timeEnd) throw new validation.ValidationError("End Time must be later than Start Time");
+    if (timeStart >= timeEnd) throw new validation.ValidationError("Meeting End Time must be later than Start Time");
     if (duration > timeEnd - timeStart) throw new validation.ValidationError("Duration is too long for the given Start and End Times");
 
     // ============= construct the document =============

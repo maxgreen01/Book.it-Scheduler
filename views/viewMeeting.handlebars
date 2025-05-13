@@ -53,9 +53,45 @@
             <div id="best-times-section">
                 {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
                 <h3>Meeting Booking</h3>
-                <h4>This meeting has been booked for {{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</h4>
+                <p>This meeting has been booked for <strong>{{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</strong></p>
                 <p>This time was selected by the meeting owner based on the group's collective availabilities!</p>
 
+                {{!-- display invitation replies --}}
+                <h4>Accepted Invitations:</h4>
+                {{#if invitationReplies.accepted.length}}
+                <ul>
+                    {{#each invitationReplies.accepted}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>Nobody has accepted the invitation yet!</p>
+                {{/if}}
+
+                <h4>Declined Invitations:</h4>
+                {{#if invitationReplies.declined.length}}
+
+                <ul>
+                    {{#each invitationReplies.declined}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>Nobody has declined the invitation yet!</p>
+                {{/if}}
+
+                <h4>Pending Invitations:</h4>
+                {{#if invitationReplies.pending.length}}
+                <ul>
+                    {{#each invitationReplies.pending}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>There are no pending invitations because everyone has replied!</p>
+                {{/if}}
+
+                <br />
                 {{else if isCancelled}} {{!-- show a cancellation message --}}
                 <h3>Meeting Cancelled</h3>
                 <p>This meeting was cancelled by the owner. All responses are still saved, but a meeting time cannot be booked unless the meeting is restored first.</p>
@@ -73,7 +109,7 @@
                     {{/each}}
                 </ul>
                 {{else}}
-                <p>There are currently no best times for this meeting!</p>
+                <p>There are currently no best times for this meeting (where more than one person is available), so the meeting cannot be booked!</p>
                 {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
                 <br />
 
@@ -89,8 +125,7 @@
                 {{else if isCancelled}}
                 <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
-                {{else}} {{#if bestTimeExists}}
-
+                {{else if bestTimes.length}} {{!-- only allowed to book a meeting if there are best times available --}}
                 <h4>Book a Meeting Time</h4>
                 <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 
@@ -111,7 +146,7 @@
                 </form>
                 {{else}}
                 <p>Invite People to this meeting if you'd like to book a meeting!</p>
-                {{/if}} {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
+                {{/if}} {{/if}} {{!-- end of `isOwner` conditional --}}
             </div>
         </div>
 
@@ -119,7 +154,7 @@
         <div class="response-section" id="responseSection">
             <h2>Responses & Other</h2>
             {{#if viewerNotResponse}}
-            <p>You've not responded to this meeting yet!</p>
+            <p>You haven't responded to this meeting yet!</p>
             {{/if}}
             <div id="responsePeopleSection">
                 <h4 id="responsePeopleHeader">Respondents:</h4>
@@ -127,13 +162,45 @@
                     <p>Hover over the calendar to see who's available!</p>
                 </div>
             </div>
+
             <div class="title-bar-actions">
+                {{#unless (or bookedTime isCancelled)}} {{!-- prevent submission when meeting is booked or cancelled --}}
                 <button id="edit-response-button" class="response-button">
-                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />
+                    <img src="/public/icons/pencil-svgrepo-com.svg" alt="pencil icon" class="button-image" />
                     Respond
                 </button>
-                <button id="submit-response-button" hidden class="response-button"><img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Edit Meeting" class="button-image" />Submit</button>
+                <button id="submit-response-button" hidden class="response-button">
+                    <img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="paper airplane icon" class="button-image" />
+                    Submit
+                </button>
+                {{/unless}}
             </div>
+
+            {{#if bookedTime}}
+            <div class="invitation-reply-actions">
+                {{#if (equal? ownInvitationReply 0)}} {{!-- user has not replied yet --}}
+                <p>You have not replied to this meeting invitation! Please indicate whether you're able to attend this meeting or not!</p>
+
+                {{#if hasConflict}} {{!-- don't let user accept --}}
+                <p>This meeting's booked time conflicts with another meeting you've accepted, so you can't accept this invitation!</p>
+                {{else}} {{!-- no conflict, so user can accept --}}
+                <form method="POST" name="acceptInvite" id="acceptInvite" action="/meetings/{{meetingId}}/inviteReply">
+                    <button type="submit" name="action" value="accept">Accept Meeting Invitation</button>
+                </form>
+                {{/if}}
+
+                <form method="POST" name="declineInvite" id="declineInvite" action="/meetings/{{meetingId}}/inviteReply">
+                    <button type="submit" name="action" value="decline">Decline Meeting Invitation</button>
+                </form>
+                {{else}} {{!-- allow the user to reset their invitation reply --}}
+                <p>You have already replied to this meeting invitation! However, you can reset your reply if you need to change it!</p>
+
+                <form method="POST" name="resetInvite" id="resetInvite" action="/meetings/{{meetingId}}/inviteReply">
+                    <button type="submit" name="action" value="reset">Reset Meeting Invitation</button>
+                </form>
+                {{/if}}
+            </div>
+            {{/if}}
         </div>
 
         {{!-- scrollable container for comments --}}

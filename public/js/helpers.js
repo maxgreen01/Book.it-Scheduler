@@ -144,7 +144,7 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
 export function convertIndexToLabel(timeIndex) {
     if (typeof timeIndex === "undefined") throw new Error("Unable to format time index: no index given");
 
-    const hours24 = Math.floor(timeIndex / 2) % 48; // round down since "2:30" is still in hour "2"
+    const hours24 = Math.floor((timeIndex % 48) / 2); // round down since "2:30" is still in hour "2"
     const minutes = timeIndex % 2 === 0 ? "00" : "30";
     const meridian = hours24 >= 12 ? "PM" : "AM";
     const hours12 = hours24 % 12 || 12; // account for midnight when hours12 == 0
@@ -183,4 +183,20 @@ export function augmentFormatDate(date) {
 // convert a Date into a string like "YYYY-MM-DD" which can be used for setting the `min` or `max` property of a date picker
 export function formatDateAsMinMaxString(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+// given a `meeting.invitations` object, return the users who have replied with a certain status
+export function filterByInviteStatus(invitations, status) {
+    if (!invitations) return;
+    return Object.keys(invitations).filter((uid) => invitations[uid] === status);
+}
+
+// split a `meeting.invitations` object into an object with 3 arrays, representing the users who have replied with each status
+export function categorizeInvitations(invitations) {
+    if (!invitations) return;
+    return {
+        accepted: filterByInviteStatus(invitations, 1),
+        pending: filterByInviteStatus(invitations, 0),
+        declined: filterByInviteStatus(invitations, -1),
+    };
 }

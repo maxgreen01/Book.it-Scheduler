@@ -53,7 +53,6 @@ async function seed() {
             return weeklySlots;
         };
 
-        console.log(`Adding user #${i}: ${fname} ${lname}`);
         if (i == 0) {
             const brendan = await createUser({
                 uid: "Brendan123",
@@ -62,12 +61,13 @@ async function seed() {
                 lastName: "Lee",
                 description: faker.lorem.sentences({ min: 0, max: 2 }),
                 profilePicture: "_default.jpg",
-                availability: new WeeklyAvailability(generateWeeklyAvailability()),
+                availability: new WeeklyAvailability(generateWeeklyAvailability()), // todo maybe hardcode this for more realistic usage
             });
             userIds.push("Brendan123");
             console.log("Brendan Added");
         }
 
+        console.log(`Adding user #${i}: ${fname} ${lname}`);
         const user = await createUser({
             uid: username,
             //FIXME: Test Password so I can login and check comments
@@ -102,7 +102,7 @@ async function seed() {
         const meetingEnd = faker.number.int({ min: meetingStart + duration + 3, max: Math.min(48, meetingStart + duration + 16) });
 
         const newMeeting = {
-            name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
+            name: faker.lorem.words(faker.number.int({ min: 2, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
             duration: (duration / 2).toString(), // convert to a string input in hours
             owner: faker.helpers.arrayElement(meetingUsers),
