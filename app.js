@@ -170,7 +170,7 @@ app.use((err, req, res, next) => {
 //
 
 app.post("/signup", profilePictureUpload);
-app.patch("/profile", profilePictureUpload);
+app.post("/profile", profilePictureUpload);
 
 configRoutes(app);
 
