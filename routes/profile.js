@@ -1,6 +1,6 @@
 import express from "express";
 import { xss } from "express-xss-sanitizer";
-import { validateUserId } from "../utils/validation.js";
+import { validateUserExists, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUserDocument, deleteUser, getUserById, updateUser } from "../data/users.js";
@@ -12,8 +12,14 @@ router
     .route("/")
     // serve HTML
     .get(async (req, res) => {
+        const userID = req.session.user._id;
+        try {
+            getUserById(userID);
+        } catch (err) {
+            return routeUtils.handleValidationError(req, res, err, 400);
+        }
         return res.render("profile", {
-            title: "My Profile",
+            title: "Your Profile",
             canEdit: true,
             firstName: req.session.user.firstName,
             lastName: req.session.user.lastName,
