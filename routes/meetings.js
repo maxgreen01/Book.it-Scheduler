@@ -226,6 +226,7 @@ router
             const userMeetings = await getUserMeetings(userId);
             for (const bookedMeeting of userMeetings) {
                 if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
 
                 for (let i = 0; i < meeting.dates.length; i++) {
                     // find the day (if any) where the booked date lines up with this meeting's calendar
@@ -358,6 +359,7 @@ router
             const userMeetings = await getUserMeetings(userId);
             for (const bookedMeeting of userMeetings) {
                 if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
 
                 for (let i = 0; i < meeting.dates.length; i++) {
                     // find the day (if any) where the booked date lines up with this meeting's calendar
