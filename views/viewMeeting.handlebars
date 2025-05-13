@@ -125,7 +125,7 @@
                 {{else if isCancelled}}
                 <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
-                {{else}}
+                {{else if bestTimes.length}} {{!-- only allowed to book a meeting if there are best times available --}}
                 <h4>Book a Meeting Time</h4>
                 <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 

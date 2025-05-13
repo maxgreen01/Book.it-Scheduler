@@ -66,7 +66,7 @@ export async function getUserMeetings(uid) {
     uid = validation.validateUserId(uid);
     const user = await getUserById(uid);
     if (!user && !user.meetings) throw new Error(`Could not retrieve meetings from the user with ID "${uid}"`);
-    const meetingIds = user.meetings.map((obj) => validation.convertStrToObjectId(obj.meetingId));
+    const meetingIds = user.meetings.map((obj) => validation.convertStrToObjectId(obj));
 
     const collection = await meetingsCollection();
     const meetings = await collection.find({ _id: { $in: meetingIds } }).toArray();
