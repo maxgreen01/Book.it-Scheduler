@@ -89,7 +89,8 @@
                 {{else if isCancelled}}
                 <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
-                {{else}}
+                {{else}} {{#if bestTimeExists}}
+
                 <h4>Book a Meeting Time</h4>
                 <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 
@@ -108,8 +109,9 @@
                     <br />
                     <button type="submit" name="action" value="book">Book Meeting</button>
                 </form>
-
-                {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
+                {{else}}
+                <p>Invite People to this meeting if you'd like to book a meeting!</p>
+                {{/if}} {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
             </div>
         </div>
 

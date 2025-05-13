@@ -256,6 +256,7 @@ router
                 viewerNotResponse: viewerNotResponse,
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
+                bestTimeExists: bestTimes.length !== 0,
                 bestTimes: bestTimes,
                 bestTimesJSON: JSON.stringify(bestTimes), // pass the entire array as JSON so it can be reused by validation
                 bookedTime: meeting.bookedTime,
