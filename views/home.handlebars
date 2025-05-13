@@ -1,6 +1,74 @@
-<main>
-    <h1>{{title}}</h1>
-    <p>TODO: Description</p>
-    <a href="/login">Login</a>
-    <a href="/signup">Sign up</a>
+<main class="about-page">
+    <section class="about-header">
+        <h1>Welcome to Book.it!</h1>
+        <p></p>
+    </section>
+
+    <section class="about-section mission">
+        <h2>Our Mission</h2>
+        <p>Our mission with Book.it is to make scheduling simple again. Designed for busy students, clubs, and teams, our app finds a time that works — fast. No more back-and-forth in the group chat. We believe scheduling should never have to be difficult, and that you should spend less time planning, and more time doing.</p>
+    </section>
+
+    <section class="about-section how-to-use">
+        <h2>How To Get Started</h2>
+
+        <div class="howto-row">
+            <div class="howto-text">
+                <h3>Import your Schedule</h3>
+                <p>Input your reoccurring committments, like work or classes, and they'll be saved for next time you respond</p>
+            </div>
+            <div class="howto-visual double-image">
+                <div class="image-column">
+                    <img src="/public/images/old-calendar.png" alt="Typical calendar layout" />
+                    <p class="caption">Your existing calendar</p>
+                </div>
+
+                <div class="arrow-column">
+                    <img src="/public/icons/arrow-right-svgrepo-com.svg" alt="Arrow from old calendar to book.it calendar" class="conversion-arrow" />
+                </div>
+
+                <div class="image-column">
+                    <img src="/public/images/bookit-calendar.png" alt="Book.it calendar layout" />
+                    <p class="caption">Book.it import preview</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="howto-row text-left">
+            <div class="howto-text">
+                <h3>Respond to Meetings</h3>
+                <p>Tell us when you can't make it — We'll tell you when everyone can. The darker the cell, the more can make it.</p>
+            </div>
+            <div class="howto-visual">
+                <img src="/public/images/best-time.png" alt="Booked calendar slot example" />
+                <p class="caption">Best time found at 8:00PM</p>
+            </div>
+        </div>
+
+        <div class="howto-row text-left">
+            <div class="howto-text">
+                <h3>Accept the Invite</h3>
+                <p>Once a meeting owner has booked a time, accept your RSVP invite to let everyone know you'll be there or decline if you can't!</p>
+            </div>
+            <div class="howto-visual">
+                <img id="rsvp-img" src="/public/images/RSVP.png" alt="Pending RSVP invite for The Great Meetup" />
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section get-started">
+        <div class="get-started-row">
+            <div class="get-started-box">
+                <h2>Get Started</h2>
+                <p>Create an account to start participatings in meetings.</p>
+                <a href="/signup" class="create-account-button">Create Account</a>
+            </div>
+
+            <div class="get-started-box">
+                <h2>Already Registered?</h2>
+                <p>Log in to view your meetings and profile.</p>
+                <a href="/login" class="log-in-button">Log In</a>
+            </div>
+        </div>
+    </section>
 </main>
