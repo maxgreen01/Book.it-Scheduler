@@ -136,7 +136,7 @@ app.use(rewriteUnsupportedBrowserMethods);
 app.use("/", async (req, res, next) => {
     const timestamp = new Date().toString();
     const auth = req.session?.user?._id ?? "?";
-    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ""}`);
+    console.log(`[${timestamp}]: (${auth}) ${req.method} ${req.path}`);
     next();
 });
 
