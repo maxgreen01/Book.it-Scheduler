@@ -101,9 +101,9 @@ router
         // assign default profile picture (which may be updated later in this route)
         data.profilePicture = profileUtils.defaultProfilePicture;
         // TODO: remove this temp fix when availability can be entered on the page
-        data.availability = new WeeklyAvailability(JSON.parse(data.availability));
         // validate User
         try {
+            data.availability = new WeeklyAvailability(JSON.parse(data.availability));
             createUserDocument(data);
         } catch (err) {
             return res.status(400).json({ error: err.message });
