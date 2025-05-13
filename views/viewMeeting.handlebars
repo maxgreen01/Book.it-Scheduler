@@ -4,8 +4,11 @@
         <div class="title-bar-multi">
             <div class="title-bar-short">
                 <h1 style="margin-right: 20px">{{title}}</h1>
+                <<<<<<< Updated upstream
                 <p><img src="/public/icons/time-svgrepo-com.svg" style="margin-bottom: -4px" alt="Stop Watch" class="button-image" /> Duration: {{duration}}</p>
-                {{#if isOwner}}
+                =======
+                <p><img src="/public/icons/time-svgrepo-com.svg" style="margin-bottom: -2px" alt="Stop Watch" class="button-image" /> Duration: {{duration}}</p>
+                >>>>>>> Stashed changes {{#if isOwner}}
                 <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit Meeting</a>
                 {{/if}}
                 <a href="/meetings/{{meetingId}}" id="linkShareButton" class="linkShareButton"> <img src="/public/icons/link-svgrepo-com.svg" alt="Link Icon" class="button-image" />Copy Meeting Link</a>
