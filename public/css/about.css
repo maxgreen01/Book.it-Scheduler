@@ -169,3 +169,8 @@
 .log-in-button:hover {
     background-color: #5a4abc;
 }
+
+#rsvp-img {
+    max-width: 340px;
+    max-height: 198px;
+}
