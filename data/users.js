@@ -27,7 +27,7 @@ export async function createUser({ uid, password, firstName, lastName, descripti
     }
 
     // hash password
-    user.passnword = await bcrypt.hash(user.password, 10);
+    user.password = await bcrypt.hash(user.password, 10);
 
     // run the DB operation
     const collection = await usersCollection();
