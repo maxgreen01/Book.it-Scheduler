@@ -62,9 +62,9 @@ const bindCommentDelete = (commentId) => {
                     setTimeout(clearCommentWrapper, 3000);
                     //update the comment count
                     const commentCount = $("#comment-count");
-                    let currCount = parseInt(commentCount.attr("data"));
+                    let currCount = parseInt(commentCount.attr("data-comment-length"));
                     currCount--;
-                    commentCount.attr("data", currCount);
+                    commentCount.attr("data-comment-length", currCount);
                     commentCount.html(`${currCount} comments`);
                 })
                 .fail((error) => {
@@ -116,9 +116,9 @@ $("#commentsForm").submit((submission) => {
                 const commentCount = $("#comment-count");
                 commentCount.after(newComment);
                 //update the comment count
-                let currCount = parseInt(commentCount.attr("data"));
+                let currCount = parseInt(commentCount.attr("data-comment-length"));
                 currCount++;
-                commentCount.attr("data", currCount);
+                commentCount.attr("data-comment-length", currCount);
                 commentCount.html(`${currCount} comments`);
                 //reset the comment's input box value
                 $("#commentInput").val("");

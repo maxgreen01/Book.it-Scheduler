@@ -39,7 +39,7 @@
                         <div class="calendar-cells">
                             {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
                             <div class="timeslot response-merged" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this.merged}});"></div>
-                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}" hidden></div>
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" hidden></div>
                             {{/each}}
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                     <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
                     <br />
                     <label for="timeStartInput">Start Time:</label>
-                    <select name="timeStart" id="timeStartInput" type="text">
+                    <select name="timeStart" id="timeStartInput">
                         <option value="">--Choose a time--</option>
                         {{#for 0 48 1}}
                         <option value="{{this}}">{{convertIndexToLabel this}}</option>
@@ -139,11 +139,11 @@
             <h2>Comments</h2>
             <form method="POST" name="commentsForm" id="commentsForm" class="comments-form" action="./note">
                 <label for="commentInput" class="hidden-label">Enter a Comment:</label>
-                <textarea type="text" id="commentInput" name="commentInput" class="text-input" placeholder="Add a comment."></textarea>
-                <button type="submit" id="commentSend" class="send-icon-comment" label="Send Note"></button>
+                <textarea id="commentInput" class="text-input commentInput" placeholder="Add a comment."></textarea>
+                <button type="submit" id="commentSend" class="send-icon-comment"></button>
             </form>
             {{#if comments.length}} {{!-- If comments exist, make a div for each one --}}
-            <p id="comment-count" data="{{comments.length}}">{{comments.length}} comments</p>
+            <p id="comment-count" data-comment-length="{{comments.length}}">{{comments.length}} comments</p>
             {{#each comments}}
             <div class="comment-wrapper" id="commentWrapper{{this._id}}">
                 <div class="comment" id="comment{{this._id}}">
@@ -153,7 +153,7 @@
                     {{#if this.dateUpdated}}
                     <p>Edited on: {{this.dateUpdated}}</p>
                     {{/if}} {{#if this.isViewerComment}}
-                    <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
+                    <button id="commentTrash{{this._id}}" class="trashIcon"></button>
                     {{/if}}
                 </div>
             </div>
@@ -169,11 +169,11 @@
             <form method="POST" name="notesForm" id="notesForm" class="notes-form" action="./note">
                 <label for="noteInput" class="hidden-label">Enter a Note:</label>
                 {{#if note}}
-                <textarea type="text" id="noteInput" name="noteInput" class="prev-Note" class="text-input" placeholder="Add a private note."></textarea>
+                <textarea id="noteInput" name="noteInput" class="prev-Note text-input" placeholder="Add a private note."></textarea>
                 {{else}}
-                <textarea type="text" id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
+                <textarea id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
                 {{/if}}
-                <button type="submit" id="noteSend" class="send-icon" label="Send Note"></button>
+                <button type="submit" id="noteSend" class="send-icon"></button>
             </form>
         </div>
     </div>

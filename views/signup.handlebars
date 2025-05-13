@@ -40,7 +40,7 @@
                         </div>
                         <div class="calendar-cells">
                             {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
-                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}"></div>
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}"></div>
                             {{/each}}
                         </div>
                     </div>
