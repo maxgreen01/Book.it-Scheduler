@@ -84,8 +84,10 @@ router.route("/:uid").get(async (req, res) => {
         return res.render("profile", {
             title: `${user.firstName}'s Profile`,
             canEdit: false,
-            fullName: `${user.firstName} ${user.lastName}`,
-            pfpUrl: `/public/images/${user.profilePicture}`,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            description: user.description,
+            pfpUrl: profileUtils.profilePictureToPath(user.profilePicture),
             ...routeUtils.prepareRenderOptions(req),
         });
     } catch (err) {
