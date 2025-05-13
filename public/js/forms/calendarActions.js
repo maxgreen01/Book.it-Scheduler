@@ -177,32 +177,32 @@ if (submitButton) {
             ts.hidden = true;
         }
 
+        // update calendar title
+        calendarTitle.innerHTML = "Group's Availability";
 
-    // update calendar title
-    calendarTitle.innerHTML = "Group's Availability";
+        //replace self with edit response button
+        //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
+        $("#edit-response-button").show();
+        $("#submit-response-button").hide();
 
-    //replace self with edit response button
-    //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
-    $("#edit-response-button").show();
-    $("#submit-response-button").hide();
-
-    //TODO: Send over the complete matrix to the server or make response object here and send it
-    const reqBody = {
-        method: "POST",
-        data: JSON.stringify(availabilityFromCalendar()),
-        url: window.location.href,
-        contentType: "application/json",
-    };
-    $.ajax(reqBody)
-        .then(() => {
-            window.location.reload();
-        })
-        .fail(() => {
-            const errorDiv = serverFail(`An unexpected error occurred when trying to submit your response! Try reloading the page or checking your network connection.`);
-            clearMessageTimeout();
-            $("#responseSection").append(errorDiv);
-        });
-});
+        //TODO: Send over the complete matrix to the server or make response object here and send it
+        const reqBody = {
+            method: "POST",
+            data: JSON.stringify(availabilityFromCalendar()),
+            url: window.location.href,
+            contentType: "application/json",
+        };
+        $.ajax(reqBody)
+            .then(() => {
+                window.location.reload();
+            })
+            .fail(() => {
+                const errorDiv = serverFail(`An unexpected error occurred when trying to submit your response! Try reloading the page or checking your network connection.`);
+                clearMessageTimeout();
+                $("#responseSection").append(errorDiv);
+            });
+    });
+}
 
 //on page load register the listeners
 // TODO maybe add a way to query which users are available at the selected time
