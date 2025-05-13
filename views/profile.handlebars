@@ -1,13 +1,39 @@
-<main>
+<main style="margin-left: 15px">
     <h1>{{title}}</h1>
     <img src="{{pfpUrl}}" alt="Profile picture" width="250" height="250" />
     <div id="info">
         <p>Name: {{firstName}} {{lastName}}</p>
         <p>{{description}}</p>
-        <p>TODO: Show availability</p>
         {{#if canEdit}}
         <button id="editProfile">Edit Profile</button>
         {{/if}}
+        <div class="center-calendar-wrapper">
+            <h3 style="text-align: center">(Optional) Input Your Normal Weekly Availability:</h3>
+            <div class="calendar-wrapper-center">
+                <div class="calendar-center" style="--day-count: {{days.length}}; background-color: #f8f8f8">
+                    <div class="time-column">
+                        {{#each timeColumn}}
+                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
+                        {{/each}}
+                    </div>
+
+                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    <div class="calendar-column">
+                        <div class="calendar-column-header">
+                            {{#with (at_index ../days @index)}}
+                            <p class="calendar-column-header-text">{{dow}}</p>
+                            {{/with}}
+                        </div>
+                        <div class="calendar-cells">
+                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}"></div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
     </div>
     <div id="editor" hidden>
         <p id="error"></p>
@@ -42,7 +68,9 @@
         <button id="confirmDelete">Yes</button>
         <button id="cancelDelete">No</button>
     </div>
-    <a href="/meetings">My Meetings</a>
-    <a href="/create">Create Meeting</a>
+    <div id="linkWrapper" class="linkWrapper">
+        <a class="myMeetingLink" href="/meetings"> <img src="/public/icons/calendar-user-svgrepo-com.svg" alt="User Calendar" class="button-image" /> My Meetings</a>
+        <a class="createMeetingLink" href="/create"> <img src="/public/icons/calendar-circle-plus-svgrepo-com.svg" alt="Add Calendar" class="button-image" /> Create Meeting</a>
+    </div>
 </main>
 <script type="module" src="/public/js/forms/profileEditor.js"></script>

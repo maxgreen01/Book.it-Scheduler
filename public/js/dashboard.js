@@ -1,11 +1,6 @@
 //script used to add links to meeting cards & bookings on the dashboard page
 
 document.addEventListener("DOMContentLoaded", () => {
-    // set up + button
-    document.getElementById("create-meeting").addEventListener("click", () => {
-        window.location.href = "/create";
-    });
-
     //link booked meetings to their pages
     const bookingItems = document.querySelectorAll(".booking-item");
     for (let item of bookingItems) {
