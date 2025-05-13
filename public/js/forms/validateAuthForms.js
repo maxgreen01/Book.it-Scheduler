@@ -63,13 +63,17 @@ function validateSignup(event) {
             data: signUpFormData,
             processData: false,
             contentType: false,
-            success: function (response) {
-                console.log("Success:", response);
-            },
-            error: function (xhr, status, error) {
-                console.error("Error:", error);
-            },
-        });
+        })
+            .then(() => {
+                window.location.href = "/profile";
+            })
+            .fail((e) => {
+                $("#server-fail").remove();
+                console.log(e);
+                const errorDiv = serverFail(e.responseJSON.error);
+                event.preventDefault();
+                $("#signupFormWrapper").prepend(errorDiv);
+            });
     } catch (e) {
         $("#server-fail").remove();
         const errorDiv = serverFail(e.message);

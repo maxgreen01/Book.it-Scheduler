@@ -95,7 +95,7 @@ router
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
+            return res.status(400).json({ error: "Request body is empty" });
         }
 
         // assign default profile picture (which may be updated later in this route)
@@ -106,12 +106,12 @@ router
         try {
             createUserDocument(data);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         try {
             await validateUserExists(data.uid);
-            return routeUtils.renderError(req, res, 400, `The user ID: ${data.uid} already exists!`);
+            return res.status(400).json({ error: `The user ID: ${data.uid} already exists!` });
         } catch (e) {
             //Should always error
         }
@@ -125,11 +125,11 @@ router
                     const profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
                     data.profilePicture = profilePicture;
                 } else {
-                    return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
+                    return res.status(400).json({ error: "Only one image can be submitted!" });
                 }
             }
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         // validate all inputs and add the user to the DB
@@ -137,13 +137,13 @@ router
         try {
             user = await createUser(data);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         delete user.password;
         req.session.user = user;
 
-        return res.redirect("/profile"); // go to the newly created profile page
+        return res.status(200).json({ success: `Created a new profile for ${data.uid}` }); // go to the newly created profile page
     });
 
 export default router;

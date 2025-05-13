@@ -19,36 +19,33 @@
             <br />
             <label for="profilePictureInput">Profile Picture:</label>
             <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" />
-            <br />
-            <p>TODO: availability input</p>
-            <input type="submit" value="Sign up" />
-        </form>
-    </div>
-    <div id="calendarSection" class="calendar-section">
-        <div class="calendar-wrapper">
-            <div class="calendar" style="--day-count: {{days.length}}">
-                <div class="time-column">
-                    {{#each timeColumn}}
-                    <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
-                    {{/each}}
-                </div>
-
-                {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
-                <div class="calendar-column">
-                    <div class="calendar-column-header">
-                        {{#with (at_index ../days @index)}}
-                        <p class="calendar-column-header-text">{{dow}}</p>
-                        {{/with}}
-                    </div>
-                    <div class="calendar-cells">
-                        {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
-                        <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}"></div>
+            <p>Input Your Normal Weekly Availability:</p>
+            <div class="calendar-wrapper">
+                <div class="calendar" style="--day-count: {{days.length}}; background-color: #f8f8f8">
+                    <div class="time-column">
+                        {{#each timeColumn}}
+                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
                         {{/each}}
                     </div>
+
+                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    <div class="calendar-column">
+                        <div class="calendar-column-header">
+                            {{#with (at_index ../days @index)}}
+                            <p class="calendar-column-header-text">{{dow}}</p>
+                            {{/with}}
+                        </div>
+                        <div class="calendar-cells">
+                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}"></div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
                 </div>
-                {{/each}}
             </div>
-        </div>
+            <input type="submit" value="Sign up" />
+        </form>
     </div>
 </main>
 
