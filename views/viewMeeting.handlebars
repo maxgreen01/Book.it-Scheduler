@@ -3,25 +3,19 @@
         {{!-- header for meeting details --}}
         <div class="title-bar">
             <h1 style="margin-right: 20px">{{title}}</h1>
-            <div class="title-bar-actions">{{!-- todo: put meeting owner actions in here if owner --}}</div>
             <br />
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
+            <div class="title-bar-actions">
+                {{#if isOwner}}
+                <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit Meeting</a>
+                {{/if}}
+                <a href="/meetings/{{meetingId}}" id="linkShareButton" class="linkShareButton"> <img src="/public/icons/link-svgrepo-com.svg" alt="Link Icon" class="button-image" />Copy Meeting Link</a>
+            </div>
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div id="calendarSection" class="calendar-section">
-            {{!--
-            <div class="title-bar">
-                <h2>Calendar</h2>
-                <div class="title-bar-actions">
-                    <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
-                    <button id="submit-response-button" hidden>Submit</button>
-                </div>
-            </div>
-            --}} {{!--
-            <h2>Meeting Calendar</h2>
-            --}} {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
                 <div class="calendar" style="--day-count: {{days.length}}">
                     {{!-- indicate whether the user is viewing the group availability or editing their own --}}
@@ -34,7 +28,7 @@
                         {{/each}}
                     </div>
 
-                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    {{#each processedResponses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
                     <div class="calendar-column">
                         <div class="calendar-column-header">
                             {{#with (at_index ../days @index)}}
@@ -45,7 +39,7 @@
                         <div class="calendar-cells">
                             {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
                             <div class="timeslot response-merged" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this.merged}});"></div>
-                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" data="{{this.user}}" hidden></div>
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}" hidden></div>
                             {{/each}}
                         </div>
                     </div>
@@ -53,10 +47,72 @@
                 </div>
             </div>
 
-            {{#if isOwner}}
             <br />
-            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
-            {{/if}}
+
+            {{!-- display the computed best meeting times --}}
+            <div id="best-times-section">
+                {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
+                <h3>Meeting Booking</h3>
+                <h4>This meeting has been booked for {{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</h4>
+                <p>This time was selected by the meeting owner based on the group's collective availabilities!</p>
+
+                {{else if isCancelled}} {{!-- show a cancellation message --}}
+                <h3>Meeting Cancelled</h3>
+                <p>This meeting was cancelled by the owner. All responses are still saved, but a meeting time cannot be booked unless the meeting is restored first.</p>
+
+                {{else}} {{!-- show the computed times --}}
+                <h3>Recommended Meeting Times</h3>
+
+                <p>Below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
+
+                <br />
+                {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the times that are too short --}}
+                <ul>
+                    {{#each bestTimes}}
+                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{formatDate date}}: &ensp;{{convertIndexToLabel timeStart}} - {{convertIndexToLabel timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>There are currently no best times for this meeting!</p>
+                {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
+                <br />
+
+                {{#if isOwner}} {{#if bookedTime}} {{!-- owner-only section for actually booking the meeting --}}
+                <p>Want to change this meeting's booking time? Remove the booking using this button, and the best times will be recomputed so you can choose a different time!</p>
+                <p>Keep in mind that users who have responded to this meeting will need to accept the new booked time again, even if they already accepted previously!</p>
+
+                <form method="POST" name="unbookMeeting" id="unbookMeeting" action="/meetings/{{meetingId}}/edit">
+                    {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
+                    <button type="submit" name="action" value="unbook">Remove Meeting Booking</button>
+                </form>
+
+                {{else if isCancelled}}
+                <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
+
+                {{else}} {{#if bestTimeExists}}
+
+                <h4>Book a Meeting Time</h4>
+                <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
+
+                <p id="booking-error"></p>
+                <form method="POST" name="bookMeeting" id="bookMeeting" action="/meetings/{{meetingId}}/edit" data-best-times="{{bestTimesJSON}}">
+                    <label for="dateInput">Date:</label>
+                    <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
+                    <br />
+                    <label for="timeStartInput">Start Time:</label>
+                    <select name="timeStart" id="timeStartInput">
+                        <option value="">--Choose a time--</option>
+                        {{#for 0 48 1}}
+                        <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                        {{/for}}
+                    </select>
+                    <br />
+                    <button type="submit" name="action" value="book">Book Meeting</button>
+                </form>
+                {{else}}
+                <p>Invite People to this meeting if you'd like to book a meeting!</p>
+                {{/if}} {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
+            </div>
         </div>
 
         {{!-- Container for filling in responder info --}}
@@ -85,11 +141,11 @@
             <h2>Comments</h2>
             <form method="POST" name="commentsForm" id="commentsForm" class="comments-form" action="./note">
                 <label for="commentInput" class="hidden-label">Enter a Comment:</label>
-                <textarea type="text" id="commentInput" name="commentInput" class="text-input" placeholder="Add a comment."></textarea>
-                <button type="submit" id="commentSend" class="send-icon-comment" label="Send Note"></button>
+                <textarea id="commentInput" class="text-input commentInput" placeholder="Add a comment."></textarea>
+                <button type="submit" id="commentSend" class="send-icon-comment"></button>
             </form>
             {{#if comments.length}} {{!-- If comments exist, make a div for each one --}}
-            <p id="comment-count" data="{{comments.length}}">{{comments.length}} comments</p>
+            <p id="comment-count" data-comment-length="{{comments.length}}">{{comments.length}} comments</p>
             {{#each comments}}
             <div class="comment-wrapper" id="commentWrapper{{this._id}}">
                 <div class="comment" id="comment{{this._id}}">
@@ -99,7 +155,7 @@
                     {{#if this.dateUpdated}}
                     <p>Edited on: {{this.dateUpdated}}</p>
                     {{/if}} {{#if this.isViewerComment}}
-                    <button id="commentTrash{{this._id}}" class="trashIcon" data="{{this._id}}"></button>
+                    <button id="commentTrash{{this._id}}" class="trashIcon"></button>
                     {{/if}}
                 </div>
             </div>
@@ -115,11 +171,11 @@
             <form method="POST" name="notesForm" id="notesForm" class="notes-form" action="./note">
                 <label for="noteInput" class="hidden-label">Enter a Note:</label>
                 {{#if note}}
-                <textarea type="text" id="noteInput" name="noteInput" class="prev-Note" class="text-input" placeholder="Add a private note."></textarea>
+                <textarea id="noteInput" name="noteInput" class="prev-Note text-input" placeholder="Add a private note."></textarea>
                 {{else}}
-                <textarea type="text" id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
+                <textarea id="noteInput" name="noteInput" class="text-input" placeholder="Add a private note."></textarea>
                 {{/if}}
-                <button type="submit" id="noteSend" class="send-icon" label="Send Note"></button>
+                <button type="submit" id="noteSend" class="send-icon"></button>
             </form>
         </div>
     </div>
@@ -128,3 +184,5 @@
 <script type="module" src="../../public/js/forms/calendarActions.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>
+<script type="module" src="/public/js/pages/miscBinds.js"></script>
+<script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>

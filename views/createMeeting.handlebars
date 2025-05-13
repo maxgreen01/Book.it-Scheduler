@@ -1,140 +1,63 @@
 <main>
-    <h1>{{title}}</h1>
+    <h1 style="padding-left: 10px">{{title}}</h1>
 
+    {{!--
     <p>To create a meeting, simply input all the required fields below and click the submit button (or Enter key)!</p>
-    <p>Usage Notes:</p>
-    <ul>
-        <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
-        <li>The possible date range for this meeting includes all dates between the Start and End Date (inclusive), with a limit of 20 date options per meeting.</li>
-        <li>Within each selected date for this meeting, users can select their availability for every 30-minute increment between the Start and End Times. This range must be at least as long as the meeting's Duration!</li>
-        <li>A meeting's date and time ranges CANNOT be edited after the event is created, so be sure to get them right the first time!</li>
-    </ul>
+    --}}
+    <ul></ul>
 
-    <p id="error"></p>
-    <form method="POST" name="createMeeting" id="createMeeting">
-        <label for="titleInput">Title:</label>
-        <input name="name" id="titleInput" type="text" />
-        <br />
-        <label for="descriptionInput">Description:</label>
-        <input name="description" id="descriptionInput" type="text" />
-        <br />
-        <label for="durationInput">Duration (hours):</label>
-        <input name="duration" id="durationInput" type="number" step="0.5" min="0.5" max="24" />
-        <br />
-        <label for="dateStartInput">Start Date:</label>
-        <input name="dateStart" id="dateStartInput" type="date" min="{{todayStr}}" />
-        <br />
-        <label for="dateEndInput">End Date:</label>
-        <input name="dateEnd" id="dateEndInput" type="date" min="{{todayStr}}" />
-        <br />
-        <label for="timeStartInput">Start Time:</label>
-        <select name="timeStart" id="timeStartInput" type="text">
-            <option value="">--Choose a time--</option>
-            <option value="0">12:00 AM</option>
-            <option value="1">12:30 AM</option>
-            <option value="2">1:00 AM</option>
-            <option value="3">1:30 AM</option>
-            <option value="4">2:00 AM</option>
-            <option value="5">2:30 AM</option>
-            <option value="6">3:00 AM</option>
-            <option value="7">3:30 AM</option>
-            <option value="8">4:00 AM</option>
-            <option value="9">4:30 AM</option>
-            <option value="10">5:00 AM</option>
-            <option value="11">5:30 AM</option>
-            <option value="12">6:00 AM</option>
-            <option value="13">6:30 AM</option>
-            <option value="14">7:00 AM</option>
-            <option value="15">7:30 AM</option>
-            <option value="16">8:00 AM</option>
-            <option value="17">8:30 AM</option>
-            <option value="18">9:00 AM</option>
-            <option value="19">9:30 AM</option>
-            <option value="20">10:00 AM</option>
-            <option value="21">10:30 AM</option>
-            <option value="22">11:00 AM</option>
-            <option value="23">11:30 AM</option>
-            <option value="24">12:00 PM</option>
-            <option value="25">12:30 PM</option>
-            <option value="26">1:00 PM</option>
-            <option value="27">1:30 PM</option>
-            <option value="28">2:00 PM</option>
-            <option value="29">2:30 PM</option>
-            <option value="30">3:00 PM</option>
-            <option value="31">3:30 PM</option>
-            <option value="32">4:00 PM</option>
-            <option value="33">4:30 PM</option>
-            <option value="34">5:00 PM</option>
-            <option value="35">5:30 PM</option>
-            <option value="36">6:00 PM</option>
-            <option value="37">6:30 PM</option>
-            <option value="38">7:00 PM</option>
-            <option value="39">7:30 PM</option>
-            <option value="40">8:00 PM</option>
-            <option value="41">8:30 PM</option>
-            <option value="42">9:00 PM</option>
-            <option value="43">9:30 PM</option>
-            <option value="44">10:00 PM</option>
-            <option value="45">10:30 PM</option>
-            <option value="46">11:00 PM</option>
-            <option value="47">11:30 PM</option>
-        </select>
-        <br />
-        <label for="timeEndInput">End Time:</label>
-        <select name="timeEnd" id="timeEndInput" type="text">
-            <option value="">--Choose a time--</option>
-            <option value="1">12:30 AM</option>
-            <option value="2">1:00 AM</option>
-            <option value="3">1:30 AM</option>
-            <option value="4">2:00 AM</option>
-            <option value="5">2:30 AM</option>
-            <option value="6">3:00 AM</option>
-            <option value="7">3:30 AM</option>
-            <option value="8">4:00 AM</option>
-            <option value="9">4:30 AM</option>
-            <option value="10">5:00 AM</option>
-            <option value="11">5:30 AM</option>
-            <option value="12">6:00 AM</option>
-            <option value="13">6:30 AM</option>
-            <option value="14">7:00 AM</option>
-            <option value="15">7:30 AM</option>
-            <option value="16">8:00 AM</option>
-            <option value="17">8:30 AM</option>
-            <option value="18">9:00 AM</option>
-            <option value="19">9:30 AM</option>
-            <option value="20">10:00 AM</option>
-            <option value="21">10:30 AM</option>
-            <option value="22">11:00 AM</option>
-            <option value="23">11:30 AM</option>
-            <option value="24">12:00 PM</option>
-            <option value="25">12:30 PM</option>
-            <option value="26">1:00 PM</option>
-            <option value="27">1:30 PM</option>
-            <option value="28">2:00 PM</option>
-            <option value="29">2:30 PM</option>
-            <option value="30">3:00 PM</option>
-            <option value="31">3:30 PM</option>
-            <option value="32">4:00 PM</option>
-            <option value="33">4:30 PM</option>
-            <option value="34">5:00 PM</option>
-            <option value="35">5:30 PM</option>
-            <option value="36">6:00 PM</option>
-            <option value="37">6:30 PM</option>
-            <option value="38">7:00 PM</option>
-            <option value="39">7:30 PM</option>
-            <option value="40">8:00 PM</option>
-            <option value="41">8:30 PM</option>
-            <option value="42">9:00 PM</option>
-            <option value="43">9:30 PM</option>
-            <option value="44">10:00 PM</option>
-            <option value="45">10:30 PM</option>
-            <option value="46">11:00 PM</option>
-            <option value="47">11:30 PM</option>
-            <option value="48">12:00 AM</option>
-        </select>
-        <br />
-        <input type="submit" value="Create Meeting" />
-    </form>
+    <div id="formWrapper" class="formWrapper">
+        <p id="error"></p>
+        <div class="usage-notes-wrapper">
+            <p class="usage-header"><img src="/public/icons/info-circle-svgrepo-com.svg" alt="Info Icon" style="margin-right: 5px" class="button-image" />Usage Notes</p>
+            <div class="usage-info-wrapper">
+                <ul>
+                    <li>Duration must be a number representing the number of hours the meeting will take. This only supports half-hour increments, like "1" for an hour or "2.5" for two and a half hours.</li>
+                    <li>The possible date range for this meeting includes all dates between the Start and End Date (inclusive), with a limit of 20 date options per meeting.</li>
+                    <li>Within each selected date for this meeting, users can select their availability for every 30-minute increment between the Start and End Times. This range must be at least as long as the meeting's Duration!</li>
+                    <li>A meeting's date and time ranges CANNOT be edited after the event is created, so be sure to get them right the first time!</li>
+                </ul>
+            </div>
+        </div>
+        <form method="POST" name="createMeeting" id="createMeeting">
+            <label for="titleInput">Title:</label>
+            <input name="name" id="titleInput" type="text" />
+            <br />
+            <label for="descriptionInput">Description:</label>
+            <input name="description" id="descriptionInput" type="text" />
+            <br />
+            <label for="durationInput">Duration (hours):</label>
+            <input name="duration" id="durationInput" type="number" step="0.5" min="0.5" max="24" />
+            <br />
+            <label for="dateStartInput">Start Date:</label>
+            <input name="dateStart" id="dateStartInput" type="date" min="{{todayStr}}" />
+            <br />
+            <label for="dateEndInput">End Date:</label>
+            <input name="dateEnd" id="dateEndInput" type="date" min="{{todayStr}}" />
+            <br />
+            <label for="timeStartInput">Start Time:</label>
+            <select name="timeStart" id="timeStartInput" type="text">
+                <option value="">--Choose a time--</option>
+                {{#for 0 48 1}}
+                <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                {{/for}}
+            </select>
+            <br />
+            <label for="timeEndInput">End Time:</label>
+            <select name="timeEnd" id="timeEndInput" type="text">
+                <option value="">--Choose a time--</option>
+                {{#for 1 49 1}}
+                <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                {{/for}}
+            </select>
+            <br />
+            <div class="create-meeting-submit" id="createMeetingSubmit">
+                <p class="create-meeting-submit-text">Save</p>
+                <img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Paper Plane" class="button-image" />
+            </div>
+            {{!-- <input type="submit" value="Create Meeting" /> --}}
+        </form>
+    </div>
 </main>
 
 <script type="module" src="/public/js/forms/validateMeetingForms.js"></script>

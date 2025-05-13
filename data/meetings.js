@@ -7,9 +7,10 @@ export { createMeetingDocument } from "../public/js/documentCreation.js";
 import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
-export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }) {
+// `allowCreateInPast` allows meetings to be created using dates that have already passed, but should NEVER be `true` except when seeding the database.
+export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, allowCreateInPast = false) {
     // set up the document that will be saved to the DB
-    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd });
+    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, false, allowCreateInPast);
     meeting.bookingStatus = 0; // todo make an enum for status code meanings
     meeting.bookedTime = null;
     meeting.users = [];
@@ -152,13 +153,17 @@ export async function updateMeetingNote(mid, uid, body) {
 }
 
 //Set the Meeting Status and Booked Time of the Meeting
-//Booking Status = Integer from 1 to -1
-//Booked Time = {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
-export async function setBooking(mid, bookingStatus, bookedTime) {
+//Booking Status:  Integer from 1 to -1
+//Booked Time:  null unless bookingStatus == 1, otherwise Object like { date, timeStart, timeEnd }
+// FIXME MG - will need to do lots of other logic here for inviting (or cancelling invites) to users based on new status
+export async function setMeetingBooking(mid, bookingStatus, bookedTime) {
     mid = await validation.validateMeetingExists(mid);
     bookingStatus = validation.validateIntRange(bookingStatus, "Booking Status", -1, 1);
-
-    bookedTime = validation.validateBookedTimeObj(bookedTime); //BL -- added to helpers for when we need to add booked times
+    if (bookingStatus == 1) {
+        bookedTime = validation.validateBookedTimeObj(bookedTime);
+    } else {
+        bookedTime = null; // enforce no booked time
+    }
 
     const collection = await meetingsCollection();
     const updated = await collection.findOneAndUpdate(
@@ -171,7 +176,7 @@ export async function setBooking(mid, bookingStatus, bookedTime) {
         },
         { returnDocument: "after" }
     );
-    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID ${mid}`);
+    if (!updated) throw new Error(`Could not set the Booking information on the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();
     return updated;
 }

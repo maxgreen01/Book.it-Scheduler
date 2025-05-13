@@ -64,7 +64,7 @@
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">
-                            {{#each this.matrix}}
+                            {{#each this.processedResponses}}
                             <div class="mini-calendar-column">
                                 {{!-- Only cells, no headers --}}
                                 <div class="mini-calendar-cells">
@@ -94,7 +94,7 @@
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">
-                            {{#each this.matrix}}
+                            {{#each this.processedResponses}}
                             <div class="mini-calendar-column">
                                 {{!-- Only cells, no headers --}}
                                 <div class="mini-calendar-cells">

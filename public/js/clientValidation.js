@@ -227,6 +227,20 @@ export function validateResponseArrHasSameDates(responseArr) {
     return responseDates;
 }
 
+// Validate that an object is a valid bookedTime for a meeting.
+// Return the validated object if it is valid.
+export function validateBookedTimeObj(obj) {
+    const allowedKeys = ["date", "timeStart", "timeEnd"];
+    obj = validateObjectKeys(obj, allowedKeys, "Meeting Booking Object");
+
+    obj.date = validateDateObj(obj.date, "Meeting Booking Date");
+    obj.timeStart = validateIntRange(obj.timeStart, "Meeting Booking Start Time", 0, 47);
+    obj.timeEnd = validateIntRange(obj.timeEnd, "Meeting Booking End Time", 1, 48);
+    if (obj.timeStart >= obj.timeEnd) throw new ValidationError("Meeting Booking Start Time must be before End Time");
+
+    return obj;
+}
+
 //
 // ============ Misc Validation & Utility ============
 //

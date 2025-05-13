@@ -26,16 +26,6 @@ export function redirectBack(req, res) {
     return res.redirect(req.get("Referrer") || "/");
 }
 
-//enum helper to not have to copy/paste Max's 48 lines of HTML :)
-export function formatTimeIndex(index) {
-    if (index === undefined) throw new Error("Unable to format time index: no index given");
-    const hours24 = Math.floor(index / 2);
-    const minutes = index % 2 === 0 ? "00" : "30";
-    const meridian = hours24 >= 12 ? "PM" : "AM";
-    const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
-    return `${hours12}:${minutes} ${meridian}`;
-}
-
 export function formatDateString(dateString, showWeekday = false) {
     const date = new Date(dateString);
     let options = {

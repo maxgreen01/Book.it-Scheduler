@@ -1,16 +1,24 @@
 <main>
-    <h1>{{title}}</h1>
+    <h1 style="margin-left: 15px">{{title}}</h1>
     <p id="error"></p>
-    <form method="POST" name="login" id="login">
-        <label for="usernameInput">Username:</label>
-        <input name="uid" id="usernameInput" type="text" />
-        <br />
-        <label for="passwordInput">Password:</label>
-        <input name="password" id="passwordInput" type="password" />
-        <br />
-        <input type="submit" value="Login" />
-    </form>
-    <a href="/signup">Sign up</a>
+    <div id="formWrapper" class="formWrapper">
+        <form method="POST" name="login" id="login">
+            <label for="usernameInput">Username:</label>
+            <input name="uid" id="usernameInput" type="text" />
+            <br />
+            <label for="passwordInput">Password:</label>
+            <input name="password" id="passwordInput" type="password" />
+            <div class="login-submit" id="loginSubmit">
+                <p class="login-submit-text">Login</p>
+                <img src="/public/icons/login-2-svgrepo-com.svg" alt="Login In" class="button-image" />
+            </div>
+        </form>
+    </div>
+    <div class="linkWrapperCenter">
+        <p style="text-align: center">
+            Don't Have an Account? <a class="signUpLink" href="/signup"> <img src="/public/icons/user-plus-alt-1-svgrepo-com.svg" alt="User Add" class="button-image" /> Sign up</a>
+        </p>
+    </div>
 </main>
 
 <script type="module" src="/public/js/forms/validateAuthForms.js"></script>
