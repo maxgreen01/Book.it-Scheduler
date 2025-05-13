@@ -34,7 +34,7 @@
                         {{/each}}
                     </div>
 
-                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    {{#each processedResponses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
                     <div class="calendar-column">
                         <div class="calendar-column-header">
                             {{#with (at_index ../days @index)}}
@@ -52,6 +52,8 @@
                     {{/each}}
                 </div>
             </div>
+
+            <br />
 
             {{!-- display the computed best meeting times --}}
             <div id="best-times-section">
@@ -77,7 +79,7 @@
                     {{/each}}
                 </ul>
                 {{else}}
-                <p>There are currently no best times for this meeting!</p>
+                <p>There are currently no good times for this meeting, so the meeting cannot be booked!</p>
                 {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
                 <br />
 
@@ -93,7 +95,7 @@
                 {{else if isCancelled}}
                 <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
-                {{else}}
+                {{else if bestTimes.length}} {{!-- only allowed to book a meeting if there are best times available --}}
                 <h4>Book a Meeting Time</h4>
                 <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 
@@ -124,7 +126,7 @@
             <p>You've not responded to this meeting yet!</p>
             {{/if}}
             <div id="responsePeopleSection">
-                <h4>Available:</h4>
+                <h4 id="responsePeopleHeader">Respondents:</h4>
                 <div id="responsePeople">
                     <p>Hover over the calendar to see who's available!</p>
                 </div>

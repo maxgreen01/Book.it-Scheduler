@@ -7,6 +7,7 @@ import express from "express";
 import configRoutes from "./routes/index.js";
 import handlebars from "express-handlebars";
 import fileUpload from "express-fileupload";
+import { xss } from "express-xss-sanitizer";
 import session from "express-session";
 import favicon from "serve-favicon";
 import path from "node:path";
@@ -24,6 +25,7 @@ const app = express();
 app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(xss());
 
 // Handlebars setup
 app.engine("handlebars", handlebars.engine({ defaultLayout: "main" }));
@@ -59,7 +61,7 @@ app.use(favicon(path.join(__rootdir, "/public/icons/favicon.ico")));
 // Ex: rgba(128, 0, 128, {{#multiplyOpacity 4}}) where 0 is blank
 Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     // this a parameter passed to the route in the handlebars context
-    // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
+    // this MUST be explicitly defined in any route that renders a calendar -> numUsers: users.length ... etc
     const numUsers = options.data.root.numUsers;
     const opacity = numUsers > 0 ? Math.min(1, value / numUsers) : 0;
     return opacity.toFixed(2);
@@ -168,7 +170,7 @@ app.use((err, req, res, next) => {
 //
 
 app.post("/signup", profilePictureUpload);
-app.patch("/profile", profilePictureUpload);
+app.post("/profile", profilePictureUpload);
 
 configRoutes(app);
 

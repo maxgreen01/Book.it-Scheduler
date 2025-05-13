@@ -27,10 +27,16 @@ export function profilePictureToPath(profilePicture) {
 // Update a user's profile picture by deleting the existing file and uploading a new one
 // If successful, return the name of the newly uploaded file.
 export async function updateProfilePicture(uid, pfpFile) {
+    // delete the existing profile picture (if it isn't the default)
+    await deleteProfilePicture(uid);
+
+    // upload the new picture, and return its name
+    return await uploadProfilePicture(uid, pfpFile);
+}
+
+export async function deleteProfilePicture(uid) {
     // get the stored data for this user
     const user = await getUserById(uid);
-
-    // delete the existing profile picture (if it isn't the default)
     try {
         if (user.profilePicture !== defaultProfilePicture) {
             await fs.unlink(path.join(__imagesDir, user.profilePicture));
@@ -38,9 +44,6 @@ export async function updateProfilePicture(uid, pfpFile) {
     } catch (err) {
         console.warn(`Error deleting old profile picture for user ${uid}: ${err.message}`);
     }
-
-    // upload the new picture, and return its name
-    return await uploadProfilePicture(uid, pfpFile);
 }
 
 // Upload a profile picture to the server's filesystem.

@@ -12,14 +12,18 @@ export async function createUser({ uid, password, firstName, lastName, descripti
     const user = createUserDocument({ uid, password, firstName, lastName, description, profilePicture, availability });
     user.meetings = [];
 
+    let userInDB = undefined;
     // make sure username (which is already validated) is unique in the DB
     try {
-        await getUserById(user._id);
+        userInDB = await getUserById(user._id);
         // if no error occurs, then the user already exists
-        throw new Error(`User ID "${user._id}" is already taken`);
     } catch {
         // if an error is thrown, then the username should be available (which is a good thing)
         // todo - maybe add some way to identify and NOT ignore MongoDB errors here
+    }
+
+    if (userInDB) {
+        throw new Error(`User ID "${user._id}" is already taken`);
     }
 
     // hash password
@@ -96,6 +100,10 @@ export async function deleteUser(uid) {
 // Return the updated user object if operation is successful.
 export async function updateUser(uid, { password, firstName, lastName, description, profilePicture, availability }) {
     uid = validation.validateUserId(uid);
+    if (password) {
+        password = validation.validatePassword(password);
+        password = await bcrypt.hash(password, 10);
+    }
     const collection = await usersCollection();
     const newFields = createUserDocument({ password, firstName, lastName, description, profilePicture, availability }, true);
 

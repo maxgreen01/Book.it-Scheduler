@@ -7,6 +7,8 @@ import { serverFail } from "../pages/server-AJAX.js";
 let isMouseDown = false;
 let isDeselecting = false;
 let selectedSlots = new Set();
+let viewerUid = null;
+const respondents = [];
 
 let onMainCalendar = true;
 
@@ -54,11 +56,11 @@ const getResponsesReq = {
     contentType: "application/json",
 };
 
-const genHTMLforRespondees = (users, vUid) => {
+const genHTMLforRespondees = (users) => {
     let output = "";
     for (const user of users) {
         output += `<p class="userResText">${user}`;
-        if (user === vUid) {
+        if (user === viewerUid) {
             output += " (You)";
         }
         output += "</p>";
@@ -66,13 +68,24 @@ const genHTMLforRespondees = (users, vUid) => {
     return $(`${output}`);
 };
 
+const genAllRespondentHTML = (respondents) => {
+    let output = "";
+    const currURL = window.location.origin;
+
+    for (const responder of respondents) {
+        const youHTML = responder === viewerUid ? " (You)" : "";
+        output += `<a class="profileLink" href="${currURL}/profile/${responder}">${responder}${youHTML}</a>`;
+    }
+    return $(`${output}`);
+};
+
 const bindSlot = (slot, uids, currUid) => {
-    // console.log("Binding event to slot:", slot);
     slot.addEventListener("mouseover", () => {
         const respondeeHTML = genHTMLforRespondees(uids, currUid);
         $("#responsePeople").empty();
         $("#edit-response-button").hide();
         $("#responsePeople").append(respondeeHTML);
+        $("#responsePeopleHeader").html("Available:");
     });
 };
 
@@ -98,14 +111,24 @@ const bindCalendarSlots = (responsesArr, timeStart, uid) => {
 
 $("#calendarSection").mouseout(() => {
     $("#responsePeople").empty();
+    if (onMainCalendar) {
+        $("#edit-response-button").show();
+        $("#responsePeopleHeader").html("Respondents:");
+    }
+    const allUsers = genAllRespondentHTML(respondents);
+    $("#responsePeople").append(allUsers);
     $("#responsePeople").append(`<p>Hover over the calendar to see who's available!</p>`);
-    if (onMainCalendar) $("#edit-response-button").show();
 });
 
 $.ajax(getResponsesReq)
     .then((res) => {
-        // console.log(res);
+        viewerUid = res.uid;
         bindCalendarSlots(res.responses, res.start, res.uid);
+        for (const response of res.responses) {
+            respondents.push(response.uid);
+        }
+        const allUsers = genAllRespondentHTML(respondents);
+        $("#responsePeople").prepend(allUsers);
     })
     .fail(() => {
         const errorDiv = serverFail("Failed to connect to the server to get your private note! Try reloading page or checking your network connection.");
@@ -171,7 +194,6 @@ if (submitButton) {
         };
         $.ajax(reqBody)
             .then(() => {
-                // console.log("success!");
                 window.location.reload();
             })
             .fail(() => {

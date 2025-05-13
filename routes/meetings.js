@@ -1,9 +1,9 @@
 import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
-import { getOwnedMeetings, getUserById, getUserMeetings } from "../data/users.js";
+import { getUserById, getUserMeetings } from "../data/users.js";
 import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString } from "../public/js/helpers.js";
+import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, convertIndexToLabel } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
 
@@ -26,24 +26,108 @@ const safeMergeResponses = (responses, dates, timeStart, timeEnd) => {
 
 router.route("/").get(async (req, res) => {
     const uid = req.session.user._id;
-    const myMeetings = await getOwnedMeetings(uid);
     const allMeetings = await getUserMeetings(uid);
-    // myMeetings.forEach((element) => {
-    //     element.matrix = testMatrix;
-    // });
 
-    //NOTE: This is a hack to avoid changing the schema,
-    //but in the future this should be separated into two lists in the document: Owned Meetings & Responded Meeting
+    let maxUsers = 0; //keep track of the highest number of users in meeting for global display
 
-    //filter out meetings user does not own
-    const otherMeetings = allMeetings.filter((meeting) => !myMeetings.some((myMeeting) => myMeeting._id.toString() === meeting._id.toString()));
+    //date information
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // these reference dates shouldn't have time info
+    const sevenDaysLater = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    sevenDaysLater.setDate(today.getDate() + 7);
+
+    const myBookings = []; // bookingStatus == 1
+    const myMeetings = []; // bookingStatus != 1 && owned by user
+    const myResponses = []; // bookingStatus != 1 && NOT owned by user
+    const upcomingMeetings = {}; //calendar timeline dictionary
+
+    //fill the calendar timeline w proper keys, initially empty
+    for (let i = 0; i < 7; i++) {
+        const day = new Date();
+        day.setDate(today.getDate() + i);
+        const key = routeUtils.formatDateString(day, true);
+        upcomingMeetings[key] = [];
+    }
+
+    //filter all meetings based on their statuses, and add handlebars fields where needed
+    for (const meeting of allMeetings) {
+        if (meeting.users.length > maxUsers) maxUsers = meeting.users.length;
+        //transformations applied to all meetings
+        meeting.duration /= 2;
+
+        //make date range readable
+        const numDays = meeting.dates.length;
+        meeting.startDate = routeUtils.formatDateString(meeting.dates[0], false);
+        meeting.endDate = numDays == 1 ? null : routeUtils.formatDateString(meeting.dates[numDays - 1], false);
+
+        //========== FILTER MEETINGS AROUND PAGE ===========
+
+        //booked meetings
+        if (meeting.bookingStatus === 1) {
+            const bookedDate = meeting.bookedTime.date;
+
+            //parse booked time object for handlebars render
+            meeting.bookingDate = routeUtils.formatDateString(bookedDate, false);
+            meeting.bookingStart = convertIndexToLabel(meeting.bookedTime.timeStart);
+            meeting.bookingEnd = convertIndexToLabel(meeting.bookedTime.timeEnd);
+
+            //mark past meetings
+            if (bookedDate < today) meeting.isPast = true;
+
+            //mark upcoming meetings
+            if (bookedDate >= today && bookedDate <= sevenDaysLater) {
+                const key = routeUtils.formatDateString(bookedDate, true);
+
+                //push calendar object to value of dictionary
+                if (key in upcomingMeetings) {
+                    const calendarItem = {
+                        _id: meeting._id,
+                        name: meeting.name,
+                    };
+                    upcomingMeetings[key].push(calendarItem);
+                }
+            }
+            myBookings.push(meeting);
+
+            //owned meetings
+        } else if (meeting.owner == uid) {
+            meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
+
+            // process responses on the fly
+            const merged = safeMergeResponses(meeting.responses, meeting.dates, meeting.timeStart, meeting.timeEnd);
+            // extract the raw data and only display the slots within this meeting's time range
+            meeting.processedResponses = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd));
+
+            myMeetings.push(meeting);
+
+            //responded meetings
+        } else {
+            meeting.bookingStatus = meeting.bookingStatus == 0 ? "Pending" : "Cancelled";
+
+            // process responses on the fly
+            const merged = safeMergeResponses(meeting.responses, meeting.dates, meeting.timeStart, meeting.timeEnd);
+            // extract the raw data and only display the slots within this meeting's time range
+            meeting.processedResponses = merged.map((avail) => avail.slots.slice(meeting.timeStart, meeting.timeEnd));
+
+            myResponses.push(meeting);
+        }
+    }
+
+    //split up upcomingMeetings for easier handlebars rendering
+    let upcomingDays = Object.keys(upcomingMeetings).map((key) => {
+        let tokens = key.split(", "); //split Sun, May 21 -> Sun | May 21
+        return { weekday: tokens[0], date: tokens[1] };
+    });
+    let upcomingDaysContent = Object.values(upcomingMeetings); //{name: , _id: } (for an href)
 
     return res.render("viewAllMeetings", {
-        title: "My Meetings",
+        title: "Dashboard",
+        upcomingDays,
+        upcomingDaysContent,
+        myBookings,
         myMeetings,
-        otherMeetings,
-        numUsers: 8, //todo make this number reflect the largest # attendees globally on the page
-        //If we wanted to make this card-specific would need to rework the opacity helper
+        myResponses,
+        numUsers: maxUsers * 2, //shade at most halfway
         ...routeUtils.prepareRenderOptions(req),
     });
 });
@@ -171,7 +255,7 @@ router
                 description: meeting.description,
                 duration: `${meeting.duration / 2} hour(s)`,
                 days: formattedDates,
-                responses: renderResponses,
+                processedResponses: renderResponses,
                 viewerNotResponse: viewerNotResponse,
                 timeColumn: columnLabels,
                 numUsers: meeting.users.length,
@@ -190,7 +274,6 @@ router
     })
     // submit availability
     .post(async (req, res) => {
-        // TODO
         //   note: need to make sure to offset the response data by `timeStart` when constructing Availability Objects
         try {
             const userId = req.session.user._id;

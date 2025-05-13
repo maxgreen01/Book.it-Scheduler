@@ -88,15 +88,19 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const startDate = faker.date.soon({ days: 60 });
+        const now = new Date();
+        const fromDate = new Date();
+        fromDate.setDate(now.getDate() - 10);
+        const toDate = new Date();
+        toDate.setDate(now.getDate() + 60);
+        const startDate = faker.date.between({ from: fromDate, to: toDate });
         const endDate = faker.date.soon({ days: 10, refDate: startDate });
 
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
-        const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
+        const meetingStart = faker.number.int({ min: 10, max: 40 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration + 3, max: Math.min(48, meetingStart + duration + 16) });
 
-        //todo: uncomment when done testing dashboard --bl
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 2, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
@@ -109,7 +113,7 @@ async function seed() {
         };
 
         console.log(`Adding meeting #${i}: ${newMeeting.name}`);
-        const addedMeeting = await createMeeting(newMeeting);
+        const addedMeeting = await createMeeting(newMeeting, true);
         meetingIds.push(addedMeeting._id);
 
         const randomSlotGenerator = () => {
