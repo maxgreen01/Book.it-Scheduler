@@ -353,7 +353,8 @@ router
             duration: meeting.duration / 2, // convert from index back into hours
             timeStart: meeting.timeStart,
             timeEnd: meeting.timeEnd,
-            isCancelled: meeting.bookingStatus == -1,
+            isPending: meeting.bookingStatus === 0,
+            isBookedOrCancelled: meeting.bookingStatus === 1 || meeting.bookingStatus === -1,
             ...routeUtils.prepareRenderOptions(req),
         });
     })
