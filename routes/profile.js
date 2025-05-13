@@ -85,6 +85,9 @@ router
 // view someone else's profile
 router.route("/:uid").get(async (req, res) => {
     // validate ID and retrieve other's profile
+    if (req.params.uid === req.session.user._id) {
+        return res.redirect("/profile");
+    }
     try {
         const user = await getUserById(req.params.uid);
         return res.render("profile", {

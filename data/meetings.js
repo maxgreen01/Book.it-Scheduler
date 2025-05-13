@@ -148,7 +148,6 @@ export async function updateMeetingNote(mid, uid, body) {
     body = validation.validateCommentNoteBody(body);
 
     const collection = await meetingsCollection();
-    // todo make sure case-insensitivity works as intended here
     const updated = await collection.findOneAndUpdate({ _id: validation.convertStrToObjectId(mid) }, { $set: { [`notes.${uid}`]: body } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Could not update a note on the meeting with ID "${mid}"`);
     updated._id = updated._id.toString();

@@ -1,9 +1,9 @@
 <main class="edit-meeting-page">
     <h1>Editing Meeting: {{title}}</h1>
 
-    <button id="editMeetingBack" data="/meetings/{{meetingId}}" class="back-button edit-meeting-button"><img src="/public/icons/left-arrow-alt-svgrepo-com.svg" alt="Back Button" class="button-image" /> Go Back</button>
+    <button id="editMeetingBack" data-target="/meetings/{{meetingId}}" class="back-button edit-meeting-button"><img src="/public/icons/left-arrow-alt-svgrepo-com.svg" alt="Back Button" class="button-image" /> Go Back</button>
 
-    <div id="editMeetingDetailsWrapper" class="edit-meeting-details">
+    <div id="editMeetingDetailsWrapper" class="edit-meeting-details" {{#unless isPending}} hidden {{/unless}}>
         <h2 style="text-align: center">Edit Meeting Details</h2>
 
         {{!--
@@ -40,17 +40,14 @@
         </div>
     </div>
 
-    {{#if isBookedOrCancelled}}
-    <div id="meetingBooked"></div>
-    {{/if}} {{!-- note: meeting deletion would go here if we implement it --}}
     <div id="linkWrapper" class="linkWrapper">
-        {{#if isPending}}
-        <form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
-            <button class="cancelMeetingButton" type="submit" name="action" value="cancel"><img src="/public/icons/calendar-xmark-svgrepo-com.svg" alt="Calendar Cancel" class="button-image" /> Cancel Meeting</button>
-        </form>
-        {{else}}
+        {{#if isCancelled}}
         <form method="POST" name="restoreMeeting" id="restoreMeeting" action="/meetings/{{meetingId}}/edit">
             <button type="submit" class="restoreMeetingButton" name="action" value="restore"><img src="/public/icons/calendar-arrow-up-svgrepo-com.svg" alt="Calendar Arrow Up" class="button-image" />Restore Meeting</button>
+        </form>
+        {{else}}
+        <form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
+            <button class="cancelMeetingButton" type="submit" name="action" value="cancel"><img src="/public/icons/calendar-xmark-svgrepo-com.svg" alt="Calendar Cancel" class="button-image" /> Cancel Meeting</button>
         </form>
         {{/if}}
         <a class="myMeetingLink" href="/meetings"> <img src="/public/icons/calendar-user-svgrepo-com.svg" alt="User Calendar" class="button-image" /> My Meetings</a>
