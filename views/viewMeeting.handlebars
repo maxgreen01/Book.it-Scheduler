@@ -7,7 +7,10 @@
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
             <div class="title-bar-actions">
-                <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit/Book Meeting</a>
+                {{#if isOwner}}
+                <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit Meeting</a>
+                {{/if}}
+                <a href="/meetings/{{meetingId}}" id="linkShareButton" class="linkShareButton"> <img src="/public/icons/link-svgrepo-com.svg" alt="Link Icon" class="button-image" />Copy Meeting Link</a>
             </div>
         </div>
 
@@ -179,4 +182,5 @@
 <script type="module" src="../../public/js/forms/calendarActions.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>
-<script type="module" src="/public/js/forms/"></script>
+<script type="module" src="/public/js/pages/miscBinds.js"></script>
+<script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>

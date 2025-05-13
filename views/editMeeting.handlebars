@@ -40,36 +40,24 @@
             </form>
         </div>
     </div>
-    <div id="book-meeting">
-        {{#if isCancelled}} {{!-- restore the meeting --}}
-        <h2>Restore Meeting</h2>
-
-        <p>This meeting is currently cancelled, but you can restore it here!</p>
-
-        <form method="POST" name="restoreMeeting" id="restoreMeeting" action="/meetings/{{meetingId}}/edit">
-            {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
-            <button type="submit" name="action" value="restore">Restore Meeting</button>
-        </form>
-
-        {{else}} {{!-- cancel the meeting --}}
-        <h2>Cancel Meeting</h2>
-
-        <p>If you no longer wish to host this meeting, you can cancel it here!</p>
-        <p>You can restore the meeting later if needed, but you'll need to book the meeting time again if you already have one booked.</p>
-
-        <form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
-            {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
-            <button type="submit" name="action" value="cancel">Cancel Meeting</button>
-        </form>
-        {{/if}}
-    </div>
 
     {{!-- note: meeting deletion would go here if we implement it --}}
-    <div class="linkWrapper">
+    <div id="linkWrapper" class="linkWrapper">
+        {{#if isCancelled}}
+        <form method="POST" name="restoreMeeting" id="restoreMeeting" action="/meetings/{{meetingId}}/edit">
+            <button type="submit" class="restoreMeetingButton" name="action" value="restore"><img src="/public/icons/calendar-arrow-up-svgrepo-com.svg" alt="Calendar Arrow Up" class="button-image" />Restore Meeting</button>
+        </form>
+        {{else}}
+        <form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
+            <button class="cancelMeetingButton" type="submit" name="action" value="cancel"><img src="/public/icons/calendar-xmark-svgrepo-com.svg" alt="Calendar Cancel" class="button-image" /> Cancel Meeting</button>
+        </form>
+        {{/if}}
         <a class="myMeetingLink" href="/meetings"> <img src="/public/icons/calendar-user-svgrepo-com.svg" alt="User Calendar" class="button-image" /> My Meetings</a>
         <a class="createMeetingLink" href="/create"> <img src="/public/icons/calendar-circle-plus-svgrepo-com.svg" alt="Add Calendar" class="button-image" /> Create Meeting</a>
     </div>
+    <div id="deletePromptWrapper"></div>
 </main>
 
 <script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>
 <script type="module" src="../../public/js/pages/miscBinds.js"></script>
+<script type="module" src="/public/js/pages/editMeeting.js"></script>

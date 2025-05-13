@@ -90,6 +90,7 @@ nav a:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-direction: column;
 }
 
 .title-bar-actions button {
@@ -434,6 +435,7 @@ Comments Form CSS
     background-color: #f0f0f0;
     position: relative;
     border: 1px solid #86909c;
+    margin-right: 15px;
 }
 .yes-delete {
     margin-left: 10px;
@@ -452,6 +454,16 @@ Comments Form CSS
     color: white;
     border-radius: 6px;
     border: 1px solid #86909c;
+}
+
+.yes-delete:hover {
+    background-color: #00751b;
+    cursor: pointer;
+}
+
+.no-delete:hover {
+    background-color: #8c131f;
+    cursor: pointer;
 }
 
 /* Styling for edit Meeting Response button*/
@@ -636,6 +648,7 @@ p.create-meeting-submit-text {
     gap: 8px;
 }
 
+.linkShareButton,
 .editBookMeeting {
     display: flex;
     margin-top: 4px;
@@ -651,12 +664,34 @@ p.create-meeting-submit-text {
     gap: 8px;
 }
 
+.cancelMeetingButton,
+.restoreMeetingButton {
+    display: flex;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    width: 170px;
+    border-radius: 6px;
+    gap: 8px;
+    outline: none;
+    border: none;
+    font-size: 15px;
+}
+
 .linkWrapper {
     display: flex;
     gap: 10px;
+    margin-top: 10px;
 }
 
-.editBookMeeting,
+.restoreMeetingButton:hover,
+.cancelMeetingButton:hover,
+.editBookMeeting:hover,
+.linkShareButton:hover,
 .createMeetingLink:hover,
 .myMeetingLink:hover {
     background-color: #5a4abc;
