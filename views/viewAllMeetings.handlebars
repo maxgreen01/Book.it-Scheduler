@@ -7,33 +7,64 @@
             </div>
         </div>
 
+        {{!-- booked sidebar --}}
         <aside class="bookings-sidebar">
             <h3>My Bookings</h3>
-            <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Show Past Meetings </label>
-            <ul id="booked-meetings-list">
-                {{#each bookedMeetings}}
-                <li>{{this.title}} — {{this.time}}</li>
+            <label class="sidebar-checkbox"> <input type="checkbox" id="toggle-past-meetings" /> Hide Past Bookings </label>
+
+            <ul class="booked-meetings-list">
+                {{#each myBookings}}
+                <li class="booking-item {{#if isPast}}past-booking{{/if}}" data-id="{{this._id}}">
+                    <div class="booking-title">{{this.name}}</div>
+                    <div class="booking-datetime">{{this.bookingDate}} : {{this.bookingStart}} - {{this.bookingEnd}}</div>
+                </li>
                 {{/each}}
             </ul>
         </aside>
 
+        {{!-- main section with cal, my meetings, my responses --}}
         <section class="meetings-main-content">
+            <h2>Upcoming This Week:</h2>
+            <div class="calendar-timeline">
+                {{#each upcomingDays}}
+                <div class="calendar-day" data-day-index="{{@index}}">
+                    <div class="calendar-date">
+                        <div class="calendar-day-name">{{this.weekday}}</div>
+                        <div class="calendar-day-number">{{this.date}}</div>
+                    </div>
+                    {{!-- if there is content for this day, highlight the node --}} {{#if (at_index ../upcomingDaysContent @index)}}
+                    <div class="calendar-node has-meetings"></div>
+                    <div class="meeting-tooltip">
+                        {{!-- iterate over each meeting in the meetingsContent (same position) at this day --}}
+                        <ul>
+                            {{#each (at_index ../upcomingDaysContent @index)}}
+                            <li><a href="meetings/{{this._id}}">{{this.name}}</a></li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    {{else}}
+                    <div class="calendar-node"></div>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+
+            <div class="meeting-list"></div>
+
             <h2>My Meetings</h2>
             <div class="meetings-grid" id="my-meetings">
                 {{#each myMeetings}} {{!-- Mark each card with meeting id for clickability--}}
                 <div class="meeting-card" data-id="{{this._id}}">
                     <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
                     <div class="meeting-info">
-                        <p><strong>Duration:</strong> {{this.duration}} hours</p>
-                        <p class="status-{{bookingStatus}}">
-                            <strong>Status: {{bookingStatus}}</strong>
-                            {{!-- {{#if isBooked}}Booked for {{bookedTime}}{{else}}Pending{{/if}} --}}
-                        </p>
-                        <p><strong>Respondents:</strong> {{this.responses.length}}</p>
+                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p>Respondents: {{this.responses.length}}</p>
+                        <p>Duration: {{this.duration}}h</p>
+                        <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">
-                            {{#each this.matrix}}
+                            {{#each this.processedResponses}}
                             <div class="mini-calendar-column">
                                 {{!-- Only cells, no headers --}}
                                 <div class="mini-calendar-cells">
@@ -51,8 +82,31 @@
 
             <h2>My Responses</h2>
             <div class="meetings-grid" id="responded-meetings">
-                {{#each otherMeetings}}
-                <div class="meeting-card">{{this.name}}</div>
+                {{#each myResponses}}
+                <div class="meeting-card" data-id="{{this._id}}">
+                    <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
+                    <div class="meeting-info">
+                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p>Owner: {{this.owner}}</p>
+                        <p>Respondents: {{this.responses.length}}</p>
+                        <p>Duration: {{this.duration}}h</p>
+                        <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
+                    </div>
+                    <div class="mini-calendar-wrapper">
+                        <div class="mini-calendar" style="--day-count: {{meeting.length}}">
+                            {{#each this.processedResponses}}
+                            <div class="mini-calendar-column">
+                                {{!-- Only cells, no headers --}}
+                                <div class="mini-calendar-cells">
+                                    {{#each this}}
+                                    <div class="mini-timeslot" style="background-color: rgba(106, 90, 205, {{multiplyOpacity this}});"></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
                 {{/each}}
             </div>
         </section>

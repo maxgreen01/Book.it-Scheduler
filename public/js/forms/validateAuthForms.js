@@ -14,8 +14,10 @@ function validateSignup(event) {
     const description = document.getElementById("descriptionInput").value;
     const uid = document.getElementById("usernameInput").value;
     const password = document.getElementById("passwordInput").value;
+    const confirmPassword = document.getElementById("confirmPasswordInput").value;
     const files = document.getElementById("profilePictureInput").files;
     try {
+        if (password != confirmPassword) throw new Error("Passwords do not match");
         const user = createUserDocument(
             {
                 firstName,

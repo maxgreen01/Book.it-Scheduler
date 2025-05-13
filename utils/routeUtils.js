@@ -26,6 +26,17 @@ export function redirectBack(req, res) {
     return res.redirect(req.get("Referrer") || "/");
 }
 
+export function formatDateString(dateString, showWeekday = false) {
+    const date = new Date(dateString);
+    let options = {
+        month: "short",
+        day: "numeric",
+    };
+    if (showWeekday) options.weekday = "short";
+
+    return date.toLocaleDateString("en-US", options);
+}
+
 // When an error occurs, return a different error code if the error is a ValidationError or regular Error
 export function handleValidationError(req, res, err, validationCode = 400, regularCode = 500) {
     if (err instanceof ValidationError) {

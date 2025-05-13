@@ -20,15 +20,19 @@
 .bookings-sidebar {
     grid-area: sidebar;
     background-color: #f0f0f0;
-    padding: 1.5rem;
+    padding: 1rem;
     border-right: 1px solid #d1d8e0;
     overflow-y: auto;
 }
 
 .bookings-sidebar h3 {
-    font-size: 18px;
+    font-size: 1.2rem;
     margin-bottom: 1rem;
-    color: #333;
+    font-weight: 700;
+    color: #222;
+    border-bottom: 2px solid #c9d0d8;
+    padding-bottom: 0.35rem;
+    padding-left: 0.25rem;
 }
 
 .sidebar-checkbox {
@@ -40,6 +44,55 @@
     margin-bottom: 1rem;
 }
 
+.booked-meetings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-item {
+    width: 100%;
+    padding: 1rem 0;
+    cursor: pointer;
+    border-bottom: 1px solid #c9d0d8;
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.25rem;
+}
+
+.booking-item:hover {
+    background-color: rgba(232, 232, 247, 0.75);
+}
+
+.booked-meetings-list .booking-item:last-child {
+    border-bottom: none;
+}
+
+.bookings-sidebar h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.booking-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #222;
+    padding-left: 0.25rem;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.booking-datetime {
+    font-size: 0.85rem;
+    color: #666;
+    padding-left: 0.25rem;
+}
+
 /* ==================== Page Content section w/ Grids ==================== */
 .meetings-main-content {
     grid-area: main;
@@ -49,7 +102,7 @@
 
 .meetings-main-content h2 {
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     font-size: 20px;
     color: #333;
     border-bottom: 2px solid #d1d8e0;
@@ -83,22 +136,13 @@
 .meeting-title {
     color: #333;
     border-bottom: 1px solid #e0e0e0;
-
-    /* 
-    Apparently we have a way in css to force line count with -webkit 
-    See: https://www.geeksforgeeks.org/css-webkit-line-clamp-property/
-    
-    */
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .meeting-info p {
     margin: 0.25rem 0;
-    font-size: 14px;
+    font-size: 0.85rem;
     color: #555;
 }
 
@@ -137,11 +181,106 @@
 }
 
 /* Pending Status */
-.status-0 {
-    color: #d17b0f; /* orange tone */
+.status-Pending {
+    color: #d17b0f !important; /* prevents hiding the color */
 }
 
-/* Booked Status */
-.status-1 {
-    color: #228b22; /* forest green */
+/* Cancelled Status */
+.status-Cancelled {
+    color: #b82424 !important;
+}
+
+/* ==================== Calendar View for Upcoming Meetings ==================== */
+
+/* flexible row atop the meeting */
+.calendar-timeline {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #d1d8e0;
+    border-top: 1px solid #d1d8e0;
+    overflow-x: auto;
+    gap: 1rem;
+}
+
+/* Each element of the calendar: header + node */
+.calendar-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    min-width: 80px;
+    cursor: default;
+}
+
+/* Header for day + date */
+.calendar-date {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-day-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+}
+
+.calendar-day-number {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* Little purple (or gray if empty) button */
+.calendar-node {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+.calendar-node.has-meetings {
+    background-color: #6a5acd;
+}
+
+/* Floating textbox when viewing a booked date */
+.meeting-tooltip {
+    /* Fixed positioning + js would allow this to "hover" over other elements and not extend the timeline box */
+    display: none;
+    text-align: center;
+    background-color: #ffffff;
+    border: 1px solid #d1d8e0;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    white-space: nowrap; /*forces 1 line*/
+}
+
+/* tooltip items */
+.meeting-tooltip a {
+    color: #333;
+    text-decoration: none;
+}
+
+.meeting-tooltip a:hover {
+    color: #111;
+    text-decoration: underline;
+}
+
+.meeting-tooltip ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.meeting-tooltip li {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+/* show tooltip on hover */
+.calendar-day:hover .meeting-tooltip {
+    display: block;
 }
