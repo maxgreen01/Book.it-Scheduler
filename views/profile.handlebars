@@ -7,7 +7,6 @@
                 <p class="profileName">{{firstName}} {{lastName}}</p>
                 <p class="profileID">{{userId}}</p>
                 <p class="profileDescription">{{description}}</p>
-                <p>TODO: Show availability</p>
                 {{#if canEdit}}
                 <button class="editProfileButton" id="editProfile"><img src="/public/icons/edit-profile-svgrepo-com.svg" alt="Calendar Cancel" class="button-image" /> Edit Profile</button>
                 {{/if}}
@@ -48,12 +47,12 @@
         </div>
         <div class="center-gen">
             <div class="buttonWrapper">
-                <button class="genButton" id="cancelEdit">
-                    <p class="genButton-text">Cancel</p>
+                <button class="genButton genButton-text" id="cancelEdit">
+                    Cancel
                     <img src="/public/icons/cancel-svgrepo-com.svg" alt="Paper Plane" class="button-image" />
                 </button>
-                <button class="genButton" id="deleteUser">
-                    <p class="genButton-text">Delete Account</p>
+                <button class="genButton genButton-text" id="deleteUser">
+                    Delete Account
                     <img src="/public/icons/trash-blank-svgrepo-com.svg" alt="Paper Plane" class="button-image" />
                 </button>
             </div>
@@ -106,8 +105,5 @@
     </div>
 </main>
 
-{{#if canEdit}}
-<script type="module" src="/public/js/pages/signupCal.js"></script>
-{{/if}}
 <script type="module" src="/public/js/forms/profileEditor.js"></script>
 <script type="module" src="/public/js/pages/miscBinds.js"></script>

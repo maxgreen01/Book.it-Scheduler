@@ -2,7 +2,8 @@ import { validateImageFileType } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
 import { serverFail } from "../pages/server-AJAX.js";
 
-//returns a matrix form of the user's response when submit is clicked
+//returns a matrix form o
+//if the user's response when submit is clicked
 function availabilityFromCalendar() {
     const calendarColumns = document.querySelectorAll(".calendar-column");
     let responseMatrix = [];
@@ -19,6 +20,8 @@ function availabilityFromCalendar() {
     return responseMatrix;
 }
 
+let editMenuActive = false;
+
 // Set error text in html element with id "error"
 function setError(err) {
     $("#server-fail").remove();
@@ -33,6 +36,14 @@ function toggleEditor(num) {
     info.hidden = num != 0;
     editor.hidden = num != 1;
     deleter.hidden = num != 2;
+    if (editor.hidden) {
+        console.log("Unbinding calendar");
+        editMenuActive = false;
+    } else {
+        editMenuActive = true;
+        console.log("Binding calendar");
+        calendarBinds();
+    }
 }
 
 async function deleteUser() {
@@ -106,3 +117,87 @@ if (document.getElementById("editProfile")) {
     document.getElementById("cancelDelete").addEventListener("click", () => toggleEditor(1));
     document.getElementById("editorForm").addEventListener("submit", validateProfile);
 }
+
+let isMouseDown = false;
+let isDeselecting = false;
+let selectedSlots = new Set();
+
+const calendarBinds = () => {
+    const timeslotElements = document.querySelectorAll(".response-slot");
+
+    //apply listeners to all elements: mousedown (click), mouseover (drag), mouseup (release)
+    for (let ts of timeslotElements) {
+        // Click inside a cell: Start selection
+        ts.addEventListener("mousedown", (e) => {
+            if (editMenuActive) {
+                isMouseDown = true;
+                // if already selected start a deselect. else start select
+                if (ts.classList.contains("selected")) {
+                    isDeselecting = true;
+                    ts.classList.remove("selected");
+                    selectedSlots.delete(ts);
+                } else {
+                    isDeselecting = false;
+                    ts.classList.add("selected");
+                    selectedSlots.add(ts);
+                }
+                e.preventDefault(); //prevent selecting text on mousedown
+            }
+        });
+
+        // Mouse dragged over a cell: Continue behavior
+        ts.addEventListener("mouseover", (e) => {
+            //if holding the mouse when mousing over, select or deselect
+            if (isMouseDown && editMenuActive) {
+                // cell selected & deselecting - remove cell
+                // cell not selected & selecting - select cell
+                // else no-op
+                if (ts.classList.contains("selected") && isDeselecting) {
+                    ts.classList.remove("selected");
+                    selectedSlots.delete(ts);
+                } else if (!ts.classList.contains("selected") && !isDeselecting) {
+                    ts.classList.add("selected");
+                    selectedSlots.add(ts);
+                }
+            }
+            e.preventDefault();
+        });
+
+        // Click released inside cell: End selection
+        ts.addEventListener("mouseup", () => {
+            if (editMenuActive) {
+                isMouseDown = false;
+                isDeselecting = false;
+            }
+        });
+        $("#submit-response-button").hide();
+    }
+
+    // Click released OUTside cell: End selection
+    document.addEventListener("mouseup", () => {
+        if (editMenuActive) {
+            isMouseDown = false;
+            isDeselecting = false;
+        }
+    });
+};
+
+$("#pfpUpload").click(() => {
+    $("#profilePictureInput").click();
+});
+
+//detect if a valid image is uploaded
+$("#profilePictureInput").change(function () {
+    const file = this.files[0];
+    const validTypes = ["image/png", "image/jpeg"];
+
+    if (file && validTypes.includes(file.type)) {
+        $("#pfpUpload").text(`Uploaded: ${file.name}`).removeClass("pfp-fail").addClass("pfp-succ");
+    } else {
+        $("#pfpUpload").text("Invalid file type! Upload a PNG or JPEG instead").removeClass("pfp-succ").addClass("pfp-fail");
+    }
+});
+
+$("#signUpSubmit").click(() => {
+    $("#SignUpButtonReal").click();
+});

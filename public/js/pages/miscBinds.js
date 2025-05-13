@@ -6,7 +6,7 @@ $("#genBackButton").click(() => {
 
 //bind to the back button on the edit meeting page
 $("#editMeetingBack").click(() => {
-    const url = $("#editMeetingBack").attr("data");
+    const url = $("#editMeetingBack").attr("data-back");
     window.location.href = url;
 });
 
