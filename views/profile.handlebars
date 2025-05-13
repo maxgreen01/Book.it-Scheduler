@@ -1,4 +1,4 @@
-<main>
+<main style="margin-left: 15px">
     <h1>{{title}}</h1>
     <img src="{{pfpUrl}}" alt="Profile picture" width="250" height="250" />
     <div id="info">
@@ -42,7 +42,9 @@
         <button id="confirmDelete">Yes</button>
         <button id="cancelDelete">No</button>
     </div>
-    <a href="/meetings">My Meetings</a>
-    <a href="/create">Create Meeting</a>
+    <div id="linkWrapper" class="linkWrapper">
+        <a class="myMeetingLink" href="/meetings"> <img src="/public/icons/calendar-user-svgrepo-com.svg" alt="User Calendar" class="button-image" /> My Meetings</a>
+        <a class="createMeetingLink" href="/create"> <img src="/public/icons/calendar-circle-plus-svgrepo-com.svg" alt="Add Calendar" class="button-image" /> Create Meeting</a>
+    </div>
 </main>
 <script type="module" src="/public/js/forms/profileEditor.js"></script>

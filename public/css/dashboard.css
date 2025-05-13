@@ -78,7 +78,8 @@
     text-overflow: ellipsis;
 }
 
-.booking-datetime {
+.booking-datetime,
+.invite-status {
     font-size: 0.85rem;
     color: #666;
     padding-left: 0.25rem;
@@ -166,8 +167,8 @@
     width: 100%;
 }
 
-/* Status message text */
-.status {
+/* Meeting booking tatus message text */
+.booking-status {
     font-weight: bold;
 }
 
@@ -177,8 +178,13 @@
 }
 
 /* Cancelled Status */
-.status-Cancelled {
+.status-Cancelled,
+.status-Declined {
     color: #b82424 !important;
+}
+
+.status-Accepted {
+    color: #067811 !important;
 }
 
 /* ==================== Calendar View for Upcoming Meetings ==================== */

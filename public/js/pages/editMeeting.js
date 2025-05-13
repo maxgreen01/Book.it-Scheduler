@@ -61,6 +61,7 @@ const registerRestoreMeeting = () => {
         $("#yesRestoreMeeting").click(() => {
             $.ajax(restoreMeetingReq)
                 .then(() => {
+                    $("#editMeetingDetailsWrapper").show();
                     clearMessageTimeout();
                     const successDiv = serverSucc("Successfully restored meeting!");
                     $("#deletePromptWrapper").empty();
@@ -100,6 +101,7 @@ const registerCancelMeeting = () => {
             $.ajax(cancelMeetingReq)
                 .then(() => {
                     clearMessageTimeout();
+                    $("#editMeetingDetailsWrapper").hide();
                     const successDiv = serverSucc("Successfully cancelled meeting!");
                     $("#deletePromptWrapper").empty();
                     $("#deletePromptWrapper").prepend(successDiv);
@@ -123,3 +125,5 @@ const registerCancelMeeting = () => {
 
 registerCancelMeeting();
 registerRestoreMeeting();
+
+if ($("#meetingBooked")[0].length !== 0) $("#editMeetingDetailsWrapper").hide();
