@@ -177,6 +177,15 @@ nav a:hover {
     padding-right: 10px;
 }
 
+.calendar-center {
+    display: grid;
+    grid-template-columns: 100px repeat(var(--day-count), minmax(100px, auto)); /* pass --day-count through a style tag in handlebars */
+    grid-template-rows: auto;
+    background-color: #ffffff;
+    width: max-content;
+    margin: 0 auto;
+}
+
 /* contains calendar in one element */
 .calendar-wrapper {
     width: 100%;
@@ -537,6 +546,7 @@ Comments Form CSS
     border-radius: 5px;
     width: 300px;
     color: #494949;
+    text-align: left;
 }
 
 .usage-notes-wrapper:hover .usage-info-wrapper {
@@ -550,7 +560,8 @@ Comments Form CSS
     align-items: center;
 }
 
-#formWrapper {
+#formWrapper,
+#signupFormWrapper {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -563,12 +574,16 @@ Comments Form CSS
 }
 
 #editMeeting,
-#createMeeting {
+#createMeeting,
+#signup,
+#login {
     width: 100%;
 }
 
 #editMeeting label,
-#createMeeting label {
+#createMeeting label,
+#signup label,
+#login label {
     font-size: 16px;
     font-weight: bold;
     display: block;
@@ -580,7 +595,11 @@ Comments Form CSS
 #createMeeting input[type="text"],
 #createMeeting input[type="number"],
 #editMeeting input[type="date"],
-#createMeeting input[type="date"] {
+#createMeeting input[type="date"],
+#login input[type="text"],
+#signup input[type="text"],
+#signup input[type="password"],
+#login input[type="password"] {
     width: 95%;
     padding: 8px;
     border: 1px solid #6a5acd;
@@ -605,7 +624,10 @@ Comments Form CSS
 }
 
 .create-meeting-submit,
-.edit-meeting-submit {
+.edit-meeting-submit,
+.pfp-upload,
+.login-submit,
+.signUp-submit {
     width: 93%;
     display: flex;
     align-items: center;
@@ -620,19 +642,26 @@ Comments Form CSS
 }
 
 p.edit-meeting-submit-text,
-p.create-meeting-submit-text {
+p.create-meeting-submit-text,
+.login-submit-text,
+.signUp-submit-text,
+.pfp-upload-text {
     font-size: 14px;
     color: white;
     font-weight: bold;
 }
 
 .create-meeting-submit:hover,
-.edit-meeting-submit:hover {
+.edit-meeting-submit:hover,
+.login-submit:hover,
+.signUp-submit:hover,
+.pfp-upload:hover {
     background-color: #5a4abc;
     cursor: pointer;
 }
 
 .myMeetingLink,
+.signUpLink,
 .createMeetingLink {
     display: flex;
     margin-top: 4px;
@@ -688,12 +717,54 @@ p.create-meeting-submit-text {
     margin-top: 10px;
 }
 
+.linkWrapperCenter {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
 .restoreMeetingButton:hover,
 .cancelMeetingButton:hover,
 .editBookMeeting:hover,
 .linkShareButton:hover,
 .createMeetingLink:hover,
-.myMeetingLink:hover {
+.myMeetingLink:hover,
+.signUpLink:hover {
     background-color: #5a4abc;
     cursor: pointer;
+}
+
+.usage-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.pfp-succ {
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.pfp-fail {
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.center-calendar-wrapper {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+}
+.calendar-wrapper-center {
+    justify-content: center;
+    width: 100%;
+    padding-bottom: 0.5rem;
+    padding-top: 20px;
 }

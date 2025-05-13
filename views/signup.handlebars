@@ -1,7 +1,19 @@
 <main>
-    <h1>{{title}}</h1>
+    <h1 style="margin-left: 15px">{{title}}</h1>
     <div id="signupFormWrapper">
         <form method="POST" name="signup" id="signup" enctype="multipart/form-data">
+            <div class="usage-notes-wrapper usage-center">
+                <p class="usage-header"><img src="/public/icons/info-circle-svgrepo-com.svg" alt="Info Icon" style="margin-right: 5px" class="button-image" /> Notes</p>
+                <div class="usage-info-wrapper">
+                    <ul>
+                        <li>Your Username must be 3 alphanumeric characters</li>
+                        <li>Your first/last name must contain only alphabetic characters and be less than 30 characters</li>
+                        <li>Your description has a limit of 300 characters</li>
+                        <li>Your profile picture must be either a png/jpeg</li>
+                        <li>You can input your normally weekly availability in the calendar below. This information will be automatically populated when you response to a meeting.</li>
+                    </ul>
+                </div>
+            </div>
             <label for="firstNameInput">First Name:</label>
             <input name="firstName" id="firstNameInput" type="text" />
             <br />
@@ -21,34 +33,49 @@
             <input name="confirmPassword" id="confirmPasswordInput" type="password" />
             <br />
             <label for="profilePictureInput">Profile Picture:</label>
-            <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" />
-            <p>Input Your Normal Weekly Availability:</p>
-            <div class="calendar-wrapper">
-                <div class="calendar" style="--day-count: {{days.length}}; background-color: #f8f8f8">
-                    <div class="time-column">
-                        {{#each timeColumn}}
-                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
-                        {{/each}}
-                    </div>
-
-                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
-                    <div class="calendar-column">
-                        <div class="calendar-column-header">
-                            {{#with (at_index ../days @index)}}
-                            <p class="calendar-column-header-text">{{dow}}</p>
-                            {{/with}}
-                        </div>
-                        <div class="calendar-cells">
-                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
-                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}"></div>
-                            {{/each}}
-                        </div>
-                    </div>
+            <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" hidden />
+            <div class="pfp-upload" id="pfpUpload">
+                <p class="pfp-upload-text">Upload Profile Picture</p>
+                <img src="/public/icons/upload-svgrepo-com.svg" alt="Upload Icon" class="button-image" />
+            </div>
+            <div class="signUp-submit" id="signUpSubmit">
+                <p class="signUp-submit-text">Sign Up</p>
+                <img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Paper Plane" class="button-image" />
+            </div>
+            <input type="submit" id="SignUpButtonReal" value="Sign up" hidden />
+        </form>
+        <div class="linkWrapperCenter">
+            <p style="text-align: center">
+                Already have an Account? <a class="signUpLink" href="/login"> <img src="/public/icons/login-2-svgrepo-com.svg" alt="Login" class="button-image" />Login</a>
+            </p>
+        </div>
+    </div>
+    <div class="center-calendar-wrapper">
+        <h3 style="text-align: center">(Optional) Input Your Normal Weekly Availability:</h3>
+        <div class="calendar-wrapper-center">
+            <div class="calendar-center" style="--day-count: {{days.length}}; background-color: #f8f8f8">
+                <div class="time-column">
+                    {{#each timeColumn}}
+                    <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
                     {{/each}}
                 </div>
+
+                {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                <div class="calendar-column">
+                    <div class="calendar-column-header">
+                        {{#with (at_index ../days @index)}}
+                        <p class="calendar-column-header-text">{{dow}}</p>
+                        {{/with}}
+                    </div>
+                    <div class="calendar-cells">
+                        {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
+                        <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}"></div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/each}}
             </div>
-            <input type="submit" value="Sign up" />
-        </form>
+        </div>
     </div>
 </main>
 

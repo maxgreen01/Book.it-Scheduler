@@ -55,3 +55,23 @@ document.addEventListener("DOMContentLoaded", () => {
         isDeselecting = false;
     });
 });
+
+$("#pfpUpload").click(() => {
+    $("#profilePictureInput").click();
+});
+
+//detect if a valid image is uploaded
+$("#profilePictureInput").change(function () {
+    const file = this.files[0];
+    const validTypes = ["image/png", "image/jpeg"];
+
+    if (file && validTypes.includes(file.type)) {
+        $("#pfpUpload").text(`Uploaded: ${file.name}`).removeClass("pfp-fail").addClass("pfp-succ");
+    } else {
+        $("#pfpUpload").text("Invalid file type! Upload a PNG or JPEG instead").removeClass("pfp-succ").addClass("pfp-fail");
+    }
+});
+
+$("#signUpSubmit").click(() => {
+    $("#SignUpButtonReal").click();
+});
