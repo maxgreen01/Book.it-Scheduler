@@ -1,31 +1,56 @@
 <main>
     <h1>{{title}}</h1>
-    <p id="error"></p>
-    <form method="POST" name="signup" id="signup" enctype="multipart/form-data">
-        <label for="firstNameInput">First Name:</label>
-        <input name="firstName" id="firstNameInput" type="text" />
-        <br />
-        <label for="lastNameInput">Last Name:</label>
-        <input name="lastName" id="lastNameInput" type="text" />
-        <br />
-        <label for="descriptionInput">Description:</label>
-        <input name="description" id="descriptionInput" type="text" />
-        <br />
-        <label for="usernameInput">Username:</label>
-        <input name="uid" id="usernameInput" type="text" />
-        <br />
-        <label for="passwordInput">Password:</label>
-        <input name="password" id="passwordInput" type="password" />
-        <br />
-        <label for="confirmPasswordInput">Confirm Password:</label>
-        <input name="confirmPassword" id="confirmPasswordInput" type="password" />
-        <br />
-        <label for="profilePictureInput">Profile Picture:</label>
-        <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" />
-        <br />
-        <p>TODO: availability input</p>
-        <input type="submit" value="Sign up" />
-    </form>
+    <div id="signupFormWrapper">
+        <form method="POST" name="signup" id="signup" enctype="multipart/form-data">
+            <label for="firstNameInput">First Name:</label>
+            <input name="firstName" id="firstNameInput" type="text" />
+            <br />
+            <label for="lastNameInput">Last Name:</label>
+            <input name="lastName" id="lastNameInput" type="text" />
+            <br />
+            <label for="descriptionInput">Description:</label>
+            <input name="description" id="descriptionInput" type="text" />
+            <br />
+            <label for="usernameInput">Username:</label>
+            <input name="uid" id="usernameInput" type="text" />
+            <br />
+            <label for="passwordInput">Password:</label>
+            <input name="password" id="passwordInput" type="password" />
+            <br />
+            <label for="confirmPasswordInput">Confirm Password:</label>
+            <input name="confirmPassword" id="confirmPasswordInput" type="password" />
+            <br />
+            <label for="profilePictureInput">Profile Picture:</label>
+            <input name="profilePicture" id="profilePictureInput" type="file" accept="image/png, image/jpeg" />
+            <p>Input Your Normal Weekly Availability:</p>
+            <div class="calendar-wrapper">
+                <div class="calendar" style="--day-count: {{days.length}}; background-color: #f8f8f8">
+                    <div class="time-column">
+                        {{#each timeColumn}}
+                        <div class="time-column-timestamp {{#if small}}time-column-timestamp-small{{/if}}">{{label}}</div>
+                        {{/each}}
+                    </div>
+
+                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    <div class="calendar-column">
+                        <div class="calendar-column-header">
+                            {{#with (at_index ../days @index)}}
+                            <p class="calendar-column-header-text">{{dow}}</p>
+                            {{/with}}
+                        </div>
+                        <div class="calendar-cells">
+                            {{#each this}} {{!-- generate all timeslots (as cells) for group availability and individual responses (which are hidden at first). Each cell color is rendered based on matrix data --}}
+                            <div class="timeslot response-slot {{#if (equal? this.user 2)}}blocked-out-slot {{/if}} {{#if (equal? this.user 0)}} selected {{/if}}"></div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            <input type="submit" value="Sign up" />
+        </form>
+    </div>
 </main>
 
+<script type="module" src="/public/js/pages/signupCal.js"></script>
 <script type="module" src="/public/js/forms/validateAuthForms.js"></script>

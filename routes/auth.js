@@ -5,7 +5,7 @@ import { validateUserExists, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, createUserDocument, getUserById } from "../data/users.js";
-import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 const router = express.Router();
 
@@ -49,31 +49,69 @@ router
     .route("/signup")
     // serve HTML
     .get(async (req, res) => {
-        return res.render("signup", { title: "Sign up", ...routeUtils.prepareRenderOptions(req) });
+        const formattedDates = [
+            {
+                dow: "Sunday",
+            },
+            {
+                dow: "Monday",
+            },
+            {
+                dow: "Tuesday",
+            },
+            {
+                dow: "Wednesday",
+            },
+            {
+                dow: "Thursday",
+            },
+            {
+                dow: "Friday",
+            },
+            {
+                dow: "Saturday",
+            },
+        ];
+        const columnLabels = [];
+        let hours = 0; // round down since "2:30" is still in hour "2"
+        for (let i = 0; i < 48; i++) {
+            // calculate the AM/PM hour
+            const pm = hours >= 12;
+            let adjustedHours = hours % 12;
+            if (adjustedHours == 0) adjustedHours = 12; // midnight
+
+            if (i % 2 == 0) {
+                columnLabels.push({ label: `${adjustedHours}:00 ${pm ? "PM" : "AM"}`, small: false });
+            } else {
+                columnLabels.push({ label: `${adjustedHours}:30 ${pm ? "PM" : "AM"}`, small: true });
+                hours++; // move to the next hour on the next iteration
+            }
+        }
+        const responses = new Array(7).fill(null).map(() => new Array(48).fill({ user: 1 }));
+        return res.render("signup", { title: "Sign up", days: formattedDates, timeColumn: columnLabels, responses: responses, ...routeUtils.prepareRenderOptions(req) });
     })
     // create a new profile (i.e. "sign up")
     .post(xss(), async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return routeUtils.renderError(req, res, 400, "Request body is empty");
+            return res.status(400).json({ error: "Request body is empty" });
         }
 
         // assign default profile picture (which may be updated later in this route)
         data.profilePicture = profileUtils.defaultProfilePicture;
         // TODO: remove this temp fix when availability can be entered on the page
-        data.availability = new WeeklyAvailability(Array(7).fill(Array(48).fill(1)));
-
+        data.availability = new WeeklyAvailability(JSON.parse(data.availability));
         // validate User
         try {
             createUserDocument(data);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         try {
             await validateUserExists(data.uid);
-            return routeUtils.renderError(req, res, 400, `The user ID: ${data.uid} already exists!`);
+            return res.status(400).json({ error: `The user ID: ${data.uid} already exists!` });
         } catch (e) {
             //Should always error
         }
@@ -87,11 +125,11 @@ router
                     const profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
                     data.profilePicture = profilePicture;
                 } else {
-                    return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
+                    return res.status(400).json({ error: "Only one image can be submitted!" });
                 }
             }
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         // validate all inputs and add the user to the DB
@@ -99,13 +137,13 @@ router
         try {
             user = await createUser(data);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
 
         delete user.password;
         req.session.user = user;
 
-        return res.redirect("/profile"); // go to the newly created profile page
+        return res.status(200).json({ success: `Created a new profile for ${data.uid}` }); // go to the newly created profile page
     });
 
 export default router;
