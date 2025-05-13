@@ -513,7 +513,7 @@ router
             const userId = validateUserId(req.session.user._id);
             return res.status(200).json({ note: meeting.notes[userId] });
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400, 404);
+            return res.status(400).json({ error: err.message });
         }
     })
     // AJAX route for updating a user's private note
@@ -525,7 +525,7 @@ router
             await updateMeetingNote(meetingId, userId, note);
             return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
     });
 
@@ -549,7 +549,7 @@ router
 
             return res.status(200).json({ comments: comments, uid: userId });
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400, 404);
+            return res.status(400).json({ error: err.message });
         }
     })
     // AJAX route for creating a new comment on a meeting
@@ -563,7 +563,7 @@ router
 
             return res.status(200).json(newComment);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
     });
 
@@ -576,7 +576,7 @@ router
             comment.dateCreated = comment.dateCreated.toLocaleString();
             return res.status(200).json(comment);
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400, 404);
+            return res.status(400).json({ error: err.message });
         }
     })
     // AJAX route for deleting a particular comment
@@ -590,7 +590,7 @@ router
             const deleted = await deleteComment(comment._id);
             return res.status(200).json({ deleted: "success", comment: deleted });
         } catch (err) {
-            return routeUtils.handleValidationError(req, res, err, 400);
+            return res.status(400).json({ error: err.message });
         }
     })
     // AJAX route for posting a reaction to a particular reaction
@@ -611,7 +611,7 @@ router.route("/:meetingId/responses").get(async (req, res) => {
         const userId = validateUserId(req.session.user._id);
         return res.status(200).json({ responses: meeting.responses, uid: userId, start: meeting.timeStart, end: meeting.timeEnd });
     } catch (err) {
-        return routeUtils.handleValidationError(req, res, err, 400, 404);
+        return res.status(400).json({ error: err.message });
     }
 });
 
