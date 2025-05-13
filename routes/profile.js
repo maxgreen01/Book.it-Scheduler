@@ -32,30 +32,37 @@ router
 
         if (data.password === "") delete data.password;
 
-        // validate data
+        // validate fields
+        let pfpFile;
         try {
+            // validate profile picture if one was provided, otherwise do nothing to it
+            const file = req.files?.profilePicture;
+            if (typeof file === "object") {
+                // make sure only one file is submitted
+                if (!Array.isArray(file)) {
+                    pfpFile = file;
+                } else {
+                    return routeUtils.renderError(req, res, 400, "Only one profile picture can be submitted");
+                }
+            }
+
+            // validate fields
             createUserDocument(data, true);
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400);
         }
 
-        // update profile picture, if one is supplied
+        // update profile picture if one has been supplied
         try {
-            const pfpFile = req.files?.profilePicture;
-            if (typeof pfpFile === "object") {
-                // make sure only one file is submitted
-                if (!Array.isArray(pfpFile)) {
-                    data.profilePicture = await profileUtils.updateProfilePicture(req.session.user._id, pfpFile);
-                } else {
-                    return routeUtils.renderError(req, res, 400, "Only one image can be submitted");
-                }
+            if (pfpFile) {
+                data.profilePicture = await profileUtils.updateProfilePicture(req.session.user._id, pfpFile);
             }
             // profile picture not provided, so don't change anything existing profile picture
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400);
         }
 
-        // validate all inputs and add the user to the DB
+        // validate all inputs and update the user fields in the DB
         try {
             req.session.user = await updateUser(req.session.user._id, data);
 
@@ -71,7 +78,7 @@ router
             await deleteUser(uid);
             req.session.destroy();
             return res.sendStatus(204);
-        } catch (err) {
+        } catch {
             return routeUtils.renderError(req, res, 500, "Internal server error");
         }
     });

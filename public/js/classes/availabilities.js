@@ -53,7 +53,6 @@ export class Availability {
 }
 
 // Weekly (Default) Availability Object
-//FIXME: When initializing the Weekly Availability Object in the user's profile page make sure to fill it in as 1s!
 export class WeeklyAvailability {
     // Array of 7 Availability Objects, with the index corresponding to the day of the week (with 0 meaning Sunday)
     days = [];

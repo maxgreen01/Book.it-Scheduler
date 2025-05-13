@@ -275,3 +275,13 @@ export function validateImageFileType(fileName, label = "Image File") {
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
     return match[1].toLowerCase(); // return the matched file extension
 }
+
+// Given a profile picture file, check that its file extension and size are valid.
+// Return the correct file extension if it is valid.
+export function validateProfilePicture(file) {
+    if (typeof file !== "object") throw new ValidationError("Profile Picture must be an image file");
+    if (Array.isArray(file)) throw new ValidationError("Only one profile picture can be submitted");
+
+    if (file.size > 5000000) throw new ValidationError("Profile Picture must be smaller than 5MB");
+    return validateImageFileType(file.name, "Profile Picture");
+}

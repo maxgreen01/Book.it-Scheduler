@@ -31,14 +31,8 @@ app.use(xss());
 app.engine("handlebars", handlebars.engine({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
-// File uploading
-const profilePictureUpload = fileUpload({
-    limits: {
-        fileSize: 5000000,
-    },
-    abortOnLimit: true,
-    responseOnLimit: "Profile picture size cannot exceed 5 megabytes!",
-});
+// Set up file uploading middleware
+const profilePictureUpload = fileUpload();
 
 // Session
 app.use(
