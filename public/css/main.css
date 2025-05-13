@@ -510,3 +510,10 @@ Comments Form CSS
     background-color: #5a4abc;
     cursor: pointer;
 }
+
+.mini-pfp {
+    height: 45px;
+    width: 45px;
+    border: none;
+    border-radius: 8px;
+}

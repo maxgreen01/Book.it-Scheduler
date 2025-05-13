@@ -153,7 +153,8 @@
             {{#each comments}}
             <div class="comment-wrapper" id="commentWrapper{{this._id}}">
                 <div class="comment" id="comment{{this._id}}">
-                    <p>Author: {{this.uid}} {{#if this.isViewerComment}} (You) {{/if}}</p>
+                    <a href="/profile/{{this.uid}}"><img src="/public/images/{{this.uid}}.jpg" alt="{{this.uid}}" class="mini-pfp" /></a>
+                    <p>Author: <a href="/profile/{{this.uid}}">{{this.uid}}</a> {{#if this.isViewerComment}} (You) {{/if}}</p>
                     <p>Text: {{this.body}}</p>
                     <p>Created at: {{{this.dateCreated}}}</p>
                     {{#if this.dateUpdated}}
