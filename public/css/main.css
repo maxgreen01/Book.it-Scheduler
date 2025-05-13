@@ -11,10 +11,11 @@ body {
 }
 
 /* ==================== Navbar ==================== */
-header {
+.navigation-bar {
     background-color: #6a5acd;
     color: white;
     width: 100%;
+    line-height: 1.6;
 }
 
 /* Placeholder: Can replace with a logo png or anything else */

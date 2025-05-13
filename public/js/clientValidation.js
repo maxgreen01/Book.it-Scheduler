@@ -265,7 +265,7 @@ export function validateImageFileType(fileName, label = "Image File") {
 // Throw an error if bookedTime object for setBooking() is not of the form:
 // {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
 export function validateBookedTimeObj(bookedTime) {
-    const allowedKeys = ["date", "timeStart", "timeEnd"];
+    const allowedKeys = ["date", "startTime", "endTime"];
     bookedTime = validateObjectKeys(bookedTime, allowedKeys, "Meeting Booking Object");
     bookedTime.date = validateDateObj(bookedTime.date, "Meeting Booking Date");
     bookedTime.startTime = validateIntRange(bookedTime.startTime, "Booking startTime", 0, 47);

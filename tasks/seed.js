@@ -97,7 +97,6 @@ async function seed() {
         const meetingStart = faker.number.int({ min: 1, max: 40 });
         const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
 
-        //todo: uncomment when done testing dashboard --bl
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
