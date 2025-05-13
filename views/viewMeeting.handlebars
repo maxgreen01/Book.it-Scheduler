@@ -153,7 +153,11 @@
                     <p>Created at: {{{this.dateCreated}}}</p>
                     {{#if this.dateUpdated}}
                     <p>Edited on: {{this.dateUpdated}}</p>
-                    {{/if}} {{#if this.isViewerComment}}
+                    {{/if}}
+                    <button id="commentLike{{this._id}}" class="likeIcon {{this.liked}}"></button>
+                    <button id="commentDislike{{this._id}}" class="dislikeIcon {{this.disliked}}"></button>
+                    {{#if this.isViewerComment}}
+                    <button id="commentEdit{{this._id}}" class="editIcon"></button>
                     <button id="commentTrash{{this._id}}" class="trashIcon"></button>
                     {{/if}}
                 </div>

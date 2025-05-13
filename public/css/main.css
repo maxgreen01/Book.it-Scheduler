@@ -402,7 +402,7 @@ Paper Plane Send Icon
     background-repeat: no-repeat;
     background-position: center;
     background-size: 60%;
-    top: 10px;
+    top: 50px;
     right: 10px;
     border: none;
     border-radius: 8px;
@@ -411,6 +411,76 @@ Paper Plane Send Icon
 .trashIcon:hover {
     cursor: pointer;
     background-color: rgba(197, 13, 31, 0.867);
+}
+
+.editIcon {
+    height: 35px;
+    width: 35px;
+    margin-top: 10px;
+    background-color: #6a5acd;
+    /*Pencil Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/pencil-svgrepo-com.svg");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    top: 50px;
+    right: 50px;
+    border: none;
+    border-radius: 8px;
+}
+
+.likeIcon {
+    height: 35px;
+    width: 35px;
+    margin-top: 10px;
+    background-color: #6a5acd;
+    /*Like Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/like-svgrepo-com.svg");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    top: 10px;
+    right: 50px;
+    border: none;
+    border-radius: 8px;
+}
+
+.dislikeIcon {
+    height: 35px;
+    width: 35px;
+    margin-top: 10px;
+    background-color: #6a5acd;
+    /*Dislike Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/dislike-svgrepo-com.svg");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    top: 10px;
+    right: 10px;
+    border: none;
+    border-radius: 8px;
+}
+
+.likeIcon:hover,
+.dislikeIcon:hover,
+.editIcon:hover {
+    cursor: pointer;
+    background-color: #5a4abc;
+}
+
+.likedIcon {
+    background-color: #3119ca;
+    /*Like Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/like-filled-svgrepo-com.svg");
+}
+
+.dislikedIcon {
+    background-color: #3119ca;
+    /*Dislike Icon Image from: svgrepo.com full credit to them!*/
+    background-image: url("/public/icons/dislike-filled-svgrepo-com.svg");
 }
 
 /* 

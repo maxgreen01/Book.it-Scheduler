@@ -26,7 +26,10 @@ const genCommentHTML = (comment) => {
                     <p>Author: ${comment.uid} (You)</p>
                     <p>Text: ${comment.body}</p>
                     <p>Created at: ${comment.dateCreated}</p>
-                    <button id="commentTrash${comment._id}" class="trashIcon" data="${comment._id}"></button>
+                    <button id="commentLike${comment._id}" class="likeIcon"></button>
+                    <button id="commentDisike${comment._id}" class="dislikeIcon"></button>
+                    <button id="commentEdit${comment._id}" class="editIcon"></button>
+                    <button id="commentTrash${comment._id}" class="trashIcon"></button>
                 </div>
             </div>`);
 };
