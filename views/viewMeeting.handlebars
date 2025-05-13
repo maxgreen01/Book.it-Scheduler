@@ -3,25 +3,16 @@
         {{!-- header for meeting details --}}
         <div class="title-bar">
             <h1 style="margin-right: 20px">{{title}}</h1>
-            <div class="title-bar-actions">{{!-- todo: put meeting owner actions in here if owner --}}</div>
             <br />
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
+            <div class="title-bar-actions">
+                <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit/Book Meeting</a>
+            </div>
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div id="calendarSection" class="calendar-section">
-            {{!--
-            <div class="title-bar">
-                <h2>Calendar</h2>
-                <div class="title-bar-actions">
-                    <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
-                    <button id="submit-response-button" hidden>Submit</button>
-                </div>
-            </div>
-            --}} {{!--
-            <h2>Meeting Calendar</h2>
-            --}} {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
                 <div class="calendar" style="--day-count: {{days.length}}">
                     {{!-- indicate whether the user is viewing the group availability or editing their own --}}
@@ -53,7 +44,6 @@
                 </div>
             </div>
 
-            {{#if isOwner}}
             <br />
 
             {{!-- display the computed best meeting times --}}
