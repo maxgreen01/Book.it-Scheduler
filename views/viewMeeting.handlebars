@@ -62,8 +62,8 @@
 
                 {{else}} {{!-- show the computed times --}}
                 <h3>Recommended Meeting Times</h3>
-
                 <p>Below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
+                <label class="sidebar-checkbox" for="show-short-meetings"> <input type="checkbox" id="show-short-meetings" /> Show Additional Time Options </label>
 
                 <br />
                 {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the times that are too short --}}

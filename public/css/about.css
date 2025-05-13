@@ -1,0 +1,171 @@
+.about-page {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+}
+
+.about-header {
+    margin-bottom: 2rem;
+}
+
+.about-header h1 {
+    font-size: 2.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.about-section {
+    margin-bottom: 2.5rem;
+}
+
+.about-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: #444;
+}
+
+.about-section p {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.feature-list {
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.feature-list li {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.how-to .howto-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.howto-text h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.howto-text p {
+    font-size: 1rem;
+    color: #555;
+}
+
+.howto-visual:not(.double-image) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+.howto-row.text-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+}
+.howto-row.text-left .howto-text {
+    flex: 1;
+}
+.howto-row.text-left .howto-visual {
+    flex: 1;
+}
+
+.howto-visual.double-image {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.image-column {
+    flex: 0 0 45%;
+    max-width: 45%;
+    text-align: center;
+}
+
+.image-column img {
+    max-height: 180px;
+    object-fit: cover;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.arrow-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 50px;
+}
+
+.conversion-arrow {
+    width: 100%;
+    /* width: 32px; */
+    height: auto;
+    opacity: 0.7;
+}
+
+.caption {
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.get-started-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.get-started-box {
+    background-color: #f0f0f0;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.get-started-box h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.get-started-box p {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    color: #555;
+}
+
+/* bottom buttons */
+.create-account-button,
+.log-in-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.1s ease;
+}
+
+.create-account-button,
+.log-in-button {
+    background-color: #6a5acd;
+    color: white;
+}
+
+.create-account-button:hover,
+.log-in-button:hover {
+    background-color: #5a4abc;
+}

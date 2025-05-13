@@ -35,15 +35,6 @@
     padding-left: 0.25rem;
 }
 
-.sidebar-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 1rem;
-}
-
 .booked-meetings-list {
     list-style: none;
     padding: 0;
