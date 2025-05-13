@@ -136,68 +136,73 @@ $.ajax(getResponsesReq)
     });
 
 //respond button clicked
-editButton.addEventListener("click", () => {
-    onMainCalendar = false;
-    //toggle off meeting calendar
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = true;
-    }
+if (editButton) {
+    editButton.addEventListener("click", () => {
+        onMainCalendar = false;
+        //toggle off meeting calendar
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = true;
+        }
 
-    //replace with response
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = false;
-    }
+        //replace with response
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = false;
+        }
 
-    // update calendar title
-    calendarTitle.innerHTML = "Your Availability";
+        // update calendar title
+        calendarTitle.innerHTML = "Your Availability";
 
-    //replace self with submit button
-    $("#edit-response-button").hide();
-    $("#submit-response-button").show();
-});
+        //replace self with submit button
+        $("#edit-response-button").hide();
+        $("#submit-response-button").show();
+    });
+}
 
 //listener for submit button
-submitButton.addEventListener("click", () => {
-    onMainCalendar = true;
-    //toggle off response
-    const timeslots = document.querySelectorAll(".timeslot");
-    for (let ts of timeslots) {
-        ts.hidden = false;
-    }
+//TODO: POST reponse here!!
+if (submitButton) {
+    submitButton.addEventListener("click", () => {
+        onMainCalendar = true;
+        //toggle off response
+        const timeslots = document.querySelectorAll(".timeslot");
+        for (let ts of timeslots) {
+            ts.hidden = false;
+        }
 
-    //replace with meeting calendar
-    const responseSlots = document.querySelectorAll(".response-slot");
-    for (let ts of responseSlots) {
-        ts.hidden = true;
-    }
+        //replace with meeting calendar
+        const responseSlots = document.querySelectorAll(".response-slot");
+        for (let ts of responseSlots) {
+            ts.hidden = true;
+        }
 
-    // update calendar title
-    calendarTitle.innerHTML = "Group's Availability";
+        // update calendar title
+        calendarTitle.innerHTML = "Group's Availability";
 
-    //replace self with edit response button
-    //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
-    $("#edit-response-button").show();
-    $("#submit-response-button").hide();
+        //replace self with edit response button
+        //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
+        $("#edit-response-button").show();
+        $("#submit-response-button").hide();
 
-    //TODO: Send over the complete matrix to the server or make response object here and send it
-    const reqBody = {
-        method: "POST",
-        data: JSON.stringify(availabilityFromCalendar()),
-        url: window.location.href,
-        contentType: "application/json",
-    };
-    $.ajax(reqBody)
-        .then(() => {
-            window.location.reload();
-        })
-        .fail(() => {
-            const errorDiv = serverFail(`An unexpected error occurred when trying to submit your response! Try reloading the page or checking your network connection.`);
-            clearMessageTimeout();
-            $("#responseSection").append(errorDiv);
-        });
-});
+        //TODO: Send over the complete matrix to the server or make response object here and send it
+        const reqBody = {
+            method: "POST",
+            data: JSON.stringify(availabilityFromCalendar()),
+            url: window.location.href,
+            contentType: "application/json",
+        };
+        $.ajax(reqBody)
+            .then(() => {
+                window.location.reload();
+            })
+            .fail(() => {
+                const errorDiv = serverFail(`An unexpected error occurred when trying to submit your response! Try reloading the page or checking your network connection.`);
+                clearMessageTimeout();
+                $("#responseSection").append(errorDiv);
+            });
+    });
+}
 
 //on page load register the listeners
 // TODO maybe add a way to query which users are available at the selected time
