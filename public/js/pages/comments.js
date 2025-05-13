@@ -35,7 +35,6 @@ const genCommentHTML = (comment) => {
 const bindCommentDelete = (commentId) => {
     $(`#commentTrash${commentId}`).click(() => {
         const deletePrompt = deleteCommentPrompt(commentId);
-        //console.log($(`#deletePrompt${commentId}`));
         //if the delete prompt doesn't already exist create it
         if (!$(`#deletePrompt${commentId}`)[0]) {
             $(`#commentTrash${commentId}`).after(deletePrompt);
@@ -112,7 +111,6 @@ $("#commentsForm").submit((submission) => {
         };
         $.ajax(postCommentReq)
             .then((res) => {
-                //console.log(res);
                 //generate the comment html and add it
                 const newComment = genCommentHTML(res);
                 const commentCount = $("#comment-count");
