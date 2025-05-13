@@ -11,10 +11,10 @@ export function mergeResponses(responseArr, meetingStart, meetingEnd) {
     });
 
     //validate Meeting Start and End
-    validateIntRange(meetingStart, "Meeting Start", 0, 47);
-    validateIntRange(meetingEnd, "Meeting Start", 0, 47);
-    if (meetingStart > meetingEnd) {
-        throw new ValidationError(`Meeting ending time (${meetingEnd}) is before starting time (${meetingStart})!`);
+    validateIntRange(meetingStart, "Meeting Start Time", 0, 47);
+    validateIntRange(meetingEnd, "Meeting End Time", 1, 48);
+    if (meetingStart >= meetingEnd) {
+        throw new ValidationError("Meeting End Time must be later than Start Time");
     }
 
     //check that the dates for all the Availability objects in the Response Objects are the same (and in the same order too!)
@@ -141,7 +141,6 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
 // Convert a single timeslot index (from 0-48) into its corresponding human-readable label.
 // Note that indices map to the "start" of the corresponding timeslot, so `0` corresponds to the start of the "12:00 AM" timeslot.
 // For example, `13` => "6:30 AM"
-// TODO delete the duplicate version of this -- `routeUtils.formatTimeIndex()`
 export function convertIndexToLabel(timeIndex) {
     if (typeof timeIndex === "undefined") throw new Error("Unable to format time index: no index given");
 
@@ -174,7 +173,6 @@ export function constructTimeLabels(timeStart, timeEnd, asObject = false) {
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // transform a Date object into an object with properties `day` and `dow`, representing the formatted day of the month and corresponding day of the week
-// todo maybe replace/combine with duplicate `routeUtils.formatDateString()`
 export function augmentFormatDate(date) {
     const month = monthNames[date.getMonth()];
     const dayOfMonth = date.getDate();

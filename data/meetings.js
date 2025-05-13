@@ -7,9 +7,10 @@ export { createMeetingDocument } from "../public/js/documentCreation.js";
 import { modifyUserMeeting } from "./users.js";
 
 // Create a meeting object save it to the DB, and then return the added object
-export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }) {
+// `allowCreateInPast` allows meetings to be created using dates that have already passed, but should NEVER be `true` except when seeding the database.
+export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, allowCreateInPast = false) {
     // set up the document that will be saved to the DB
-    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd });
+    const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, false, allowCreateInPast);
     meeting.bookingStatus = 0; // todo make an enum for status code meanings
     meeting.bookedTime = null;
     meeting.users = [];

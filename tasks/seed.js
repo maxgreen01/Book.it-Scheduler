@@ -7,7 +7,7 @@ import { createComment } from "../data/comments.js";
 import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 import { Response } from "../public/js/classes/responses.js";
-import { formatDateAsString } from "../public/js/helpers.js";
+import { formatDateAsMinMaxString } from "../public/js/helpers.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -88,33 +88,37 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const startDate = formatDateAsString(faker.date.soon({ days: 60 }));
-        const endDate = formatDateAsString(faker.date.soon({ days: 10, refDate: startDate }));
+        const now = new Date();
+        const fromDate = new Date();
+        fromDate.setDate(now.getDate() - 10);
+        const toDate = new Date();
+        toDate.setDate(now.getDate() + 60);
+        const startDate = faker.date.between({ from: fromDate, to: toDate });
+        const endDate = faker.date.soon({ days: 10, refDate: startDate });
 
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
-        const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
+        const meetingStart = faker.number.int({ min: 10, max: 40 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration + 3, max: Math.min(48, meetingStart + duration + 16) });
 
-        //todo: uncomment when done testing dashboard --bl
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 1, max: 4 })),
             description: faker.lorem.sentences(faker.number.int({ min: 1, max: 6 })),
             duration: (duration / 2).toString(), // convert to a string input in hours
             owner: faker.helpers.arrayElement(meetingUsers),
-            dateStart: startDate,
-            dateEnd: endDate,
+            dateStart: formatDateAsMinMaxString(startDate),
+            dateEnd: formatDateAsMinMaxString(endDate),
             timeStart: meetingStart.toString(),
             timeEnd: meetingEnd.toString(),
         };
 
         console.log(`Adding meeting #${i}: ${newMeeting.name}`);
-        const addedMeeting = await createMeeting(newMeeting);
+        const addedMeeting = await createMeeting(newMeeting, true);
         meetingIds.push(addedMeeting._id);
 
         const randomSlotGenerator = () => {
             const slots = new Array(48).fill(0);
-            for (let i = meetingStart; i <= meetingEnd; i++) {
+            for (let i = meetingStart; i < meetingEnd; i++) {
                 //80% of being available
                 slots[i] = Math.random() < 0.8 ? 1 : 0;
             }

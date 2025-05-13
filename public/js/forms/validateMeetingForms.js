@@ -1,5 +1,6 @@
 import { convertStrToInt, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
 import { createMeetingDocument } from "../documentCreation.js";
+import { clearMessages, serverFail } from "../pages/server-AJAX.js";
 import { formatDateAsMinMaxString } from "../helpers.js";
 
 // Set error text in html element with id "error"
@@ -24,7 +25,6 @@ function validateCreateMeeting(event) {
     const timeEndInput = document.getElementById("timeEndInput");
 
     // convert dates from UTC time into local timezone (to match other funcs)
-
     try {
         const meeting = createMeetingDocument({
             name: titleInput.value,
@@ -36,9 +36,12 @@ function validateCreateMeeting(event) {
             timeStart: timeStartInput.value,
             timeEnd: timeEndInput.value,
         });
+        $("#createMeeting").submit();
     } catch (err) {
+        clearMessages();
         event.preventDefault();
-        setError(err, "error");
+        const ErrorDiv = serverFail(err.message);
+        $("#formWrapper").prepend(ErrorDiv);
     }
 }
 
@@ -59,10 +62,12 @@ function validateEditMeeting(event) {
             },
             true
         );
-        console.log(meeting);
+        $("#editMeeting").submit();
     } catch (err) {
+        clearMessages();
         event.preventDefault();
-        setError(err, "edit-error");
+        const ErrorDiv = serverFail(err.message);
+        $("#formWrapper").prepend(ErrorDiv);
     }
 }
 
@@ -81,7 +86,7 @@ function validateBookMeeting(event) {
             throw new ValidationError("You must select a valid Date");
         }
         try {
-            timeStart = validateIntRange(convertStrToInt(timeStartInput.value), "Meeting Booking Time", 0, 47);
+            timeStart = validateIntRange(convertStrToInt(timeStartInput.value), "Meeting Booking Start Time", 1, 47);
         } catch {
             throw new ValidationError(`You must select a valid Start Time and End Time`);
         }
@@ -118,6 +123,10 @@ function validateBookMeeting(event) {
 // remove a meeting's booking, and return it to `pending`
 
 // Attach event handlers
-if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);
-if (editMeetingForm) editMeetingForm.addEventListener("submit", validateEditMeeting);
+if (createMeetingForm) {
+    $("#createMeetingSubmit").click(validateCreateMeeting);
+}
+if (editMeetingForm) {
+    $("#editMeetingSubmit").click(validateEditMeeting);
+}
 if (bookMeetingForm) bookMeetingForm.addEventListener("submit", validateBookMeeting);
