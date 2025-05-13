@@ -3,7 +3,7 @@ import { createComment, deleteComment, getCommentById, getMeetingComments } from
 import * as routeUtils from "../utils/routeUtils.js";
 import { getUserById, getUserMeetings } from "../data/users.js";
 import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, convertIndexToLabel } from "../public/js/helpers.js";
+import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, filterByInviteStatus, categorizeInvitations, convertIndexToLabel } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
 
@@ -87,6 +87,10 @@ router.route("/").get(async (req, res) => {
                     upcomingMeetings[key].push(calendarItem);
                 }
             }
+
+            // mark current user's invitation reply
+            meeting.ownInvitationReply = meeting.invitations[uid] == 1 ? "Accepted" : meeting.invitations[uid] == 0 ? "Pending" : "Declined";
+
             myBookings.push(meeting);
 
             //owned meetings
@@ -249,6 +253,10 @@ router
             // retrieve the user's private note for this meeting
             const note = meeting.notes[userId];
 
+            // if the meeting is booked, create lists based on the users' responses
+            const invitationReplies = categorizeInvitations(meeting.invitations);
+            const ownInvitationReply = meeting.invitations !== null ? meeting.invitations[userId] : null;
+
             return res.render("viewMeeting", {
                 meetingId: meetingId,
                 title: meeting.name,
@@ -266,6 +274,8 @@ router
                 comments: comments,
                 note: note,
                 isOwner: await isUserMeetingOwner(meetingId, userId),
+                invitationReplies: invitationReplies,
+                ownInvitationReply: ownInvitationReply,
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {

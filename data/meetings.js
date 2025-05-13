@@ -173,7 +173,7 @@ export async function setMeetingBooking(mid, bookingStatus, bookedTime = null) {
 
         // "send" invitations
         invitations = {};
-        for (const user of users) {
+        for (const user of [...users, meeting.owner]) {
             invitations[user] = 0; // pending invite status
             await updateUserInviteStatus(user, mid, 0);
         }
@@ -182,7 +182,7 @@ export async function setMeetingBooking(mid, bookingStatus, bookedTime = null) {
         invitations = null; // reset all invitations
 
         // "remove" invitations
-        for (const user of users) {
+        for (const user of [...users, meeting.owner]) {
             await updateUserInviteStatus(user, mid, null);
         }
     }

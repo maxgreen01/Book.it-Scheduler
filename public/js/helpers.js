@@ -184,3 +184,19 @@ export function augmentFormatDate(date) {
 export function formatDateAsMinMaxString(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
+
+// given a `meeting.invitations` object, return the users who have replied with a certain status
+export function filterByInviteStatus(invitations, status) {
+    if (!invitations) return;
+    return Object.keys(invitations).filter((uid) => invitations[uid] === status);
+}
+
+// split a `meeting.invitations` object into an object with 3 arrays, representing the users who have replied with each status
+export function categorizeInvitations(invitations) {
+    if (!invitations) return;
+    return {
+        accepted: filterByInviteStatus(invitations, 1),
+        pending: filterByInviteStatus(invitations, 0),
+        declined: filterByInviteStatus(invitations, -1),
+    };
+}
