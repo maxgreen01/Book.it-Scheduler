@@ -36,7 +36,7 @@
             <input name="dateEnd" id="dateEndInput" type="date" min="{{todayStr}}" />
             <br />
             <label for="timeStartInput">Start Time:</label>
-            <select name="timeStart" id="timeStartInput" type="text">
+            <select name="timeStart" id="timeStartInput">
                 <option value="">--Choose a time--</option>
                 {{#for 0 48 1}}
                 <option value="{{this}}">{{convertIndexToLabel this}}</option>
@@ -44,7 +44,7 @@
             </select>
             <br />
             <label for="timeEndInput">End Time:</label>
-            <select name="timeEnd" id="timeEndInput" type="text">
+            <select name="timeEnd" id="timeEndInput">
                 <option value="">--Choose a time--</option>
                 {{#for 1 49 1}}
                 <option value="{{this}}">{{convertIndexToLabel this}}</option>
