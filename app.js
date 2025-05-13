@@ -61,7 +61,7 @@ app.use(favicon(path.join(__rootdir, "/public/icons/favicon.ico")));
 // Ex: rgba(128, 0, 128, {{#multiplyOpacity 4}}) where 0 is blank
 Handlebars.registerHelper("multiplyOpacity", function (value, options) {
     // this a parameter passed to the route in the handlebars context
-    // this MUST be explicitly defined in any route that renders a calendar -> maxUsers: numUsers ... and so on
+    // this MUST be explicitly defined in any route that renders a calendar -> numUsers: users.length ... etc
     const numUsers = options.data.root.numUsers;
     const opacity = numUsers > 0 ? Math.min(1, value / numUsers) : 0;
     return opacity.toFixed(2);

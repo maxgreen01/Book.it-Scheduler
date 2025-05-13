@@ -51,7 +51,7 @@ nav a {
 }
 nav a:hover {
     text-decoration: underline;
-    color: #ff7f50;
+    color: #d17b0f;
 }
 
 /* reformat navbar when screen gets squished */

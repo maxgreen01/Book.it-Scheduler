@@ -7,7 +7,7 @@ import { createComment } from "../data/comments.js";
 import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
 import { addResponseToMeeting, createMeeting, getMeetingById, updateMeetingNote } from "../data/meetings.js";
 import { Response } from "../public/js/classes/responses.js";
-import { formatDateAsString } from "../public/js/helpers.js";
+import { formatDateAsMinMaxString } from "../public/js/helpers.js";
 
 // define the seed procedure, which is called below
 async function seed() {
@@ -88,13 +88,14 @@ async function seed() {
         // randomly select users to be involved in this meeting
         const meetingUsers = faker.helpers.arrayElements(userIds, faker.number.int({ min: 1, max: 4 }));
 
-        const startDate = formatDateAsString(faker.date.soon({ days: 60 }));
-        const endDate = formatDateAsString(faker.date.soon({ days: 10, refDate: startDate }));
+        const now = new Date();
+        const startDate = formatDateAsMinMaxString(faker.date.between({ from: new Date().setDate(now.getDate() - 10), to: new Date().setDate(now.getDate() + 60) }));
+        const endDate = formatDateAsMinMaxString(faker.date.soon({ days: 10, refDate: startDate }));
 
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
-        const meetingStart = faker.number.int({ min: 1, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 10) });
+        const meetingStart = faker.number.int({ min: 10, max: 40 });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration + 3, max: Math.min(48, meetingStart + duration + 16) });
 
         //todo: uncomment when done testing dashboard --bl
         const newMeeting = {

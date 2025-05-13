@@ -236,7 +236,7 @@ export function validateBookedTimeObj(obj) {
     obj.date = validateDateObj(obj.date, "Meeting Booking Date");
     obj.timeStart = validateIntRange(obj.timeStart, "Meeting Booking Start Time", 0, 47);
     obj.timeEnd = validateIntRange(obj.timeEnd, "Meeting Booking End Time", 1, 48);
-    if (obj.startTime >= obj.endTime) throw new ValidationError("Meeting Booking Start Time must be before End Time");
+    if (obj.timeStart >= obj.timeEnd) throw new ValidationError("Meeting Booking Start Time must be before End Time");
 
     return obj;
 }
