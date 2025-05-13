@@ -1,5 +1,6 @@
 import { convertStrToInt, validateDateObj, validateIntRange, ValidationError } from "../clientValidation.js";
 import { createMeetingDocument } from "../documentCreation.js";
+import { clearMessages, serverFail } from "../pages/server-AJAX.js";
 import { formatDateAsMinMaxString } from "../helpers.js";
 
 // Set error text in html element with id "error"
@@ -24,7 +25,6 @@ function validateCreateMeeting(event) {
     const timeEndInput = document.getElementById("timeEndInput");
 
     // convert dates from UTC time into local timezone (to match other funcs)
-
     try {
         const meeting = createMeetingDocument({
             name: titleInput.value,
@@ -36,9 +36,12 @@ function validateCreateMeeting(event) {
             timeStart: timeStartInput.value,
             timeEnd: timeEndInput.value,
         });
+        $("#createMeeting").submit();
     } catch (err) {
+        clearMessages();
         event.preventDefault();
-        setError(err, "error");
+        const ErrorDiv = serverFail(err.message);
+        $("#formWrapper").prepend(ErrorDiv);
     }
 }
 
@@ -59,9 +62,12 @@ function validateEditMeeting(event) {
             },
             true
         );
+        $("#editMeeting").submit();
     } catch (err) {
+        clearMessages();
         event.preventDefault();
-        setError(err, "edit-error");
+        const ErrorDiv = serverFail(err.message);
+        $("#formWrapper").prepend(ErrorDiv);
     }
 }
 
@@ -117,6 +123,10 @@ function validateBookMeeting(event) {
 // remove a meeting's booking, and return it to `pending`
 
 // Attach event handlers
-if (createMeetingForm) createMeetingForm.addEventListener("submit", validateCreateMeeting);
-if (editMeetingForm) editMeetingForm.addEventListener("submit", validateEditMeeting);
+if (createMeetingForm) {
+    $("#createMeetingSubmit").click(validateCreateMeeting);
+}
+if (editMeetingForm) {
+    $("#editMeetingSubmit").click(validateEditMeeting);
+}
 if (bookMeetingForm) bookMeetingForm.addEventListener("submit", validateBookMeeting);

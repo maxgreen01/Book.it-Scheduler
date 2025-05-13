@@ -549,21 +549,21 @@ router
             try {
                 const bookingStatus = -1; // indicates cancelled
                 await setMeetingBooking(meetingId, bookingStatus);
-                return res.redirect(`/meetings/${meetingId}`);
+                return res.status(200).json({ success: `Canceled Meeting with ID: ${meetingId}` });
             } catch (err) {
-                return routeUtils.handleValidationError(req, res, err);
+                return res.status(400).json({ error: err.message });
             }
         } else if (action === "restore") {
             // restore the meeting
             try {
                 const bookingStatus = 0; // indicates pending
                 await setMeetingBooking(meetingId, bookingStatus);
-                return res.redirect(`/meetings/${meetingId}`);
+                return res.status(200).json({ success: `Restored Meeting with ID: ${meetingId}` });
             } catch (err) {
-                return routeUtils.handleValidationError(req, res, err);
+                return res.status(400).json({ error: err.message });
             }
         } else {
-            return routeUtils.renderError(req, res, 400, "Invalid meeting booking action");
+            return res.status(400).json({ error: "Invalid Meeting Booking Action" });
         }
     })
     // delete a meeting entirely

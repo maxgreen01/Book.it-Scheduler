@@ -90,6 +90,7 @@ nav a:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-direction: column;
 }
 
 .title-bar-actions button {
@@ -434,6 +435,7 @@ Comments Form CSS
     background-color: #f0f0f0;
     position: relative;
     border: 1px solid #86909c;
+    margin-right: 15px;
 }
 .yes-delete {
     margin-left: 10px;
@@ -454,6 +456,16 @@ Comments Form CSS
     border: 1px solid #86909c;
 }
 
+.yes-delete:hover {
+    background-color: #00751b;
+    cursor: pointer;
+}
+
+.no-delete:hover {
+    background-color: #8c131f;
+    cursor: pointer;
+}
+
 /* Styling for edit Meeting Response button*/
 
 .response-button {
@@ -464,8 +476,8 @@ Comments Form CSS
 }
 
 .button-image {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
 }
 
 .blocked-out-slot {
@@ -507,6 +519,181 @@ Comments Form CSS
 }
 
 .back-button:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
+}
+
+.edit-meeting-page {
+    margin-left: 15px;
+}
+
+.usage-info-wrapper {
+    display: none;
+    background-color: #c1c6cb;
+    border: 1px solid lightgrey;
+    padding: 10px;
+    padding-right: 20px;
+    margin-top: 5px;
+    border-radius: 5px;
+    width: 300px;
+    color: #494949;
+}
+
+.usage-notes-wrapper:hover .usage-info-wrapper {
+    display: block;
+}
+
+.usage-header {
+    font-weight: bold;
+    color: #686767;
+    display: flex;
+    align-items: center;
+}
+
+#formWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #6a5acd;
+    max-width: 500px;
+    margin: auto;
+}
+
+#editMeeting,
+#createMeeting {
+    width: 100%;
+}
+
+#editMeeting label,
+#createMeeting label {
+    font-size: 16px;
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+#editMeeting input[type="text"],
+#editMeeting input[type="number"],
+#createMeeting input[type="text"],
+#createMeeting input[type="number"],
+#editMeeting input[type="date"],
+#createMeeting input[type="date"] {
+    width: 95%;
+    padding: 8px;
+    border: 1px solid #6a5acd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+#createMeeting select {
+    width: 98%;
+    padding: 8px;
+    border: 1px solid #6a5acd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+#editMeeting input[type="date"]:hover,
+#createMeeting input[type="date"]:hover,
+#createMeeting select {
+    cursor: pointer;
+}
+
+.create-meeting-submit,
+.edit-meeting-submit {
+    width: 93%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #6a5acd;
+    margin-top: 15px;
+    height: 25px;
+}
+
+p.edit-meeting-submit-text,
+p.create-meeting-submit-text {
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+}
+
+.create-meeting-submit:hover,
+.edit-meeting-submit:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
+}
+
+.myMeetingLink,
+.createMeetingLink {
+    display: flex;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    width: 150px;
+    border-radius: 6px;
+    text-decoration: none;
+    gap: 8px;
+}
+
+.linkShareButton,
+.editBookMeeting {
+    display: flex;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    width: 200px;
+    border-radius: 6px;
+    text-decoration: none;
+    gap: 8px;
+}
+
+.cancelMeetingButton,
+.restoreMeetingButton {
+    display: flex;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    width: 170px;
+    border-radius: 6px;
+    gap: 8px;
+    outline: none;
+    border: none;
+    font-size: 15px;
+}
+
+.linkWrapper {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.restoreMeetingButton:hover,
+.cancelMeetingButton:hover,
+.editBookMeeting:hover,
+.linkShareButton:hover,
+.createMeetingLink:hover,
+.myMeetingLink:hover {
     background-color: #5a4abc;
     cursor: pointer;
 }
