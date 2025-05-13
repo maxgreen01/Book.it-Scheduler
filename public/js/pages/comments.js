@@ -163,9 +163,8 @@ const getAllCommentsReq = {
 $.ajax(getAllCommentsReq)
     .then((res) => {
         const comments = res.comments;
-        const currUser = validateUserId(res.uid);
         for (const comment of comments) {
-            if (comment.uid === currUser) {
+            if (comment.isViewerComment) {
                 bindCommentDelete(`${comment._id}`);
             }
         }

@@ -228,12 +228,13 @@ router
             // retrieve and format comments for this meeting
             let comments = await getMeetingComments(meetingId);
             comments = comments.reverse();
+            const isOwner = await isUserMeetingOwner(meetingId, userId);
             for (const comment of comments) {
                 comment.dateCreated = comment.dateCreated.toLocaleString();
                 if (comment.dateUpdated) {
                     comment.dateUpdated = comment.dateUpdated.toLocaleString();
                 }
-                if (userId === comment.uid) {
+                if (userId === comment.uid || isOwner) {
                     comment.isViewerComment = true;
                 }
             }
@@ -262,7 +263,7 @@ router
                 isCancelled: meeting.bookingStatus == -1,
                 comments: comments,
                 note: note,
-                isOwner: await isUserMeetingOwner(meetingId, userId),
+                isOwner,
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
@@ -536,12 +537,13 @@ router
             const meetingId = req.params.meetingId;
             const comments = await getMeetingComments(meetingId);
             const userId = validateUserId(req.session.user._id);
+            const isOwner = await isUserMeetingOwner(meetingId, userId);
             for (const comment of comments) {
                 comment.dateCreated = comment.dateCreated.toLocaleString();
                 if (comment.dateUpdated) {
                     comment.dateUpdated = comment.dateUpdated.toLocaleString();
                 }
-                if (userId === comment.uid) {
+                if (userId === comment.uid || isOwner) {
                     comment.isViewerComment = true;
                 }
             }
@@ -583,7 +585,8 @@ router
         try {
             const comment = await getCommentById(req.params.commentId);
             const userId = validateUserId(req.session.user._id);
-            if (userId !== comment.uid) {
+            const isOwner = await isUserMeetingOwner(comment.meetingId, userId);
+            if (userId !== comment.uid && !isOwner) {
                 return res.status(401).json({ error: `User ${userId} cannot delete the comment created by ${comment.uid}` });
             }
             const deleted = await deleteComment(comment._id);
