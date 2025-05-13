@@ -37,6 +37,8 @@ function validateSignup(event) {
     const signUpForm = document.getElementById("signup");
     let signUpFormData = new FormData(signUpForm);
     const userDefaultAvail = availabilityFromCalendar();
+    //append the new field availability which contains the user's default availability
+    //It's kinda scuffed but it's the only way I could really figure out how to get this working for the form submission
     signUpFormData.append("availability", JSON.stringify(userDefaultAvail));
     event.preventDefault();
     try {
@@ -57,6 +59,7 @@ function validateSignup(event) {
             validateImageFileType(pfp.name, "Profile Picture");
             if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
         }
+        //ajax request to the server will the signup details
         $.ajax({
             url: "/signup",
             type: "POST",
@@ -65,20 +68,30 @@ function validateSignup(event) {
             contentType: false,
         })
             .then(() => {
+                //if code 200 then redirect to profile page
                 window.location.href = "/profile";
             })
             .fail((e) => {
+                //if failure show user the failure at the top of the page
                 $("#server-fail").remove();
-                console.log(e);
-                const errorDiv = serverFail(e.responseJSON.error);
+                let errorDiv = undefined;
+                if (e.responseJSON) {
+                    errorDiv = serverFail(e.responseJSON.error);
+                } else {
+                    errorDiv = serverFail("An unknown server error has occurred! Please reload the page or check your network connection.");
+                }
                 event.preventDefault();
                 $("#signupFormWrapper").prepend(errorDiv);
+                //scroll to top of page so user can see error
+                $(window).scrollTop(0);
             });
     } catch (e) {
         $("#server-fail").remove();
         const errorDiv = serverFail(e.message);
         event.preventDefault();
         $("#signupFormWrapper").prepend(errorDiv);
+        //scroll to top of page so user can see error
+        $(window).scrollTop(0);
     }
 }
 
