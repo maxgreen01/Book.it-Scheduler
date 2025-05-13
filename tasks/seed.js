@@ -99,7 +99,7 @@ async function seed() {
         const duration = faker.number.int({ min: 1, max: 6 }); // stored as 30-min intervals
 
         const meetingStart = faker.number.int({ min: 10, max: 40 });
-        const meetingEnd = faker.number.int({ min: meetingStart + duration + 3, max: Math.min(48, meetingStart + duration + 16) });
+        const meetingEnd = faker.number.int({ min: meetingStart + duration, max: Math.min(48, meetingStart + duration + 16) });
 
         const newMeeting = {
             name: faker.lorem.words(faker.number.int({ min: 2, max: 4 })),
