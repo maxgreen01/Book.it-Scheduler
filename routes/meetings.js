@@ -420,7 +420,8 @@ router
             timeStart: meeting.timeStart,
             timeEnd: meeting.timeEnd,
             isPending: meeting.bookingStatus === 0,
-            isBookedOrCancelled: meeting.bookingStatus === 1 || meeting.bookingStatus === -1,
+            isBooked: meeting.bookingStatus === 1,
+            isCancelled: meeting.bookingStatus === -1,
             ...routeUtils.prepareRenderOptions(req),
         });
     })
@@ -441,6 +442,9 @@ router
         } catch (err) {
             return routeUtils.handleValidationError(req, res, err, 400, 404);
         }
+
+        // disallow editing cancelled or booked meetings
+        if (meeting.bookingStatus !== 0) return routeUtils.renderError(req, res, 400, "Cannot update a cancelled or booked meeting");
 
         // pass the existing time limits to validate the edited `duration`
         data.timeStart = meeting.timeStart;
