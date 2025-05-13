@@ -2,8 +2,8 @@ import express from "express";
 import { createComment, deleteComment, getCommentById, getMeetingComments } from "../data/comments.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import { getUserById, getUserMeetings } from "../data/users.js";
-import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
-import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, convertIndexToLabel } from "../public/js/helpers.js";
+import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
+import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, filterByInviteStatus, categorizeInvitations, convertIndexToLabel } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
 import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
 
@@ -65,11 +65,13 @@ router.route("/").get(async (req, res) => {
         //booked meetings
         if (meeting.bookingStatus === 1) {
             const bookedDate = meeting.bookedTime.date;
+            const bookedTimeStart = meeting.bookedTime.timeStart;
+            const bookedTimeEnd = meeting.bookedTime.timeEnd;
 
             //parse booked time object for handlebars render
             meeting.bookingDate = routeUtils.formatDateString(bookedDate, false);
-            meeting.bookingStart = convertIndexToLabel(meeting.bookedTime.timeStart);
-            meeting.bookingEnd = convertIndexToLabel(meeting.bookedTime.timeEnd);
+            meeting.bookingStart = convertIndexToLabel(bookedTimeStart);
+            meeting.bookingEnd = convertIndexToLabel(bookedTimeEnd);
 
             //mark past meetings
             if (bookedDate < today) meeting.isPast = true;
@@ -87,6 +89,28 @@ router.route("/").get(async (req, res) => {
                     upcomingMeetings[key].push(calendarItem);
                 }
             }
+
+            // mark current user's invitation reply
+            meeting.ownInvitationReply = meeting.invitations[uid] == 1 ? "Accepted" : meeting.invitations[uid] == 0 ? "Pending" : "Declined";
+
+            // check if this meeting time conflicts with any other booked meetings -- this will prevent them from accepting
+            meeting.hasConflict = false;
+            const userMeetings = await getUserMeetings(uid);
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[uid] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                const otherBooking = bookedMeeting.bookedTime;
+                if (!isSameDay(bookedDate, otherBooking.date)) continue; // ignore meetings booked on different days
+
+                // check if the other meeting's booked time intersects with this one
+                // note: this is a standard mathematical way of checking whether two intervals intersect
+                if (bookedTimeStart < otherBooking.timeEnd && bookedTimeEnd > otherBooking.timeStart) {
+                    meeting.hasConflict = true;
+                    break;
+                }
+            }
+
             myBookings.push(meeting);
 
             //owned meetings
@@ -112,6 +136,11 @@ router.route("/").get(async (req, res) => {
             myResponses.push(meeting);
         }
     }
+
+    // sort booked meetings by date, from soonest to farthest away (by date then by start time)
+    myBookings.sort((a, b) => {
+        return a.bookedTime.date - b.bookedTime.date || a.bookedTime.timeStart - b.bookedTime.timeStart;
+    });
 
     //split up upcomingMeetings for easier handlebars rendering
     let upcomingDays = Object.keys(upcomingMeetings).map((key) => {
@@ -170,7 +199,7 @@ router
             // compute the best times based on this meeting's availability
             const bestTimes = computeBestTimes(merged, timeStart, timeEnd, meeting.users.length, meeting.duration, true);
 
-            //get user default availability
+            // get user's default availability
             let userDefaultAvail = await getUserById(userId);
             userDefaultAvail = userDefaultAvail.availability;
             let userAvail = [];
@@ -184,7 +213,7 @@ router
                 userAvail.push(mergedDayAvail);
             }
 
-            //if the user has responded before overwrite with their response
+            //if the user has responded before, overwrite with their response
             for (let response of meeting.responses) {
                 if (response.uid === userId) {
                     for (let i = 0; i < response.availabilities.length; i++) {
@@ -193,18 +222,22 @@ router
                 }
             }
 
-            //If a previous meeting has been booked add that to the user's availability
+            // If a other meetings have already been booked within this timeframe, block them out in the user's availability
             const userMeetings = await getUserMeetings(userId);
-            for (const userMeeting of userMeetings) {
-                if (userMeeting.bookingStatus === 1) {
-                    for (let i = 0; i < meeting.dates.length; i++) {
-                        if (isSameDay(meeting.dates[i], userMeeting.bookedTime.date)) {
-                            for (let j = userMeeting.bookedTime.timeStart; j <= userMeeting.bookedTime.timeEnd; j++) {
-                                const currMeetingIdx = j - meeting.timeStart;
-                                if (currMeetingIdx >= 0 && currMeetingIdx < meeting.timeEnd - meeting.timeStart) {
-                                    userAvail[i][currMeetingIdx] = 2;
-                                }
-                            }
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                for (let i = 0; i < meeting.dates.length; i++) {
+                    // find the day (if any) where the booked date lines up with this meeting's calendar
+                    if (!isSameDay(meeting.dates[i], bookedMeeting.bookedTime.date)) continue;
+
+                    // block out the user's availability for the timeslots that intersect with the booked meeting
+                    for (let j = bookedMeeting.bookedTime.timeStart; j < bookedMeeting.bookedTime.timeEnd; j++) {
+                        const timeslotIdx = j - meeting.timeStart;
+                        // make sure the timeslot is valid within this meeting
+                        if (timeslotIdx >= 0 && timeslotIdx < meeting.timeEnd - meeting.timeStart) {
+                            userAvail[i][timeslotIdx] = 2;
                         }
                     }
                 }
@@ -246,6 +279,32 @@ router
             // retrieve the user's private note for this meeting
             const note = meeting.notes[userId];
 
+            // additional logic that only happens if the meeting is booked
+
+            let invitationReplies, ownInvitationReply, hasConflict;
+            if (meeting.bookingStatus == 1) {
+                // create lists based on the users' invitation replies
+                invitationReplies = categorizeInvitations(meeting.invitations);
+                ownInvitationReply = meeting.invitations !== null ? meeting.invitations[userId] : null;
+
+                // check if this meeting's booked time conflicts with any other booked meetings -- this will prevent the user from accepting
+                hasConflict = false;
+                for (const bookedMeeting of userMeetings) {
+                    if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                    if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                    const otherBooking = bookedMeeting.bookedTime;
+                    if (!isSameDay(meeting.bookedTime.date, otherBooking.date)) continue; // ignore meetings booked on different days
+
+                    // check if the other meeting's booked time intersects with this one
+                    // note: this is a standard mathematical way of checking whether two intervals intersect
+                    if (meeting.bookedTime.timeStart < otherBooking.timeEnd && meeting.bookedTime.timeEnd > otherBooking.timeStart) {
+                        hasConflict = true;
+                        break;
+                    }
+                }
+            }
+
             return res.render("viewMeeting", {
                 meetingId: meetingId,
                 title: meeting.name,
@@ -264,6 +323,9 @@ router
                 comments: comments,
                 note: note,
                 isOwner: await isUserMeetingOwner(meetingId, userId),
+                invitationReplies: invitationReplies,
+                ownInvitationReply: ownInvitationReply,
+                hasConflict: hasConflict,
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {
@@ -295,17 +357,21 @@ router
             );
 
             const userMeetings = await getUserMeetings(userId);
-            for (const userMeeting of userMeetings) {
-                if (userMeeting.bookingStatus === 1) {
-                    for (let i = 0; i < meeting.dates.length; i++) {
-                        if (isSameDay(meeting.dates[i], userMeeting.bookedTime.date)) {
-                            for (let j = userMeeting.bookedTime.timeStart; j <= userMeeting.bookedTime.timeEnd; j++) {
-                                const currMeetingIdx = j - meeting.timeStart;
-                                if (currMeetingIdx >= 0 && currMeetingIdx < meeting.timeEnd - meeting.timeStart) {
-                                    if (response[i][currMeetingIdx] === 1) {
-                                        throw new Error(`Cannot respond to a time where you're already booked for a meeting!`);
-                                    }
-                                }
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                for (let i = 0; i < meeting.dates.length; i++) {
+                    // find the day (if any) where the booked date lines up with this meeting's calendar
+                    if (!isSameDay(meeting.dates[i], bookedMeeting.bookedTime.date)) continue;
+
+                    // prevent the user from responding "available" during the timeslots that intersect with the booked meeting
+                    for (let j = bookedMeeting.bookedTime.timeStart; j < bookedMeeting.bookedTime.timeEnd; j++) {
+                        const timeslotIdx = j - meeting.timeStart;
+                        // make sure the timeslot is valid within this meeting
+                        if (timeslotIdx >= 0 && timeslotIdx < meeting.timeEnd - meeting.timeStart) {
+                            if (response[i][timeslotIdx] === 1) {
+                                throw new Error(`Cannot respond to a time where you're already booked for a different meeting`);
                             }
                         }
                     }
@@ -388,6 +454,7 @@ router
         }
     })
     // book or unbook the meeting time, or cancel/restore the entire meeting
+    // note: calls to this route must have an `action` property in the body with one of the following values:  "book", "unbook", "cancel", "restore"
     .post(async (req, res) => {
         // ensure non-empty request body
         const data = req.body;
@@ -411,7 +478,7 @@ router
             // book the meeting
 
             // validate new inputs
-            let date, timeStart;
+            let date, timeStart, timeEnd;
             try {
                 try {
                     const [year, month, day] = data.date.split("-").map(Number);
@@ -420,12 +487,17 @@ router
                     throw new ValidationError("You must select a valid Date");
                 }
                 try {
-                    timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Time", 0, 47);
+                    timeStart = validateIntRange(convertStrToInt(data.timeStart), "Meeting Booking Start Time", 0, 47);
                 } catch {
-                    throw new ValidationError(`You must select a valid Start Time and End Time`);
+                    throw new ValidationError("You must select a valid Start Time and End Time");
+                }
+                try {
+                    timeEnd = validateIntRange(timeStart + meeting.duration, "Meeting Booking End Time", 1, 48);
+                } catch {
+                    throw new ValidationError("Meeting Bookings cannot span multiple days");
                 }
             } catch (err) {
-                return routeUtils.renderError(req, res, 400, err.msg);
+                return routeUtils.renderError(req, res, 400, err.message);
             }
 
             // recompute best times to make sure the selected time matches one of them
@@ -459,7 +531,7 @@ router
                 const bookedTime = {
                     date: date,
                     timeStart: timeStart,
-                    timeEnd: timeStart + meeting.duration,
+                    timeEnd: timeEnd,
                 };
                 await setMeetingBooking(meetingId, bookingStatus, bookedTime);
                 return res.redirect(`/meetings/${meetingId}`);
@@ -494,7 +566,7 @@ router
                 return res.status(400).json({ error: err.message });
             }
         } else {
-            return res.status(400).json({ error: "Invalid Booking Action" });
+            return res.status(400).json({ error: "Invalid Meeting Booking Action" });
         }
     })
     // delete a meeting entirely
@@ -604,6 +676,7 @@ router
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
+// AJAX route for getting meeting responses
 router.route("/:meetingId/responses").get(async (req, res) => {
     try {
         const meetingId = req.params.meetingId;
@@ -612,6 +685,27 @@ router.route("/:meetingId/responses").get(async (req, res) => {
         return res.status(200).json({ responses: meeting.responses, uid: userId, start: meeting.timeStart, end: meeting.timeEnd });
     } catch (err) {
         return routeUtils.handleValidationError(req, res, err, 400, 404);
+    }
+});
+
+// reply to a meeting invitation
+// note: calls to this route must have an `action` property in the body with one of the following values:  "accept", "reset", "decline"
+router.route("/:meetingId/inviteReply").post(async (req, res) => {
+    // determine the status code that should be used for this request
+    const actionToCode = {
+        accept: 1,
+        reset: 0,
+        decline: -1,
+    };
+    const inviteStatus = actionToCode[req.body.action];
+    if (typeof inviteStatus === "undefined") return routeUtils.renderError(req, res, 400, "Invalid meeting invite action");
+
+    // actually update the invite status in the DB
+    try {
+        await replyToMeetingInvitation(req.params.meetingId, req.session.user?._id, inviteStatus);
+        return routeUtils.redirectBack(req, res);
+    } catch (err) {
+        return routeUtils.handleValidationError(req, res, err);
     }
 });
 

@@ -17,6 +17,27 @@
                 <li class="booking-item {{#if isPast}}past-booking{{/if}}" data-id="{{this._id}}">
                     <div class="booking-title">{{this.name}}</div>
                     <div class="booking-datetime">{{this.bookingDate}} : {{this.bookingStart}} - {{this.bookingEnd}}</div>
+                    <div class="invite-status status-{{ownInvitationReply}}">Invitation Status: {{ownInvitationReply}}</div>
+
+                    <div class="invitation-reply-actions">
+                        {{!-- user has not replied yet --}} {{#if (equal? ownInvitationReply "Pending")}} {{#if this.hasConflict}} {{!-- don't let user accept --}}
+                        <div class="invite-status">This meeting's booked time conflicts with another meeting you've accepted, so you can't accept this invitation!</div>
+                        {{else}} {{!-- no conflict, so user can accept --}}
+                        <form method="POST" name="acceptInvite" id="acceptInvite" action="/meetings/{{this._id}}/inviteReply">
+                            <button type="submit" name="action" value="accept">Accept Invitation</button>
+                        </form>
+                        {{/if}}
+
+                        <form method="POST" name="declineInvite" id="declineInvite" action="/meetings/{{this._id}}/inviteReply">
+                            <button type="submit" name="action" value="decline">Decline Invitation</button>
+                        </form>
+                        {{else}} {{!-- allow the user to reset their invitation reply --}}
+
+                        <form method="POST" name="resetInvite" id="resetInvite" action="/meetings/{{this._id}}/inviteReply">
+                            <button type="submit" name="action" value="reset">Reset Invitation</button>
+                        </form>
+                        {{/if}}
+                    </div>
                 </li>
                 {{/each}}
             </ul>
@@ -57,7 +78,7 @@
                 <div class="meeting-card" data-id="{{this._id}}">
                     <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
                     <div class="meeting-info">
-                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p class="booking-status status-{{bookingStatus}}">Meeting Status: {{bookingStatus}}</p>
                         <p>Respondents: {{this.responses.length}}</p>
                         <p>Duration: {{this.duration}}h</p>
                         <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
@@ -86,7 +107,7 @@
                 <div class="meeting-card" data-id="{{this._id}}">
                     <h3 class="meeting-title" title="{{this.name}}">{{this.name}}</h3>
                     <div class="meeting-info">
-                        <p class="status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
+                        <p class="booking-status status-{{bookingStatus}}">Status: {{bookingStatus}}</p>
                         <p>Owner: {{this.owner}}</p>
                         <p>Respondents: {{this.responses.length}}</p>
                         <p>Duration: {{this.duration}}h</p>
