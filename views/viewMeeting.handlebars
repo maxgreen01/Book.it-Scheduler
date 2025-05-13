@@ -7,21 +7,21 @@
             <br />
             <p>Description: {{description}}</p>
             <p>Duration: {{duration}}</p>
+            {{#if isOwner}}
+            <br />
+            <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a>
+            {{/if}}
+            <br />
+            <p>Share this meeting using the link below!</p>
+            <a id="share-link" href="https://localhost:3000/meetings/{{meetingId}}">Shareable Meeting Link</a> {{!-- TODO make this link to an actual domain if we can get one --}}
         </div>
 
         {{!-- Container for calendar element + details --}}
         <div id="calendarSection" class="calendar-section">
-            {{!--
-            <div class="title-bar">
-                <h2>Calendar</h2>
-                <div class="title-bar-actions">
-                    <button id="edit-response-button">Respond: (Put a Pencil Icon)</button>
-                    <button id="submit-response-button" hidden>Submit</button>
-                </div>
-            </div>
-            --}} {{!--
             <h2>Meeting Calendar</h2>
-            --}} {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
+            <p>When viewing the group's overall availability, a darker color means that more people are available at a particular time. When editing your own availability, green indicates that you ARE available while red indicates that you are NOT available.</p>
+
+            {{!-- You MUST specify a # of days in style attribute to properly render the calendar! --}}
             <div class="calendar-wrapper">
                 <div class="calendar" style="--day-count: {{days.length}}">
                     {{!-- indicate whether the user is viewing the group availability or editing their own --}}
@@ -34,11 +34,11 @@
                         {{/each}}
                     </div>
 
-                    {{#each responses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
+                    {{#each processedResponses}} {{!-- Spawn a column with header & cells for each day of meeting. Data is formatted as a 2D array of days then timeslots. --}}
                     <div class="calendar-column">
                         <div class="calendar-column-header">
                             {{#with (at_index ../days @index)}}
-                            <p class="calendar-column-header-text">{{date}}</p>
+                            <p class="calendar-column-header-text">{{day}}</p>
                             <p class="calendar-column-header-text">{{dow}}</p>
                             {{/with}}
                         </div>
@@ -53,10 +53,70 @@
                 </div>
             </div>
 
-            {{#if isOwner}}
             <br />
-            <a href="/meetings/{{meetingId}}/edit">Edit or Book Meeting</a>
-            {{/if}}
+
+            {{!-- display the computed best meeting times --}}
+            <div id="best-times-section">
+                {{#if bookedTime}} {{!-- display a different message if the meeting has already been booked --}}
+                <h3>Meeting Booking</h3>
+                <h4>This meeting has been booked for {{formatDate bookedTime.date}} from {{convertIndexToLabel bookedTime.timeStart}} to {{convertIndexToLabel bookedTime.timeEnd}}!</h4>
+                <p>This time was selected by the meeting owner based on the group's collective availabilities!</p>
+
+                {{else if isCancelled}} {{!-- show a cancellation message --}}
+                <h3>Meeting Cancelled</h3>
+                <p>This meeting was cancelled by the owner. All responses are still saved, but a meeting time cannot be booked unless the meeting is restored first.</p>
+
+                {{else}} {{!-- show the computed times --}}
+                <h3>Recommended Meeting Times</h3>
+
+                <p>Below is a list of the computed best times for this meeting based on the group's collective availabilities!</p>
+
+                <br />
+                {{#if bestTimes.length}} {{!-- todo PV: make a jQuery button to hide the times that are too short --}}
+                <ul>
+                    {{#each bestTimes}}
+                    <li class="{{#if tooShort}}best-time-tooshort{{/if}}">{{formatDate date}}: &ensp;{{convertIndexToLabel timeStart}} - {{convertIndexToLabel timeEnd}} &ensp;({{users}} users) {{#if tooShort}}&emsp;(too short){{/if}}</li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p>There are currently no good times for this meeting, so the meeting cannot be booked!</p>
+                {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
+                <br />
+
+                {{#if isOwner}} {{#if bookedTime}} {{!-- owner-only section for actually booking the meeting --}}
+                <p>Want to change this meeting's booking time? Remove the booking using this button, and the best times will be recomputed so you can choose a different time!</p>
+                <p>Keep in mind that users who have responded to this meeting will need to accept the new booked time again, even if they already accepted previously!</p>
+
+                <form method="POST" name="unbookMeeting" id="unbookMeeting" action="/meetings/{{meetingId}}/edit">
+                    {{!-- todo MG to PV - add styling and a confirmation prompt to this button --}}
+                    <button type="submit" name="action" value="unbook">Remove Meeting Booking</button>
+                </form>
+
+                {{else if isCancelled}}
+                <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
+
+                {{else if bestTimes.length}} {{!-- only allowed to book a meeting if there are best times available --}}
+                <h4>Book a Meeting Time</h4>
+                <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
+
+                <p id="booking-error"></p>
+                <form method="POST" name="bookMeeting" id="bookMeeting" action="/meetings/{{meetingId}}/edit" data-best-times="{{bestTimesJSON}}">
+                    <label for="dateInput">Date:</label>
+                    <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
+                    <br />
+                    <label for="timeStartInput">Start Time:</label>
+                    <select name="timeStart" id="timeStartInput" type="text">
+                        <option value="">--Choose a time--</option>
+                        {{#for 0 48 1}}
+                        <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                        {{/for}}
+                    </select>
+                    <br />
+                    <button type="submit" name="action" value="book">Book Meeting</button>
+                </form>
+
+                {{/if}}{{/if}} {{!-- end of `isOwner` conditional --}}
+            </div>
         </div>
 
         {{!-- Container for filling in responder info --}}
@@ -126,5 +186,6 @@
 </main>
 
 <script type="module" src="../../public/js/forms/calendarActions.js"></script>
+<script type="module" src="../../public/js/forms/validateMeetingForms.js"></script>
 <script type="module" src="../../public/js/pages/note.js"></script>
 <script type="module" src="../../public/js/pages/comments.js"></script>

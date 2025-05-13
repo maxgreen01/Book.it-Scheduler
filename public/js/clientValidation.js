@@ -227,6 +227,20 @@ export function validateResponseArrHasSameDates(responseArr) {
     return responseDates;
 }
 
+// Validate that an object is a valid bookedTime for a meeting.
+// Return the validated object if it is valid.
+export function validateBookedTimeObj(obj) {
+    const allowedKeys = ["date", "timeStart", "timeEnd"];
+    obj = validateObjectKeys(obj, allowedKeys, "Meeting Booking Object");
+
+    obj.date = validateDateObj(obj.date, "Meeting Booking Date");
+    obj.timeStart = validateIntRange(obj.timeStart, "Meeting Booking Start Time", 0, 47);
+    obj.timeEnd = validateIntRange(obj.timeEnd, "Meeting Booking End Time", 1, 48);
+    if (obj.timeStart >= obj.timeEnd) throw new ValidationError("Meeting Booking Start Time must be before End Time");
+
+    return obj;
+}
+
 //
 // ============ Misc Validation & Utility ============
 //
@@ -260,17 +274,4 @@ export function validateImageFileType(fileName, label = "Image File") {
     const match = /\.(jpg|jpeg|png)$/i.exec(fileName);
     if (!match) throw new ValidationError(`${label} is not one of the allowed image file types`);
     return match[1].toLowerCase(); // return the matched file extension
-}
-
-// Throw an error if bookedTime object for setBooking() is not of the form:
-// {startTime: 0-47 index, endTime: 0-47 index, date: Date()}
-export function validateBookedTimeObj(bookedTime) {
-    const allowedKeys = ["date", "timeStart", "timeEnd"];
-    bookedTime = validateObjectKeys(bookedTime, allowedKeys, "Meeting Booking Object");
-    bookedTime.date = validateDateObj(bookedTime.date, "Meeting Booking Date");
-    bookedTime.startTime = validateIntRange(bookedTime.startTime, "Booking startTime", 0, 47);
-    bookedTime.endTime = validateIntRange(bookedTime.endTime, "Booking endTime", 1, 48);
-    if (bookedTime.startTime >= bookedTime.endTime) throw new ValidationError(`Booking startTime (${bookedTime.startTime}) must be before endTime (${bookedTime.endTime})`);
-
-    return bookedTime;
 }
