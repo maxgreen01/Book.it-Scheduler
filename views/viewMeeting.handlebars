@@ -13,7 +13,7 @@
             {{/if}}
             <br />
             <p>Share this meeting using the link below!</p>
-            <a id="share-link" href="https://localhost:3000/meetings/{{meetingId}}">Shareable Meeting Link</a> {{!-- TODO make this link to an actual domain if we can get one --}}
+            <a id="share-link" href="localhost:3000/meetings/{{meetingId}}">Shareable Meeting Link</a> {{!-- TODO make this link to an actual domain if we can get one --}}
         </div>
 
         {{!-- Container for calendar element + details --}}
@@ -115,7 +115,7 @@
                     {{/each}}
                 </ul>
                 {{else}}
-                <p>There are currently no good times for this meeting, so the meeting cannot be booked!</p>
+                <p>There are currently no good times for this meeting (where more than one person is available), so the meeting cannot be booked!</p>
                 {{/if}} {{/if}} {{!-- end of `bookedTime` conditional --}}
                 <br />
 
@@ -186,9 +186,13 @@
                 {{#if (equal? ownInvitationReply 0)}} {{!-- user has not replied yet --}}
                 <p>You have not replied to this meeting invitation! Please indicate whether you're able to attend this meeting or not!</p>
 
+                {{#if hasConflict}} {{!-- don't let user accept --}}
+                <p>This meeting's booked time conflicts with another meeting you've accepted, so you can't accept this invitation!</p>
+                {{else}} {{!-- no conflict, so user can accept --}}
                 <form method="POST" name="acceptInvite" id="acceptInvite" action="/meetings/{{meetingId}}/inviteReply">
                     <button type="submit" name="action" value="accept">Accept Meeting Invitation</button>
                 </form>
+                {{/if}}
 
                 <form method="POST" name="declineInvite" id="declineInvite" action="/meetings/{{meetingId}}/inviteReply">
                     <button type="submit" name="action" value="decline">Decline Meeting Invitation</button>

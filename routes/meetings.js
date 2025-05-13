@@ -65,11 +65,13 @@ router.route("/").get(async (req, res) => {
         //booked meetings
         if (meeting.bookingStatus === 1) {
             const bookedDate = meeting.bookedTime.date;
+            const bookedTimeStart = meeting.bookedTime.timeStart;
+            const bookedTimeEnd = meeting.bookedTime.timeEnd;
 
             //parse booked time object for handlebars render
             meeting.bookingDate = routeUtils.formatDateString(bookedDate, false);
-            meeting.bookingStart = convertIndexToLabel(meeting.bookedTime.timeStart);
-            meeting.bookingEnd = convertIndexToLabel(meeting.bookedTime.timeEnd);
+            meeting.bookingStart = convertIndexToLabel(bookedTimeStart);
+            meeting.bookingEnd = convertIndexToLabel(bookedTimeEnd);
 
             //mark past meetings
             if (bookedDate < today) meeting.isPast = true;
@@ -90,6 +92,24 @@ router.route("/").get(async (req, res) => {
 
             // mark current user's invitation reply
             meeting.ownInvitationReply = meeting.invitations[uid] == 1 ? "Accepted" : meeting.invitations[uid] == 0 ? "Pending" : "Declined";
+
+            // check if this meeting time conflicts with any other booked meetings -- this will prevent them from accepting
+            meeting.hasConflict = false;
+            const userMeetings = await getUserMeetings(uid);
+            for (const bookedMeeting of userMeetings) {
+                if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                if (bookedMeeting.invitations[uid] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                const otherBooking = bookedMeeting.bookedTime;
+                if (!isSameDay(bookedDate, otherBooking.date)) continue; // ignore meetings booked on different days
+
+                // check if the other meeting's booked time intersects with this one
+                // note: this is a standard mathematical way of checking whether two intervals intersect
+                if (bookedTimeStart < otherBooking.timeEnd && bookedTimeEnd > otherBooking.timeStart) {
+                    meeting.hasConflict = true;
+                    break;
+                }
+            }
 
             myBookings.push(meeting);
 
@@ -116,6 +136,11 @@ router.route("/").get(async (req, res) => {
             myResponses.push(meeting);
         }
     }
+
+    // sort booked meetings by date, from soonest to farthest away (by date then by start time)
+    myBookings.sort((a, b) => {
+        return a.bookedTime.date - b.bookedTime.date || a.bookedTime.timeStart - b.bookedTime.timeStart;
+    });
 
     //split up upcomingMeetings for easier handlebars rendering
     let upcomingDays = Object.keys(upcomingMeetings).map((key) => {
@@ -197,7 +222,7 @@ router
                 }
             }
 
-            // If a other meetings have already been booked within this timeframe, add them to the user's availability
+            // If a other meetings have already been booked within this timeframe, block them out in the user's availability
             const userMeetings = await getUserMeetings(userId);
             for (const bookedMeeting of userMeetings) {
                 if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
@@ -253,9 +278,31 @@ router
             // retrieve the user's private note for this meeting
             const note = meeting.notes[userId];
 
-            // if the meeting is booked, create lists based on the users' responses
-            const invitationReplies = categorizeInvitations(meeting.invitations);
-            const ownInvitationReply = meeting.invitations !== null ? meeting.invitations[userId] : null;
+            // additional logic that only happens if the meeting is booked
+
+            let invitationReplies, ownInvitationReply, hasConflict;
+            if (meeting.bookingStatus == 1) {
+                // create lists based on the users' invitation replies
+                invitationReplies = categorizeInvitations(meeting.invitations);
+                ownInvitationReply = meeting.invitations !== null ? meeting.invitations[userId] : null;
+
+                // check if this meeting's booked time conflicts with any other booked meetings -- this will prevent the user from accepting
+                hasConflict = false;
+                for (const bookedMeeting of userMeetings) {
+                    if (bookedMeeting.bookingStatus !== 1) continue; // ignore pending or cancelled meetings
+                    if (bookedMeeting.invitations[userId] !== 1) continue; // ignore booked meetings that the user didn't accept
+
+                    const otherBooking = bookedMeeting.bookedTime;
+                    if (!isSameDay(meeting.bookedTime.date, otherBooking.date)) continue; // ignore meetings booked on different days
+
+                    // check if the other meeting's booked time intersects with this one
+                    // note: this is a standard mathematical way of checking whether two intervals intersect
+                    if (meeting.bookedTime.timeStart < otherBooking.timeEnd && meeting.bookedTime.timeEnd > otherBooking.timeStart) {
+                        hasConflict = true;
+                        break;
+                    }
+                }
+            }
 
             return res.render("viewMeeting", {
                 meetingId: meetingId,
@@ -276,6 +323,7 @@ router
                 isOwner: await isUserMeetingOwner(meetingId, userId),
                 invitationReplies: invitationReplies,
                 ownInvitationReply: ownInvitationReply,
+                hasConflict: hasConflict,
                 ...routeUtils.prepareRenderOptions(req),
             });
         } catch (err) {

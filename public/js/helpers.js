@@ -144,7 +144,7 @@ export function computeBestTimes(mergedAvailabilities, meetingStart, meetingEnd,
 export function convertIndexToLabel(timeIndex) {
     if (typeof timeIndex === "undefined") throw new Error("Unable to format time index: no index given");
 
-    const hours24 = Math.floor(timeIndex / 2) % 48; // round down since "2:30" is still in hour "2"
+    const hours24 = Math.floor((timeIndex % 48) / 2); // round down since "2:30" is still in hour "2"
     const minutes = timeIndex % 2 === 0 ? "00" : "30";
     const meridian = hours24 >= 12 ? "PM" : "AM";
     const hours12 = hours24 % 12 || 12; // account for midnight when hours12 == 0
