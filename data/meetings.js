@@ -79,7 +79,7 @@ export async function deleteMeeting(mid) {
         await modifyUserMeeting(user, removed._id, false);
     }
     await modifyUserMeeting(removed.owner, removed._id, false);
-    return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
+    return removed;
 }
 
 // Update the "easy" fields of the meeting with the specified ID.

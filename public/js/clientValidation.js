@@ -191,7 +191,6 @@ export function validateResponseObj(obj, allowedDates = undefined) {
         allowedDates = validateArrayElements(allowedDates, "Allowed Response Dates", (date) => validateDateObj(date));
 
         // make sure each of the Availability objects has a `date` corresponding to one of the specified dates.
-        // FIXME make sure there aren't multiple Availability objects with the same Date -- could remove from `allowedDates`?
         for (const availability of obj.availabilities) {
             const isDateValid = allowedDates.some((date) => {
                 isSameDay(date, availability.date);

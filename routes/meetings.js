@@ -576,7 +576,7 @@ router
     })
     // delete a meeting entirely
     .delete(async (req, res) => {
-        // TODO - ONLY IF THERE'S TIME
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
@@ -672,12 +672,12 @@ router
     })
     // AJAX route for posting a reaction to a particular reaction
     .post(async (req, res) => {
-        // TODO
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     })
     // AJAX route for editing a particular comment's body
     .patch(async (req, res) => {
-        // TODO
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
