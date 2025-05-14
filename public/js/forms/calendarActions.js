@@ -114,7 +114,6 @@ const bindCalendarSlots = (responsesArr, timeStart, uid) => {
             const usersAvail = [];
             for (let response of responsesArr) {
                 const isAvail = response.availabilities[i].slots[j] === 1;
-                //console.log(response.availabilities[i].slots[j]);
                 if (isAvail) usersAvail.push(response.uid);
             }
             j++;
@@ -176,7 +175,6 @@ if (editButton) {
 }
 
 //listener for submit button
-//TODO: POST reponse here!!
 if (submitButton) {
     submitButton.addEventListener("click", () => {
         onMainCalendar = true;
@@ -196,11 +194,9 @@ if (submitButton) {
         calendarTitle.innerHTML = "Group's Availability";
 
         //replace self with edit response button
-        //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
         $("#edit-response-button").show();
         $("#submit-response-button").hide();
 
-        //TODO: Send over the complete matrix to the server or make response object here and send it
         const reqBody = {
             method: "POST",
             data: JSON.stringify(availabilityFromCalendar()),

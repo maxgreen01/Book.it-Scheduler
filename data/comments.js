@@ -1,7 +1,7 @@
 // Data functions for Comment objects.
 
 import { commentsCollection } from "../config/mongoCollections.js";
-import { convertStrToObjectId, uidToCaseInsensitive, validateCommentNoteBody, validateMeetingExists, validateUserExists } from "../utils/validation.js";
+import { convertStrToObjectId, uidToCaseInsensitive, validateCommentNoteBody, validateMeetingExists, validateStrAsObjectId, validateUserExists } from "../utils/validation.js";
 import { createCommentDocument } from "../public/js/documentCreation.js";
 export { createCommentDocument } from "../public/js/documentCreation.js";
 
@@ -21,17 +21,17 @@ export async function createComment({ uid, meetingId, body }) {
 
     const collection = await commentsCollection();
     const insertResponse = await collection.insertOne(comment);
-    if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment with body "${body}"`);
+    if (!insertResponse.acknowledged || !insertResponse.insertedId) throw new Error(`User ${uid} failed to post a new comment`);
     comment._id = comment._id.toString();
     return comment;
 }
 
 // return comment with the given comment id
 export async function getCommentById(id) {
-    id = convertStrToObjectId(id, "Comment ID");
+    id = validateStrAsObjectId(id, "Comment ID");
 
     const collection = await commentsCollection();
-    const comment = await collection.findOne({ _id: id });
+    const comment = await collection.findOne({ _id: convertStrToObjectId(id, "Comment ID") });
     if (!comment) throw new Error(`No comment found with ID "${id}"`);
     comment._id = comment._id.toString();
     return comment;
@@ -87,10 +87,10 @@ export async function getMeetingComments(meetingId) {
 
 //remove comment and return it back
 export async function deleteComment(id) {
-    id = convertStrToObjectId(id, "Comment ID");
+    id = validateStrAsObjectId(id, "Comment ID");
 
     const collection = await commentsCollection();
-    const removed = await collection.findOneAndDelete({ _id: id });
+    const removed = await collection.findOneAndDelete({ _id: convertStrToObjectId(id, "Comment ID") });
     if (!removed) throw new Error(`Failed to delete comment with ID "${id}"`);
     removed._id = removed._id.toString();
     return removed;
@@ -98,12 +98,12 @@ export async function deleteComment(id) {
 
 //edit and save new text to an existing comment, returning the updated comment
 export async function updateComment(id, newBody) {
-    id = convertStrToObjectId(id, "Comment ID");
+    id = validateStrAsObjectId(id, "Comment ID");
     newBody = validateCommentNoteBody(newBody, "Comment Body");
     const timestamp = new Date();
 
     const collection = await commentsCollection();
-    const updated = await collection.findOneAndUpdate({ _id: id }, { $set: { body: newBody, dateUpdated: timestamp } }, { returnDocument: "after" });
+    const updated = await collection.findOneAndUpdate({ _id: convertStrToObjectId(id, "Comment ID") }, { $set: { body: newBody, dateUpdated: timestamp } }, { returnDocument: "after" });
     if (!updated) throw new Error(`Failed to update comment with ID "${id}"`);
     updated._id = updated._id.toString();
     return updated;
@@ -111,7 +111,6 @@ export async function updateComment(id, newBody) {
 
 //add a unique reaction to a comment --> "like" or "dislike"
 export async function reactToComment(id, uid, reaction) {
-    //TODO BL: remove this for final project, this is a dev sanity check
     if (reaction != "like" && reaction != "dislike") {
         throw new Error("reactToComment: Set reaction to either like or dislike");
     }

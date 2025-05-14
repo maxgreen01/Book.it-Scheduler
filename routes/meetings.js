@@ -5,7 +5,7 @@ import { getUserById, getUserMeetings } from "../data/users.js";
 import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
 import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, filterByInviteStatus, categorizeInvitations, convertIndexToLabel } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
-import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
+import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError, validateMeetingExists } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -59,6 +59,11 @@ router.route("/").get(async (req, res) => {
         const numDays = meeting.dates.length;
         meeting.startDate = routeUtils.formatDateString(meeting.dates[0], false);
         meeting.endDate = numDays == 1 ? null : routeUtils.formatDateString(meeting.dates[numDays - 1], false);
+
+        // shorten meeting description if needed
+        if (meeting.description.length > 50) {
+            meeting.description = meeting.description.slice(0, 50) + "...";
+        }
 
         //========== FILTER MEETINGS AROUND PAGE ===========
 
@@ -183,7 +188,18 @@ router
 
         // convert and construct meeting fields to display the data, then render the page
         try {
-            // convert data to prepare for rendering
+            // ===== convert data to prepare for rendering =====
+
+            // prepare string to display the start and end times of the entire meeting in a readable format
+            const formattedStartDate = meeting.dates[0].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+            let dateString;
+            if (meeting.dates.length == 1) {
+                dateString = `on ${formattedStartDate}`;
+            } else {
+                const formattedEndDate = meeting.dates[meeting.dates.length - 1].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+                dateString = `from ${formattedStartDate} to ${formattedEndDate}`;
+            }
+            dateString += `, between ${convertIndexToLabel(meeting.timeStart)} and ${convertIndexToLabel(meeting.timeEnd)}.`;
 
             // convert dates into human-readable format
             const formattedDates = meeting.dates.map(augmentFormatDate);
@@ -308,6 +324,7 @@ router
             return res.render("viewMeeting", {
                 meetingId: meetingId,
                 title: meeting.name,
+                dateString: dateString,
                 description: meeting.description,
                 duration: `${meeting.duration / 2} hour(s)`,
                 days: formattedDates,
@@ -576,7 +593,7 @@ router
     })
     // delete a meeting entirely
     .delete(async (req, res) => {
-        // TODO - ONLY IF THERE'S TIME
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 
@@ -596,11 +613,11 @@ router
     // AJAX route for updating a user's private note
     .post(async (req, res) => {
         try {
-            const meetingId = req.params.meetingId;
+            const meetingId = await validateMeetingExists(req.params.meetingId);
             const userId = validateUserId(req.session.user._id);
             const note = validateCommentNoteBody(req.body.noteInput, "Note Body");
             await updateMeetingNote(meetingId, userId, note);
-            return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
+            return res.status(200).json({ noteUpdated: `Note for user ${userId} has been updated` });
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -672,12 +689,12 @@ router
     })
     // AJAX route for posting a reaction to a particular reaction
     .post(async (req, res) => {
-        // TODO
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     })
     // AJAX route for editing a particular comment's body
     .patch(async (req, res) => {
-        // TODO
+        // TODO - extra feature
         return res.status(404).json({ error: "Route not implemented yet" });
     });
 

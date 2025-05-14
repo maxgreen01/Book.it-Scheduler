@@ -26,7 +26,7 @@ export function validateAndTrimString(str, label = "String", minLen, maxLen) {
 // Return the trimmed string if it is valid.
 export function validateStrUsingRegex(str, regex, label = "String", minLen, maxLen, errorMsg = "disallowed") {
     str = validateAndTrimString(str, label, minLen, maxLen);
-    if (!str.match(regex)) throw new ValidationError(`${label} "${str}" contains ${errorMsg} characters`);
+    if (!str.match(regex)) throw new ValidationError(`${label} contains ${errorMsg} characters`);
     return str;
 }
 
@@ -53,7 +53,7 @@ export function validateAlphabeticalExtended(str, label = "String", minLen, maxL
 // Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
 // Return the given number if it is valid.
 export function validateNumber(num, label = "Number", min, max) {
-    if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} "${num}" is invalid or out of range`);
+    if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} is invalid or out of range`);
     return num;
 }
 
@@ -106,7 +106,7 @@ export function validatePassword(password) {
 export function validateStrAsObjectId(id, label = "ObjectId String") {
     id = validateAndTrimString(id, label);
     const validObjectIdRegex = /^[0-9a-fA-F]{24}$/; // replaces ObjectId.isValid() so this can be used on client side
-    if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} "${id}" does not represent a valid ObjectId string`);
+    if (id.length !== 24 || !validObjectIdRegex.test(id)) throw new ValidationError(`${label} does not represent a valid ObjectId string`);
     return id;
 }
 
@@ -127,7 +127,7 @@ export function validateObjectKeys(obj, allowedFields, label = "Object") {
     const objKeys = Object.keys(obj);
     const invalidFields = objKeys.filter((key) => !allowedFields.includes(key));
     if (invalidFields.length > 0) {
-        throw new ValidationError(`${label} contains invalid fields: ${JSON.stringify(invalidFields)}`);
+        throw new ValidationError(`${label} contains invalid fields:` /* ${JSON.stringify(invalidFields)} */);
     }
     return obj;
 }
@@ -191,7 +191,6 @@ export function validateResponseObj(obj, allowedDates = undefined) {
         allowedDates = validateArrayElements(allowedDates, "Allowed Response Dates", (date) => validateDateObj(date));
 
         // make sure each of the Availability objects has a `date` corresponding to one of the specified dates.
-        // FIXME make sure there aren't multiple Availability objects with the same Date -- could remove from `allowedDates`?
         for (const availability of obj.availabilities) {
             const isDateValid = allowedDates.some((date) => {
                 isSameDay(date, availability.date);
