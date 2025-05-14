@@ -11,13 +11,14 @@ body {
 }
 
 /* ==================== Navbar ==================== */
-header {
+.navigation-bar {
     background-color: #6a5acd;
     color: white;
     width: 100%;
+    line-height: 1.6;
 }
 
-/* Placeholder: Can replace with a logo png or anything else */
+/* Title icon: Can replace with a logo png or anything else */
 .title-text {
     font-size: 24px;
     margin: 0;
@@ -55,7 +56,7 @@ nav a:hover {
 }
 
 /* reformat navbar when screen gets squished */
-@media (max-width: 700px) {
+@media (max-width: 732px) {
     .bar {
         flex-direction: column;
         align-items: center;
@@ -114,6 +115,16 @@ nav a:hover {
     gap: 0.5rem;
     font-weight: 600;
     color: #333;
+}
+
+/* reused checkbox styling in either title or side bars */
+.sidebar-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
 }
 
 /* ==================== View meeting page ==================== */
@@ -802,6 +813,12 @@ p.create-meeting-submit-text,
     width: 100%;
     padding-bottom: 0.5rem;
     padding-top: 20px;
+}
+
+.best-time-tooshort {
+    color: #999;
+    font-style: italic;
+    display: none;
 }
 
 .infoHeader {

@@ -16,8 +16,21 @@ const calendarTitle = document.getElementById("calendar-title-header");
 const editButton = document.getElementById("edit-response-button");
 const submitButton = document.getElementById("submit-response-button");
 
+const tooShortTimes = document.querySelectorAll(".best-time-tooshort");
+const checkbox = document.getElementById("show-short-meetings");
+checkbox.addEventListener("change", () => {
+    tooShortTimes.forEach((item) => {
+        if (checkbox.checked) {
+            // Display the item if the checkbox is checked
+            item.style.display = "list-item";
+        } else {
+            // Hide the item if the checkbox is unchecked
+            item.style.display = "none";
+        }
+    });
+});
+
 //returns a matrix form of the user's response when submit is clicked
-//TODO: If we want to send data as Responses instead of matrices, construct them here
 function availabilityFromCalendar() {
     const calendarColumns = document.querySelectorAll(".calendar-column");
     let responseMatrix = [];
@@ -205,7 +218,7 @@ if (submitButton) {
 }
 
 //on page load register the listeners
-// TODO maybe add a way to query which users are available at the selected time
+//additionally, register the checkbox for the hide short meetings feature
 document.addEventListener("DOMContentLoaded", () => {
     const timeslotElements = document.querySelectorAll(".response-slot");
 
