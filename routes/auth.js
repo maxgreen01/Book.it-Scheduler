@@ -98,40 +98,50 @@ router
             return res.status(400).json({ error: "Request body is empty" });
         }
 
-        // assign default profile picture (which may be updated later in this route)
-        data.profilePicture = profileUtils.defaultProfilePicture;
-        // validate User
+        // validate user (including profile picture)
+        let pfpFile;
         try {
+            // validate profile picture if one was provided, otherwise use default (handled by validation func)
+            data.profilePicture = profileUtils.defaultProfilePicture;
+
+            const file = req.files?.profilePicture;
+            if (typeof file === "object") {
+                // make sure only one file is submitted
+                if (!Array.isArray(file)) {
+                    pfpFile = file;
+                } else {
+                    return res.status(400).json({ error: "Only one profile picture can be submitted!" });
+                }
+            }
+
+            // parse Weekly Availability into proper object
             data.availability = new WeeklyAvailability(JSON.parse(data.availability));
+
+            // validate fields
             createUserDocument(data);
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
 
+        // ensure the uid is unique
         try {
             await validateUserExists(data.uid);
             return res.status(400).json({ error: `This username is already taken!` });
-        } catch (e) {
-            //Should always error
+        } catch {
+            // expected to error
         }
 
-        // upload & assign profile picture, if one is supplied
+        // upload profile picture (and save its name) if one has been supplied
         try {
-            const pfpFile = req.files?.profilePicture;
-            if (typeof pfpFile === "object") {
-                // make sure only one file is submitted
-                if (!Array.isArray(pfpFile)) {
-                    const profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
-                    data.profilePicture = profilePicture;
-                } else {
-                    return res.status(400).json({ error: "Only one image can be submitted!" });
-                }
+            if (pfpFile) {
+                data.profilePicture = await profileUtils.uploadProfilePicture(data.uid, pfpFile);
             }
         } catch (err) {
-            return res.status(400).json({ error: err.message });
+            // should only happen on filesystem errors
+            return res.status(500).json({ error: "Internal Server Error" });
         }
 
-        // validate all inputs and add the user to the DB
+        // actually add the user to the DB
         let user;
         try {
             user = await createUser(data);

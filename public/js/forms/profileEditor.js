@@ -1,4 +1,4 @@
-import { validateImageFileType } from "../clientValidation.js";
+import { validateProfilePicture, ValidationError } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
 import { serverFail } from "../pages/server-AJAX.js";
 
@@ -61,21 +61,21 @@ function validateProfile(event) {
     const userDefaultAvail = availabilityFromCalendar();
     editFormData.append("availability", JSON.stringify(userDefaultAvail));
     try {
-        if (files && files[0]) {
-            let pfp = files[0];
-            validateImageFileType(pfp.name, "Profile Picture");
-            if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
-        }
-        if (password != confirmPassword) throw new Error("Passwords do not match");
+        if (password !== confirmPassword) throw new Error("Passwords do not match");
         createUserDocument(
             {
                 firstName,
                 lastName,
                 description,
                 password: password === "" ? undefined : password,
+                profilePicture: undefined, // checked separately below
             },
             true
         );
+        if (files) {
+            if (files.length !== 1) throw new ValidationError("Only one profile picture can be submitted");
+            validateProfilePicture(files[0]);
+        }
         event.preventDefault();
         //ajax request to the server will the signup details
         $.ajax({
