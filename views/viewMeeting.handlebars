@@ -200,7 +200,7 @@
                 <form method="POST" name="declineInvite" id="declineInvite" action="/meetings/{{meetingId}}/inviteReply">
                     <button type="submit" name="action" value="decline">Decline Meeting Invitation</button>
                 </form>
-                {{else}} {{!-- allow the user to reset their invitation reply --}}
+                {{else if ownInvitationReply}} {{!-- allow the user to reset their invitation reply, unless they aren't part of the meeting --}}
                 <p>You have already replied to this meeting invitation! However, you can reset your reply if you need to change it!</p>
 
                 <form method="POST" name="resetInvite" id="resetInvite" action="/meetings/{{meetingId}}/inviteReply">
