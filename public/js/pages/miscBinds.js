@@ -6,7 +6,7 @@ $("#genBackButton").click(() => {
 
 //bind to the back button on the edit meeting page
 $("#editMeetingBack").click(() => {
-    const url = $("#editMeetingBack").attr("data");
+    const url = $("#editMeetingBack").attr("data-target");
     window.location.href = url;
 });
 
@@ -27,4 +27,16 @@ $("#linkShareButton").click((event) => {
     setTimeout(() => {
         $("#linkShareButton").html('<img src="/public/icons/link-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Copy Meeting Link');
     }, 2000);
+});
+
+$("#profileSubmit").click(() => {
+    $("#profileSaveReal").click();
+});
+
+$("#cancelProfileEdit").click(() => {
+    $("#deleteUser").click();
+});
+
+$("#deleteProfile").click(() => {
+    $("#deleteUser").click();
 });

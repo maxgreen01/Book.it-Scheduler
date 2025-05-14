@@ -21,7 +21,7 @@ export const defaultProfilePicture = "_default.jpg";
 
 // prepend the `imagesDir` to a profile picture's filename to prepare it for rendering
 export function profilePictureToPath(profilePicture) {
-    return path.join(imagesPath, profilePicture);
+    return `${imagesPath}/${profilePicture}`;
 }
 
 // Update a user's profile picture by deleting the existing file and uploading a new one

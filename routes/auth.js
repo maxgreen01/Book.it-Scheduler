@@ -5,7 +5,7 @@ import { validateUserExists, validateUserId } from "../utils/validation.js";
 import * as routeUtils from "../utils/routeUtils.js";
 import * as profileUtils from "../utils/profileUtils.js";
 import { createUser, createUserDocument, getUserById } from "../data/users.js";
-import { Availability, WeeklyAvailability } from "../public/js/classes/availabilities.js";
+import { WeeklyAvailability } from "../public/js/classes/availabilities.js";
 
 const router = express.Router();
 

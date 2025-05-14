@@ -11,13 +11,14 @@ body {
 }
 
 /* ==================== Navbar ==================== */
-header {
+.navigation-bar {
     background-color: #6a5acd;
     color: white;
     width: 100%;
+    line-height: 1.6;
 }
 
-/* Placeholder: Can replace with a logo png or anything else */
+/* Title icon: Can replace with a logo png or anything else */
 .title-text {
     font-size: 24px;
     margin: 0;
@@ -55,7 +56,7 @@ nav a:hover {
 }
 
 /* reformat navbar when screen gets squished */
-@media (max-width: 700px) {
+@media (max-width: 732px) {
     .bar {
         flex-direction: column;
         align-items: center;
@@ -114,6 +115,16 @@ nav a:hover {
     gap: 0.5rem;
     font-weight: 600;
     color: #333;
+}
+
+/* reused checkbox styling in either title or side bars */
+.sidebar-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
 }
 
 /* ==================== View meeting page ==================== */
@@ -573,8 +584,21 @@ Comments Form CSS
     margin: auto;
 }
 
+.buttonWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: auto;
+}
+
+#editorForm,
 #editMeeting,
 #createMeeting,
+#editorForm,
 #signup,
 #login {
     width: 100%;
@@ -582,6 +606,7 @@ Comments Form CSS
 
 #editMeeting label,
 #createMeeting label,
+#editorForm label,
 #signup label,
 #login label {
     font-size: 16px;
@@ -599,6 +624,8 @@ Comments Form CSS
 #login input[type="text"],
 #signup input[type="text"],
 #signup input[type="password"],
+#editorForm input[type="text"],
+#editorForm input[type="password"],
 #login input[type="password"] {
     width: 95%;
     padding: 8px;
@@ -694,6 +721,7 @@ p.create-meeting-submit-text,
 }
 
 .cancelMeetingButton,
+.editProfileButton,
 .restoreMeetingButton {
     display: flex;
     margin-top: 4px;
@@ -711,6 +739,23 @@ p.create-meeting-submit-text,
     font-size: 15px;
 }
 
+.editProfileButton {
+    display: flex;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: #6a5acd;
+    color: #fff;
+    border-radius: 6px;
+    gap: 8px;
+    outline: none;
+    border: none;
+    font-size: 15px;
+    padding-right: 30px;
+}
+
 .linkWrapper {
     display: flex;
     gap: 10px;
@@ -726,6 +771,7 @@ p.create-meeting-submit-text,
 }
 
 .restoreMeetingButton:hover,
+.editProfileButton:hover,
 .cancelMeetingButton:hover,
 .editBookMeeting:hover,
 .linkShareButton:hover,
@@ -767,4 +813,84 @@ p.create-meeting-submit-text,
     width: 100%;
     padding-bottom: 0.5rem;
     padding-top: 20px;
+}
+
+.best-time-tooshort {
+    color: #999;
+    font-style: italic;
+    display: none;
+}
+
+.infoHeader {
+    display: flex;
+    justify-content: center;
+    width: max-content;
+    max-width: 95%;
+    padding: 20px;
+    background: linear-gradient(135deg, #cb8afe, #760fc0);
+    border-radius: 10px;
+    margin-right: 20px;
+    justify-content: space-between;
+}
+
+.infoHeader img {
+    flex: 1;
+    max-width: 250px;
+    border-radius: 6px;
+}
+
+.pfpSeparator {
+    margin-left: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profileName {
+    font-size: 30px;
+    margin-bottom: 0px;
+}
+
+.profileID {
+    font-size: 12px;
+    margin-left: 1px;
+}
+
+.profileDescription {
+    color: #494949;
+    font-size: 20px;
+}
+
+.genButton {
+    width: 93%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #6a5acd;
+    margin-top: 15px;
+    height: 25px;
+    width: 200px;
+    height: 40px;
+}
+
+.genButton-text {
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+}
+
+.genButton:hover {
+    background-color: #5a4abc;
+    cursor: pointer;
+}
+
+.center-gen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

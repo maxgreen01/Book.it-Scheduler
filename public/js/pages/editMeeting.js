@@ -17,13 +17,13 @@ const restoreMeetingPrompt = () => {
 };
 
 const cancelMeetingForm = () => {
-    return $(`<form method="POST" name="cancelMeeting" id="cancelMeeting" action="/meetings/{{meetingId}}/edit">
+    return $(`<form method="POST" name="cancelMeeting" id="cancelMeeting" action="${window.location.pathname}">
             <button class="cancelMeetingButton" type="submit" name="action" value="cancel"> <img src="/public/icons/calendar-xmark-svgrepo-com.svg" alt="Calendar Cancel" class="button-image" /> Cancel Meeting</button>
         </form>`);
 };
 
 const restoreMeetingForm = () => {
-    return $(`<form method="POST" name="restoreMeeting" id="restoreMeeting" action="/meetings/{{meetingId}}/edit">
+    return $(`<form method="POST" name="restoreMeeting" id="restoreMeeting" action="${window.location.pathname}">
             <button type="submit" class="restoreMeetingButton" name="action" value="restore"><img src="/public/icons/calendar-arrow-up-svgrepo-com.svg" alt="Calendar Arrow Up" class="button-image" />Restore Meeting</button>
         </form>`);
 };
@@ -61,6 +61,7 @@ const registerRestoreMeeting = () => {
         $("#yesRestoreMeeting").click(() => {
             $.ajax(restoreMeetingReq)
                 .then(() => {
+                    $("#editMeetingDetailsWrapper").show();
                     clearMessageTimeout();
                     const successDiv = serverSucc("Successfully restored meeting!");
                     $("#deletePromptWrapper").empty();
@@ -100,6 +101,7 @@ const registerCancelMeeting = () => {
             $.ajax(cancelMeetingReq)
                 .then(() => {
                     clearMessageTimeout();
+                    $("#editMeetingDetailsWrapper").hide();
                     const successDiv = serverSucc("Successfully cancelled meeting!");
                     $("#deletePromptWrapper").empty();
                     $("#deletePromptWrapper").prepend(successDiv);
