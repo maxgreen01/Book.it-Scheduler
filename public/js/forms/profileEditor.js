@@ -1,4 +1,4 @@
-import { validateImageFileType } from "../clientValidation.js";
+import { validateProfilePicture, ValidationError } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
 import { serverFail } from "../pages/server-AJAX.js";
 
@@ -37,11 +37,9 @@ function toggleEditor(num) {
     editor.hidden = num != 1;
     deleter.hidden = num != 2;
     if (editor.hidden) {
-        console.log("Unbinding calendar");
         editMenuActive = false;
     } else {
         editMenuActive = true;
-        console.log("Binding calendar");
         calendarBinds();
     }
 }
@@ -63,21 +61,21 @@ function validateProfile(event) {
     const userDefaultAvail = availabilityFromCalendar();
     editFormData.append("availability", JSON.stringify(userDefaultAvail));
     try {
-        if (files && files[0]) {
-            let pfp = files[0];
-            validateImageFileType(pfp.name, "Profile Picture");
-            if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
-        }
-        if (password != confirmPassword) throw new Error("Passwords do not match");
+        if (password !== confirmPassword) throw new Error("Passwords do not match");
         createUserDocument(
             {
                 firstName,
                 lastName,
                 description,
                 password: password === "" ? undefined : password,
+                profilePicture: undefined, // checked separately below
             },
             true
         );
+        if (files) {
+            if (files.length > 1) throw new ValidationError("Only one profile picture can be submitted");
+            if (files.length == 1) validateProfilePicture(files[0]);
+        }
         event.preventDefault();
         //ajax request to the server will the signup details
         $.ajax({
@@ -121,8 +119,11 @@ if (document.getElementById("editProfile")) {
 let isMouseDown = false;
 let isDeselecting = false;
 let selectedSlots = new Set();
+let calendarBindsSet = false;
 
 const calendarBinds = () => {
+    if (calendarBindsSet) return;
+    calendarBindsSet = true;
     const timeslotElements = document.querySelectorAll(".response-slot");
 
     //apply listeners to all elements: mousedown (click), mouseover (drag), mouseup (release)
@@ -170,7 +171,6 @@ const calendarBinds = () => {
                 isDeselecting = false;
             }
         });
-        $("#submit-response-button").hide();
     }
 
     // Click released OUTside cell: End selection

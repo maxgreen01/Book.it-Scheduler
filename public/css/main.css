@@ -81,6 +81,32 @@ nav a:hover {
     background-color: #ffffff;
     border-bottom: 2px solid #d1d8e0;
 }
+
+.title-bar-short {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    /* 
+    CSS taken from https://www.w3schools.com/csS/css3_shadows_box.asp
+    */
+    box-shadow:
+        0 2px 4px 0 rgba(0, 0, 0, 0.2),
+        0 3px 5px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 8px;
+}
+
+.title-bar-multi {
+    display: flex;
+    width: 128.5%;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    border-bottom: 2px solid #d1d8e0;
+    flex-direction: column;
+    border-radius: 8px;
+}
+
 .page-title {
     margin: 0;
     font-size: 24px;
@@ -600,6 +626,7 @@ Comments Form CSS
 #createMeeting,
 #editorForm,
 #signup,
+#bookMeeting,
 #login {
     width: 100%;
 }
@@ -607,6 +634,7 @@ Comments Form CSS
 #editMeeting label,
 #createMeeting label,
 #editorForm label,
+#bookMeeting label,
 #signup label,
 #login label {
     font-size: 16px;
@@ -626,6 +654,7 @@ Comments Form CSS
 #signup input[type="password"],
 #editorForm input[type="text"],
 #editorForm input[type="password"],
+#bookMeeting input[type="date"],
 #login input[type="password"] {
     width: 95%;
     padding: 8px;
@@ -635,7 +664,8 @@ Comments Form CSS
     margin-top: 5px;
 }
 
-#createMeeting select {
+#createMeeting select,
+#bookMeeting select {
     width: 98%;
     padding: 8px;
     border: 1px solid #6a5acd;
@@ -646,6 +676,7 @@ Comments Form CSS
 
 #editMeeting input[type="date"]:hover,
 #createMeeting input[type="date"]:hover,
+#bookMeeting input[type="date"]:hover,
 #createMeeting select {
     cursor: pointer;
 }
@@ -825,9 +856,9 @@ p.create-meeting-submit-text,
     display: flex;
     justify-content: center;
     width: max-content;
-    max-width: 95%;
+    max-width: 60%;
     padding: 20px;
-    background: linear-gradient(135deg, #cb8afe, #760fc0);
+    background: #b1a7f0;
     border-radius: 10px;
     margin-right: 20px;
     justify-content: space-between;
@@ -859,7 +890,7 @@ p.create-meeting-submit-text,
 
 .profileDescription {
     color: #494949;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .genButton {

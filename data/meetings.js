@@ -11,7 +11,7 @@ import { modifyUserMeeting, updateUserInviteStatus } from "./users.js";
 export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, allowCreateInPast = false) {
     // set up the document that will be saved to the DB
     const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, false, allowCreateInPast);
-    meeting.bookingStatus = 0; // todo make an enum for status code meanings
+    meeting.bookingStatus = 0;
     meeting.bookedTime = null;
     meeting.users = [];
     meeting.responses = [];
@@ -47,7 +47,7 @@ export async function getMeetingById(mid) {
     const collection = await meetingsCollection();
     const meeting = await collection.findOne({ _id: validation.convertStrToObjectId(mid) });
     if (!meeting) {
-        throw new Error(`Could not retrieve the meeting with ID "${mid}"`);
+        throw new Error(`Could not retrieve the meeting`);
     }
     meeting._id = meeting._id.toString();
     return meeting;
@@ -79,7 +79,7 @@ export async function deleteMeeting(mid) {
         await modifyUserMeeting(user, removed._id, false);
     }
     await modifyUserMeeting(removed.owner, removed._id, false);
-    return removed; // FIXME MG - maybe we want to return `true` for success instead of the actual object?
+    return removed;
 }
 
 // Update the "easy" fields of the meeting with the specified ID.

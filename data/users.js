@@ -72,7 +72,6 @@ export async function getUserMeetings(uid) {
     const meetings = await collection.find({ _id: { $in: meetingIds } }).toArray();
     if (!meetings) throw new Error(`Could not retrieve user ${uid}'s meetings`);
     meetings.map((meeting) => meeting._id.toString());
-    // TODO MG - might want to add the invite status from `.meetings` to the return values for convenience?
     return meetings;
 }
 
@@ -93,7 +92,7 @@ export async function deleteUser(uid) {
     const collection = await usersCollection();
     const removed = await collection.findOneAndDelete({ _id: validation.uidToCaseInsensitive(uid) });
     if (!removed) throw new Error(`Could not delete the user with ID "${uid}"`);
-    return true; // FIXME MG - maybe return something more useful
+    return true;
 }
 
 // Update certain fields (only the non-`undefined` ones) of the user with the specified ID.

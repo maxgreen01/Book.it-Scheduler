@@ -17,18 +17,20 @@ const editButton = document.getElementById("edit-response-button");
 const submitButton = document.getElementById("submit-response-button");
 
 const tooShortTimes = document.querySelectorAll(".best-time-tooshort");
-const checkbox = document.getElementById("show-short-meetings");
-checkbox.addEventListener("change", () => {
-    tooShortTimes.forEach((item) => {
-        if (checkbox.checked) {
-            // Display the item if the checkbox is checked
-            item.style.display = "list-item";
-        } else {
-            // Hide the item if the checkbox is unchecked
-            item.style.display = "none";
-        }
+if (document.getElementById("show-short-meetings")) {
+    const checkbox = document.getElementById("show-short-meetings");
+    checkbox.addEventListener("change", () => {
+        tooShortTimes.forEach((item) => {
+            if (checkbox.checked) {
+                // Display the item if the checkbox is checked
+                item.style.display = "list-item";
+            } else {
+                // Hide the item if the checkbox is unchecked
+                item.style.display = "none";
+            }
+        });
     });
-});
+}
 
 //returns a matrix form of the user's response when submit is clicked
 function availabilityFromCalendar() {
@@ -112,7 +114,6 @@ const bindCalendarSlots = (responsesArr, timeStart, uid) => {
             const usersAvail = [];
             for (let response of responsesArr) {
                 const isAvail = response.availabilities[i].slots[j] === 1;
-                //console.log(response.availabilities[i].slots[j]);
                 if (isAvail) usersAvail.push(response.uid);
             }
             j++;
@@ -174,7 +175,6 @@ if (editButton) {
 }
 
 //listener for submit button
-//TODO: POST reponse here!!
 if (submitButton) {
     submitButton.addEventListener("click", () => {
         onMainCalendar = true;
@@ -194,11 +194,9 @@ if (submitButton) {
         calendarTitle.innerHTML = "Group's Availability";
 
         //replace self with edit response button
-        //TODO: If we don't want the user to submit two responses, set both hiddens to false. Else, call Update() on response obj
         $("#edit-response-button").show();
         $("#submit-response-button").hide();
 
-        //TODO: Send over the complete matrix to the server or make response object here and send it
         const reqBody = {
             method: "POST",
             data: JSON.stringify(availabilityFromCalendar()),

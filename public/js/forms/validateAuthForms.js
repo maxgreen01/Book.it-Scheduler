@@ -1,4 +1,4 @@
-import { validateImageFileType, validatePassword, validateUserId } from "../clientValidation.js";
+import { validateImageFileType, validatePassword, validateProfilePicture, validateUserId, ValidationError } from "../clientValidation.js";
 import { createUserDocument } from "../documentCreation.js";
 import { serverFail } from "../pages/server-AJAX.js";
 
@@ -50,16 +50,16 @@ function validateSignup(event) {
                 description,
                 uid,
                 password,
-                profilePicture: undefined, // pfp validation performed below
-                availability: undefined, // TODO availability
+                profilePicture: undefined, // checked separately below
             },
             true
         );
-        if (files && files[0]) {
-            let pfp = files[0];
-            validateImageFileType(pfp.name, "Profile Picture");
-            if (pfp.size > 5000000) throw new Error("Profile Picture must be under 5MB");
+
+        if (files) {
+            if (files.length > 1) throw new ValidationError("Only one profile picture can be submitted");
+            if (files.length == 1) validateProfilePicture(files[0]);
         }
+
         //ajax request to the server will the signup details
         $.ajax({
             url: "/signup",

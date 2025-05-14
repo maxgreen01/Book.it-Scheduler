@@ -93,7 +93,7 @@ function validateBookMeeting(event) {
 
         // make sure the date is (at least partially) contained within one of the best times
         // note: to check if the booking time is entirely contained, we'll also need to get access to the meeting `duration` here
-        const bestTimes = JSON.parse(bookMeetingForm.dataset.bestTimes); // todo replace HTML dataset with AJAX request if there's time
+        const bestTimes = JSON.parse(bookMeetingForm.dataset.bestTimes);
         let match = false;
         for (const time of bestTimes) {
             // move on if the date doesn't match

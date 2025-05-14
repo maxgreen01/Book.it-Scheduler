@@ -1,17 +1,18 @@
 <main>
     <div class="view-meetings-grid">
         {{!-- header for meeting details --}}
-        <div class="title-bar">
-            <h1 style="margin-right: 20px">{{title}}</h1>
-            <br />
-            <p>Description: {{description}}</p>
-            <p>Duration: {{duration}}</p>
-            <div class="title-bar-actions">
+        <div class="title-bar-multi">
+            <div class="title-bar-short">
+                <h1 style="margin-right: 20px">{{title}}</h1>
+                <p><img src="/public/icons/time-svgrepo-com.svg" style="margin-bottom: -4px" alt="Stop Watch" class="button-image" /> Duration: {{duration}}</p>
                 {{#if isOwner}}
                 <a href="/meetings/{{meetingId}}/edit" class="editBookMeeting"> <img src="/public/icons/calendar-lines-pen-svgrepo-com.svg" alt="Calendar Edit" class="button-image" /> Edit Meeting</a>
                 {{/if}}
                 <a href="/meetings/{{meetingId}}" id="linkShareButton" class="linkShareButton"> <img src="/public/icons/link-svgrepo-com.svg" alt="Link Icon" class="button-image" />Copy Meeting Link</a>
             </div>
+            <br />
+            <p>This meeting could occur {{dateString}}</p>
+            <p>{{description}}</p>
         </div>
 
         {{!-- Container for calendar element + details --}}
@@ -126,24 +127,31 @@
                 <p>To restore the meeting, visit the <a href="/meetings/{{meetingId}}/edit">Edit Meeting</a> page.</p>
 
                 {{else if bestTimes.length}} {{!-- only allowed to book a meeting if there are best times available --}}
-                <h4>Book a Meeting Time</h4>
-                <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
+                <div id="formWrapper">
+                    <h4>Book a Meeting Time</h4>
+                    <p>Use the dropdown to select the start time for your meeting within one of the computed best meeting times! The end time is automatically calculated based on the meeting's duration of {{duration}}.</p>
 
-                <p id="booking-error"></p>
-                <form method="POST" name="bookMeeting" id="bookMeeting" action="/meetings/{{meetingId}}/edit" data-best-times="{{bestTimesJSON}}">
-                    <label for="dateInput">Date:</label>
-                    <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
-                    <br />
-                    <label for="timeStartInput">Start Time:</label>
-                    <select name="timeStart" id="timeStartInput">
-                        <option value="">--Choose a time--</option>
-                        {{#for 0 48 1}}
-                        <option value="{{this}}">{{convertIndexToLabel this}}</option>
-                        {{/for}}
-                    </select>
-                    <br />
-                    <button type="submit" name="action" value="book">Book Meeting</button>
-                </form>
+                    <p id="booking-error"></p>
+                    <form method="POST" name="bookMeeting" id="bookMeeting" action="/meetings/{{meetingId}}/edit" data-best-times="{{bestTimesJSON}}">
+                        <label for="dateInput">Date:</label>
+                        <input name="date" id="dateInput" type="date" min="{{get_prop (at_index bestTimes 0) 'minmaxDate'}}" max="{{get_prop (last_elem bestTimes) 'minmaxDate'}}" />
+                        <br />
+                        <label for="timeStartInput">Start Time:</label>
+                        <select name="timeStart" id="timeStartInput">
+                            <option value="">--Choose a time--</option>
+                            {{#for 0 48 1}}
+                            <option value="{{this}}">{{convertIndexToLabel this}}</option>
+                            {{/for}}
+                        </select>
+                        <br />
+                        <div class="center-gen">
+                            <button type="submit" style="text-align: center" name="action" value="book" class="genButton genButton-text">
+                                Book Meeting
+                                <img src="/public/icons/paper-airplane-svgrepo-com.svg" alt="Paper Plane" class="button-image" />
+                            </button>
+                        </div>
+                    </form>
+                </div>
                 {{else}}
                 <p>Invite People to this meeting if you'd like to book a meeting!</p>
                 {{/if}} {{/if}} {{!-- end of `isOwner` conditional --}}
@@ -192,7 +200,7 @@
                 <form method="POST" name="declineInvite" id="declineInvite" action="/meetings/{{meetingId}}/inviteReply">
                     <button type="submit" name="action" value="decline">Decline Meeting Invitation</button>
                 </form>
-                {{else}} {{!-- allow the user to reset their invitation reply --}}
+                {{else if ownInvitationReply}} {{!-- allow the user to reset their invitation reply, unless they aren't part of the meeting --}}
                 <p>You have already replied to this meeting invitation! However, you can reset your reply if you need to change it!</p>
 
                 <form method="POST" name="resetInvite" id="resetInvite" action="/meetings/{{meetingId}}/inviteReply">
