@@ -47,7 +47,7 @@ export async function getMeetingById(mid) {
     const collection = await meetingsCollection();
     const meeting = await collection.findOne({ _id: validation.convertStrToObjectId(mid) });
     if (!meeting) {
-        throw new Error(`Could not retrieve the meeting with ID "${mid}"`);
+        throw new Error(`Could not retrieve the meeting`);
     }
     meeting._id = meeting._id.toString();
     return meeting;

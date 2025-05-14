@@ -110,7 +110,7 @@ router
 
         try {
             await validateUserExists(data.uid);
-            return res.status(400).json({ error: `The user ID: ${data.uid} already exists!` });
+            return res.status(400).json({ error: `This username is already taken!` });
         } catch (e) {
             //Should always error
         }
