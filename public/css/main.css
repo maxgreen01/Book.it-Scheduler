@@ -858,7 +858,7 @@ p.create-meeting-submit-text,
     width: max-content;
     max-width: 95%;
     padding: 20px;
-    background: linear-gradient(135deg, #cb8afe, #760fc0);
+    background: #b1a7f0;
     border-radius: 10px;
     margin-right: 20px;
     justify-content: space-between;
