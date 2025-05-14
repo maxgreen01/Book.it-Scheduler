@@ -60,6 +60,11 @@ router.route("/").get(async (req, res) => {
         meeting.startDate = routeUtils.formatDateString(meeting.dates[0], false);
         meeting.endDate = numDays == 1 ? null : routeUtils.formatDateString(meeting.dates[numDays - 1], false);
 
+        // shorten meeting description if needed
+        if (meeting.description.length > 50) {
+            meeting.description = meeting.description.slice(0, 50) + "...";
+        }
+
         //========== FILTER MEETINGS AROUND PAGE ===========
 
         //booked meetings
@@ -194,7 +199,7 @@ router
                 const formattedEndDate = meeting.dates[meeting.dates.length - 1].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
                 dateString = `from ${formattedStartDate} to ${formattedEndDate}`;
             }
-            dateString += ` between ${convertIndexToLabel(meeting.timeStart)} and ${convertIndexToLabel(meeting.timeEnd)}.`;
+            dateString += `, between ${convertIndexToLabel(meeting.timeStart)} and ${convertIndexToLabel(meeting.timeEnd)}.`;
 
             // convert dates into human-readable format
             const formattedDates = meeting.dates.map(augmentFormatDate);

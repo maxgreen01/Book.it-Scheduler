@@ -82,6 +82,9 @@
                         <p>Respondents: {{this.responses.length}}</p>
                         <p>Duration: {{this.duration}}h</p>
                         <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
+                        {{#if this.description}}
+                        <p>Description: {{this.description}}</p>
+                        {{/if}}
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">
@@ -112,6 +115,9 @@
                         <p>Respondents: {{this.responses.length}}</p>
                         <p>Duration: {{this.duration}}h</p>
                         <p>Meeting Date: {{#if this.endDate}}{{this.startDate}} - {{this.endDate}} {{else}}{{this.startDate}} {{/if}}</p>
+                        {{#if this.description}}
+                        <p>Description: {{this.description}}</p>
+                        {{/if}}
                     </div>
                     <div class="mini-calendar-wrapper">
                         <div class="mini-calendar" style="--day-count: {{meeting.length}}">

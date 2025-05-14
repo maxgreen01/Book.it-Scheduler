@@ -109,6 +109,8 @@ export function createMeetingDocument({ name, description, duration, owner, date
     }
     if (timeStart >= timeEnd) throw new validation.ValidationError("Meeting End Time must be later than Start Time");
     if (duration > timeEnd - timeStart) throw new validation.ValidationError("Duration is too long for the given Start and End Times");
+    const nowTimeIndex = now.getHours() * 2 + (now.getMinutes() >= 30 ? 1 : 0);
+    if (!allowCreateInPast && validation.isSameDay(dateEnd, new Date(now.getFullYear(), now.getMonth(), now.getDate())) && timeEnd <= nowTimeIndex) throw new validation.ValidationError(`Cannot create a meeting for times that have already passed`);
 
     // ============= construct the document =============
 
