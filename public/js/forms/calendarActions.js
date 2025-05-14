@@ -112,7 +112,6 @@ const bindCalendarSlots = (responsesArr, timeStart, uid) => {
             const usersAvail = [];
             for (let response of responsesArr) {
                 const isAvail = response.availabilities[i].slots[j] === 1;
-                //console.log(response.availabilities[i].slots[j]);
                 if (isAvail) usersAvail.push(response.uid);
             }
             j++;
