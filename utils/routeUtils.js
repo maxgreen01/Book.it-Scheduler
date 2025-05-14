@@ -41,7 +41,9 @@ export function formatDateString(dateString, showWeekday = false) {
 export function handleValidationError(req, res, err, validationCode = 400, regularCode = 500) {
     if (err instanceof ValidationError) {
         return renderError(req, res, validationCode, err.message);
+    } else if (regularCode === 500) {
+        return renderError(req, res, regularCode, "Internal server error");
     } else {
-        return renderError(req, res, regularCode, "Internal Server Error");
+        return renderError(req, res, regularCode, err.message);
     }
 }
