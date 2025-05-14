@@ -138,7 +138,7 @@ router
             }
         } catch (err) {
             // should only happen on filesystem errors
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json({ error: "Internal Server Error" });
         }
 
         // actually add the user to the DB
