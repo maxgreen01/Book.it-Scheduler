@@ -100,7 +100,6 @@ router
 
         // assign default profile picture (which may be updated later in this route)
         data.profilePicture = profileUtils.defaultProfilePicture;
-        data.availability = new WeeklyAvailability(JSON.parse(data.availability));
         // validate User
         try {
             data.availability = new WeeklyAvailability(JSON.parse(data.availability));
