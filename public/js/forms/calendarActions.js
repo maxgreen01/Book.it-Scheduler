@@ -17,18 +17,20 @@ const editButton = document.getElementById("edit-response-button");
 const submitButton = document.getElementById("submit-response-button");
 
 const tooShortTimes = document.querySelectorAll(".best-time-tooshort");
-const checkbox = document.getElementById("show-short-meetings");
-checkbox.addEventListener("change", () => {
-    tooShortTimes.forEach((item) => {
-        if (checkbox.checked) {
-            // Display the item if the checkbox is checked
-            item.style.display = "list-item";
-        } else {
-            // Hide the item if the checkbox is unchecked
-            item.style.display = "none";
-        }
+if (document.getElementById("show-short-meetings")) {
+    const checkbox = document.getElementById("show-short-meetings");
+    checkbox.addEventListener("change", () => {
+        tooShortTimes.forEach((item) => {
+            if (checkbox.checked) {
+                // Display the item if the checkbox is checked
+                item.style.display = "list-item";
+            } else {
+                // Hide the item if the checkbox is unchecked
+                item.style.display = "none";
+            }
+        });
     });
-});
+}
 
 //returns a matrix form of the user's response when submit is clicked
 function availabilityFromCalendar() {
