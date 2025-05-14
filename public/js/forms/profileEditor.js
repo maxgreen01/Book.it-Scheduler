@@ -119,8 +119,11 @@ if (document.getElementById("editProfile")) {
 let isMouseDown = false;
 let isDeselecting = false;
 let selectedSlots = new Set();
+let calendarBindsSet = false;
 
 const calendarBinds = () => {
+    if (calendarBindsSet) return;
+    calendarBindsSet = true;
     const timeslotElements = document.querySelectorAll(".response-slot");
 
     //apply listeners to all elements: mousedown (click), mouseover (drag), mouseup (release)
@@ -168,7 +171,6 @@ const calendarBinds = () => {
                 isDeselecting = false;
             }
         });
-        $("#submit-response-button").hide();
     }
 
     // Click released OUTside cell: End selection
