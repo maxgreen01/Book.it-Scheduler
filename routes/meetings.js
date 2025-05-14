@@ -183,7 +183,18 @@ router
 
         // convert and construct meeting fields to display the data, then render the page
         try {
-            // convert data to prepare for rendering
+            // ===== convert data to prepare for rendering =====
+
+            // prepare string to display the start and end times of the entire meeting in a readable format
+            const formattedStartDate = meeting.dates[0].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+            let dateString;
+            if (meeting.dates.length == 1) {
+                dateString = `on ${formattedStartDate}`;
+            } else {
+                const formattedEndDate = meeting.dates[meeting.dates.length - 1].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+                dateString = `from ${formattedStartDate} to ${formattedEndDate}`;
+            }
+            dateString += ` between ${convertIndexToLabel(meeting.timeStart)} and ${convertIndexToLabel(meeting.timeEnd)}.`;
 
             // convert dates into human-readable format
             const formattedDates = meeting.dates.map(augmentFormatDate);
@@ -308,6 +319,7 @@ router
             return res.render("viewMeeting", {
                 meetingId: meetingId,
                 title: meeting.name,
+                dateString: dateString,
                 description: meeting.description,
                 duration: `${meeting.duration / 2} hour(s)`,
                 days: formattedDates,
