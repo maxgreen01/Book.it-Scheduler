@@ -94,31 +94,38 @@ router
 
         if (data.password === "") delete data.password;
 
-        // validate data
+        // validate fields
+        let pfpFile;
         try {
+            // validate profile picture if one was provided, otherwise do nothing to it
+            const file = req.files?.profilePicture;
+            if (typeof file === "object") {
+                // make sure only one file is submitted
+                if (!Array.isArray(file)) {
+                    pfpFile = file;
+                } else {
+                    return res.status(400).json({ error: "Only one image can be submitted!" });
+                }
+            }
+
+            // validate fields
             data.availability = new WeeklyAvailability(JSON.parse(data.availability));
             createUserDocument(data, true);
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
 
-        // update profile picture, if one is supplied
+        // update profile picture if one has been supplied
         try {
-            const pfpFile = req.files?.profilePicture;
-            if (typeof pfpFile === "object") {
-                // make sure only one file is submitted
-                if (!Array.isArray(pfpFile)) {
-                    data.profilePicture = await profileUtils.updateProfilePicture(req.session.user._id, pfpFile);
-                } else {
-                    return res.status(400).json({ error: "Only one image can be submitted!" });
-                }
+            if (pfpFile) {
+                data.profilePicture = await profileUtils.updateProfilePicture(req.session.user._id, pfpFile);
             }
             // profile picture not provided, so don't change anything existing profile picture
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
 
-        // validate all inputs and add the user to the DB
+        // validate all inputs and update the user fields in the DB
         try {
             req.session.user = await updateUser(req.session.user._id, data);
             return res.status(200).json({ success: "Updated the profile data!" }); // go to the updated profile page
@@ -133,7 +140,7 @@ router
             await deleteUser(uid);
             req.session.destroy();
             return res.sendStatus(204);
-        } catch (err) {
+        } catch {
             return routeUtils.renderError(req, res, 500, "Internal server error");
         }
     });
@@ -141,6 +148,9 @@ router
 // view someone else's profile
 router.route("/:uid").get(async (req, res) => {
     // validate ID and retrieve other's profile
+    if (req.params.uid === req.session.user._id) {
+        return res.redirect("/profile");
+    }
     try {
         const user = await getUserById(req.params.uid);
         const userDefaultAvail = user.availability.days;
