@@ -3,7 +3,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import { __rootdir } from "./routeUtils.js";
-import { validateUserId, validateImageFileType } from "./validation.js";
+import { validateUserId, validateProfilePicture } from "./validation.js";
 import { getUserById } from "../data/users.js";
 
 // relative path where profile photos are stored
@@ -49,13 +49,15 @@ export async function deleteProfilePicture(uid) {
 // Upload a profile picture to the server's filesystem.
 // If successful, return the name of the newly uploaded file.
 export async function uploadProfilePicture(uid, pfpFile) {
-    // rename the file
+    // rename the file and ensure it's the right type
     uid = validateUserId(uid);
-    const extension = validateImageFileType(pfpFile.name, "Profile Picture Name");
+    const extension = validateProfilePicture(pfpFile);
     const filename = `${uid}.${extension}`;
 
-    // upload the file to the filesystem
-    await pfpFile.mv(path.join(__imagesDir, filename));
+    // upload the file to the filesystem (without overwriting the default)
+    if (filename !== defaultProfilePicture) {
+        await pfpFile.mv(path.join(__imagesDir, filename));
+    }
 
     // file successfully uploaded, so return its name
     return filename;
