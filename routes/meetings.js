@@ -191,12 +191,12 @@ router
             // ===== convert data to prepare for rendering =====
 
             // prepare string to display the start and end times of the entire meeting in a readable format
-            const formattedStartDate = meeting.dates[0].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+            const formattedStartDate = meeting.dates[0].toLocaleDateString("en-US", { year: "numeric", month: "long", weekday: "long", day: "numeric" });
             let dateString;
             if (meeting.dates.length == 1) {
                 dateString = `on ${formattedStartDate}`;
             } else {
-                const formattedEndDate = meeting.dates[meeting.dates.length - 1].toLocaleDateString("en-US", { month: "long", weekday: "long", day: "numeric" });
+                const formattedEndDate = meeting.dates[meeting.dates.length - 1].toLocaleDateString("en-US", { year: "numeric", month: "long", weekday: "long", day: "numeric" });
                 dateString = `from ${formattedStartDate} to ${formattedEndDate}`;
             }
             dateString += `, between ${convertIndexToLabel(meeting.timeStart)} and ${convertIndexToLabel(meeting.timeEnd)}.`;

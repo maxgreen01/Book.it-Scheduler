@@ -73,8 +73,8 @@ function validateProfile(event) {
             true
         );
         if (files) {
-            if (files.length !== 1) throw new ValidationError("Only one profile picture can be submitted");
-            validateProfilePicture(files[0]);
+            if (files.length > 1) throw new ValidationError("Only one profile picture can be submitted");
+            if (files.length == 1) validateProfilePicture(files[0]);
         }
         event.preventDefault();
         //ajax request to the server will the signup details
