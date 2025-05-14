@@ -5,7 +5,7 @@ import { getUserById, getUserMeetings } from "../data/users.js";
 import { addResponseToMeeting, getMeetingById, isUserMeetingOwner, replyToMeetingInvitation, setMeetingBooking, updateMeeting, updateMeetingNote } from "../data/meetings.js";
 import { computeBestTimes, constructTimeLabels, augmentFormatDate, mergeResponses, formatDateAsMinMaxString, filterByInviteStatus, categorizeInvitations, convertIndexToLabel } from "../public/js/helpers.js";
 import { Availability } from "../public/js/classes/availabilities.js";
-import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError } from "../utils/validation.js";
+import { convertStrToInt, isSameDay, validateArrayElements, validateCommentNoteBody, validateDateObj, validateIntRange, validateImageFileType, validateUserId, ValidationError, validateMeetingExists } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -596,11 +596,11 @@ router
     // AJAX route for updating a user's private note
     .post(async (req, res) => {
         try {
-            const meetingId = req.params.meetingId;
+            const meetingId = await validateMeetingExists(req.params.meetingId);
             const userId = validateUserId(req.session.user._id);
             const note = validateCommentNoteBody(req.body.noteInput, "Note Body");
             await updateMeetingNote(meetingId, userId, note);
-            return res.status(200).json({ noteUpdated: `Note for user ${userId} updated to ${note}` });
+            return res.status(200).json({ noteUpdated: `Note for user ${userId} has been updated` });
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }

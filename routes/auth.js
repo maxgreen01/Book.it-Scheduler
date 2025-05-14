@@ -152,7 +152,7 @@ router
         delete user.password;
         req.session.user = user;
 
-        return res.status(200).json({ success: `Created a new profile for ${data.uid}` }); // go to the newly created profile page
+        return res.status(200).json({ success: `Created a new profile for ${user._id}` }); // go to the newly created profile page
     });
 
 export default router;

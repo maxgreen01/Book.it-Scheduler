@@ -11,7 +11,7 @@ import { modifyUserMeeting, updateUserInviteStatus } from "./users.js";
 export async function createMeeting({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, allowCreateInPast = false) {
     // set up the document that will be saved to the DB
     const meeting = createMeetingDocument({ name, description, duration, owner, dateStart, dateEnd, timeStart, timeEnd }, false, allowCreateInPast);
-    meeting.bookingStatus = 0; // todo make an enum for status code meanings
+    meeting.bookingStatus = 0;
     meeting.bookedTime = null;
     meeting.users = [];
     meeting.responses = [];

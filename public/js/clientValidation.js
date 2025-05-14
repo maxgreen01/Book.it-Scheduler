@@ -53,7 +53,7 @@ export function validateAlphabeticalExtended(str, label = "String", minLen, maxL
 // Throw an error if the input is not a Number, is NaN, or is outside the given bounds.
 // Return the given number if it is valid.
 export function validateNumber(num, label = "Number", min, max) {
-    if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} "${num}" is invalid or out of range`);
+    if (typeof num !== "number" || Number.isNaN(num) || num < min || num > max) throw new ValidationError(`${label} is invalid or out of range`);
     return num;
 }
 
@@ -127,7 +127,7 @@ export function validateObjectKeys(obj, allowedFields, label = "Object") {
     const objKeys = Object.keys(obj);
     const invalidFields = objKeys.filter((key) => !allowedFields.includes(key));
     if (invalidFields.length > 0) {
-        throw new ValidationError(`${label} contains invalid fields: ${JSON.stringify(invalidFields)}`);
+        throw new ValidationError(`${label} contains invalid fields:` /* ${JSON.stringify(invalidFields)} */);
     }
     return obj;
 }
