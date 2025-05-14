@@ -172,12 +172,12 @@ export function constructTimeLabels(timeStart, timeEnd, asObject = false) {
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-// transform a Date object into an object with properties `day` and `dow`, representing the formatted day of the month and corresponding day of the week
+// transform a Date object into an object with properties `day`, `dow`, and `year`, representing the formatted day of the month and corresponding day of the week
 export function augmentFormatDate(date) {
     const month = monthNames[date.getMonth()];
     const dayOfMonth = date.getDate();
     const dayOfWeek = daysOfWeek[date.getDay()];
-    return { day: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}` };
+    return { day: `${month} ${dayOfMonth}`, dow: `${dayOfWeek}`, year: `${date.getFullYear()}` };
 }
 
 // convert a Date into a string like "YYYY-MM-DD" which can be used for setting the `min` or `max` property of a date picker
