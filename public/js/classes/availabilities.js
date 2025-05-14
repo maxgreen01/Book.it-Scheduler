@@ -28,8 +28,6 @@ export class Availability {
     // Return a new availability obj of when everyone is available
     // availArray: Array of Availability Objects
     static mergeAvailability(availArray, timeStart = 0, timeEnd = 48) {
-        //TODO: if a user has other events booked, take those in a parameter and remove user availability
-
         //validate the array of Availability Objects
         availArray = validateArrayElements(availArray, "Availability Array", (elem) => validateAvailabilityObj(elem));
         const commonDate = availArray[0].date;

@@ -37,11 +37,9 @@ function toggleEditor(num) {
     editor.hidden = num != 1;
     deleter.hidden = num != 2;
     if (editor.hidden) {
-        console.log("Unbinding calendar");
         editMenuActive = false;
     } else {
         editMenuActive = true;
-        console.log("Binding calendar");
         calendarBinds();
     }
 }

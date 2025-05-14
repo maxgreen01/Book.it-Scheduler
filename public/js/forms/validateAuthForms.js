@@ -51,7 +51,6 @@ function validateSignup(event) {
                 uid,
                 password,
                 profilePicture: undefined, // checked separately below
-                availability: undefined, // TODO availability
             },
             true
         );
