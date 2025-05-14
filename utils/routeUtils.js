@@ -42,6 +42,6 @@ export function handleValidationError(req, res, err, validationCode = 400, regul
     if (err instanceof ValidationError) {
         return renderError(req, res, validationCode, err.message);
     } else {
-        return renderError(req, res, regularCode, err.message);
+        return renderError(req, res, regularCode, "Internal Server Error");
     }
 }
